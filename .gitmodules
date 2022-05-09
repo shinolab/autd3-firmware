@@ -1,0 +1,6 @@
+[submodule "autd3-fpga"]
+	path = autd3-fpga
+	url = https://github.com/shinolab/autd3-fpga
+[submodule "autd3-cpu"]
+	path = autd3-cpu
+	url = https://github.com/shinolab/autd3-cpu
