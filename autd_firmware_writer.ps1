@@ -3,7 +3,7 @@
 # Created Date: 14/02/2020
 # Author: Shun Suzuki
 # -----
-# Last Modified: 06/12/2023
+# Last Modified: 10/12/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -151,11 +151,10 @@ if (-not (Test-Path "tmp")) {
 }
 if (-not (Test-Path "tmp/v$version")) {
   ColorEcho "Green" "INFO" "Downloading firmware files..."
-  Invoke-WebRequest "https://github.com/shinolab/autd3/releases/download/firmware%2Fv$version/firmware-v$version.zip" -OutFile "tmp.zip" | Out-Null
+  Invoke-WebRequest "https://github.com/shinolab/autd3-firmware/releases/download/v$version/firmware-v$version.zip" -OutFile "tmp.zip" | Out-Null
   Expand-Archive -Path "tmp.zip" -DestinationPath "tmp/v$version" -Force
   Remove-Item -Path "tmp.zip"
 }
-
 ColorEcho "Green" "INFO" "Found firmwares are..."
 $firmwares = Get-ChildItem "tmp/v$version"
 $fpga_firmware = ""
