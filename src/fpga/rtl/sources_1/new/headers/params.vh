@@ -14,7 +14,7 @@
 localparam int NUM_TRANSDUCERS = 249;
 
 localparam bit [7:0] VERSION_NUM = 8'h8C;
-localparam bit [7:0] VERSION_NUM_MINOR = 8'h01;
+localparam bit [7:0] VERSION_NUM_MINOR = 8'h02;
 
 localparam bit [1:0] BRAM_SELECT_CONTROLLER = 2'h0;
 localparam bit [1:0] BRAM_SELECT_MOD = 2'h1;

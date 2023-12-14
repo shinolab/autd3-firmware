@@ -19,7 +19,7 @@
 #include "utils.h"
 
 #define CPU_VERSION_MAJOR (0x8C) /* v4.1 */
-#define CPU_VERSION_MINOR (0x01)
+#define CPU_VERSION_MINOR (0x02)
 
 #define MOD_BUF_PAGE_SIZE_WIDTH (15)
 #define MOD_BUF_PAGE_SIZE (1 << MOD_BUF_PAGE_SIZE_WIDTH)
@@ -152,7 +152,7 @@ void write_mod(const volatile uint8_t* p_data) {
   }
 
   page_capacity = (_mod_cycle & ~MOD_BUF_PAGE_SIZE_MASK) + MOD_BUF_PAGE_SIZE - _mod_cycle;
-  if (write <= page_capacity) {
+  if (write < page_capacity) {
     bram_cpy(BRAM_SELECT_MOD, (_mod_cycle & MOD_BUF_PAGE_SIZE_MASK) >> 1, data, (write + 1) >> 1);
     _mod_cycle += write;
   } else {
@@ -251,7 +251,7 @@ static void write_focus_stm(const volatile uint8_t* p_data) {
   }
 
   page_capacity = (_stm_cycle & ~FOCUS_STM_BUF_PAGE_SIZE_MASK) + FOCUS_STM_BUF_PAGE_SIZE - _stm_cycle;
-  if (size <= page_capacity) {
+  if (size < page_capacity) {
     cnt = size;
     addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & FOCUS_STM_BUF_PAGE_SIZE_MASK) << 3);
     dst = &base[addr];

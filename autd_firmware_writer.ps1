@@ -10,7 +10,7 @@
 # 
 
 Param(
-    [string]$version = "4.1.1",
+    [string]$version = "4.1.2",
     [string]$vivado_dir = "NULL"
 )
 
