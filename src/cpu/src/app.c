@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/12/2023
+ * Last Modified: 14/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@
 #include "utils.h"
 
 #define CPU_VERSION_MAJOR (0x8C) /* v4.1 */
-#define CPU_VERSION_MINOR (0x00)
+#define CPU_VERSION_MINOR (0x01)
 
 #define MOD_BUF_PAGE_SIZE_WIDTH (15)
 #define MOD_BUF_PAGE_SIZE (1 << MOD_BUF_PAGE_SIZE_WIDTH)
@@ -158,7 +158,7 @@ void write_mod(const volatile uint8_t* p_data) {
   } else {
     bram_cpy(BRAM_SELECT_MOD, (_mod_cycle & MOD_BUF_PAGE_SIZE_MASK) >> 1, data, page_capacity >> 1);
     _mod_cycle += page_capacity;
-    data += page_capacity;
+    data += (page_capacity >> 1);
     change_mod_page((_mod_cycle & ~MOD_BUF_PAGE_SIZE_MASK) >> MOD_BUF_PAGE_SIZE_WIDTH);
     bram_cpy(BRAM_SELECT_MOD, (_mod_cycle & MOD_BUF_PAGE_SIZE_MASK) >> 1, data, (write - page_capacity + 1) >> 1);
     _mod_cycle += write - page_capacity;

@@ -4,7 +4,7 @@
  * Created Date: 18/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 14/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,6 +28,8 @@ module main #(
 );
 
   `include "params.vh"
+
+  localparam string ENABLE_STM = "TRUE";
 
   logic [63:0] sys_time;
   logic skip_one_assert;
@@ -124,52 +126,65 @@ module main #(
       .UPDATE(update)
   );
 
-  normal_operator #(
-      .DEPTH(DEPTH)
-  ) normal_operator (
-      .CLK(CLK),
-      .CPU_BUS(CPU_BUS_NORMAL),
-      .UPDATE(update),
-      .INTENSITY(intensity_normal),
-      .PHASE(phase_normal),
-      .DOUT_VALID(dout_valid_normal)
-  );
+  if (ENABLE_STM == "TRUE") begin
+    normal_operator #(
+        .DEPTH(DEPTH)
+    ) normal_operator (
+        .CLK(CLK),
+        .CPU_BUS(CPU_BUS_NORMAL),
+        .UPDATE(update),
+        .INTENSITY(intensity_normal),
+        .PHASE(phase_normal),
+        .DOUT_VALID(dout_valid_normal)
+    );
 
-  stm_operator #(
-      .DEPTH(DEPTH)
-  ) stm_operator (
-      .CLK(CLK),
-      .SYS_TIME(sys_time),
-      .UPDATE(update),
-      .CYCLE_STM(cycle_stm),
-      .FREQ_DIV_STM(freq_div_stm),
-      .SOUND_SPEED(sound_speed),
-      .STM_GAIN_MODE(stm_gain_mode),
-      .CPU_BUS(CPU_BUS_STM),
-      .INTENSITY(intensity_stm),
-      .PHASE(phase_stm),
-      .DOUT_VALID(dout_valid_stm),
-      .IDX(stm_idx)
-  );
+    stm_operator #(
+        .DEPTH(DEPTH)
+    ) stm_operator (
+        .CLK(CLK),
+        .SYS_TIME(sys_time),
+        .UPDATE(update),
+        .CYCLE_STM(cycle_stm),
+        .FREQ_DIV_STM(freq_div_stm),
+        .SOUND_SPEED(sound_speed),
+        .STM_GAIN_MODE(stm_gain_mode),
+        .CPU_BUS(CPU_BUS_STM),
+        .INTENSITY(intensity_stm),
+        .PHASE(phase_stm),
+        .DOUT_VALID(dout_valid_stm),
+        .IDX(stm_idx)
+    );
 
-  mux mux (
-      .CLK(CLK),
-      .OP_MODE(op_mode),
-      .INTENSITY_NORMAL(intensity_normal),
-      .PHASE_NORMAL(phase_normal),
-      .DOUT_VALID_NORMAL(dout_valid_normal),
-      .INTENSITY_STM(intensity_stm),
-      .PHASE_STM(phase_stm),
-      .DOUT_VALID_STM(dout_valid_stm),
-      .STM_IDX(stm_idx),
-      .USE_STM_START_IDX(use_stm_start_idx),
-      .USE_STM_FINISH_IDX(use_stm_finish_idx),
-      .STM_START_IDX(stm_start_idx),
-      .STM_FINISH_IDX(stm_finish_idx),
-      .INTENSITY(intensity),
-      .PHASE(phase),
-      .DOUT_VALID(dout_valid)
-  );
+    mux mux (
+        .CLK(CLK),
+        .OP_MODE(op_mode),
+        .INTENSITY_NORMAL(intensity_normal),
+        .PHASE_NORMAL(phase_normal),
+        .DOUT_VALID_NORMAL(dout_valid_normal),
+        .INTENSITY_STM(intensity_stm),
+        .PHASE_STM(phase_stm),
+        .DOUT_VALID_STM(dout_valid_stm),
+        .STM_IDX(stm_idx),
+        .USE_STM_START_IDX(use_stm_start_idx),
+        .USE_STM_FINISH_IDX(use_stm_finish_idx),
+        .STM_START_IDX(stm_start_idx),
+        .STM_FINISH_IDX(stm_finish_idx),
+        .INTENSITY(intensity),
+        .PHASE(phase),
+        .DOUT_VALID(dout_valid)
+    );
+  end else begin
+    normal_operator #(
+        .DEPTH(DEPTH)
+    ) normal_operator (
+        .CLK(CLK),
+        .CPU_BUS(CPU_BUS_NORMAL),
+        .UPDATE(update),
+        .INTENSITY(intensity),
+        .PHASE(phase),
+        .DOUT_VALID(dout_valid)
+    );
+  end
 
   modulator #(
       .DEPTH(DEPTH)
