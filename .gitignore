@@ -2,3 +2,4 @@
 *.log
 /.Xil
 tmp/
+tmp.mcs
