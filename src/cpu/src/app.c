@@ -19,7 +19,7 @@
 #include "utils.h"
 
 #define CPU_VERSION_MAJOR (0x8C) /* v4.1 */
-#define CPU_VERSION_MINOR (0x01)
+#define CPU_VERSION_MINOR (0x02)
 
 #define MOD_BUF_PAGE_SIZE_WIDTH (15)
 #define MOD_BUF_PAGE_SIZE (1 << MOD_BUF_PAGE_SIZE_WIDTH)
