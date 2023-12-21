@@ -4,7 +4,7 @@
  * Created Date: 25/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 21/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -120,10 +120,21 @@ module sim_helper_bram #(
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_FREQ_DIV_1, mod_freq_div[31:16]);
   endtask
 
-  task automatic write_silent_step(logic [15:0] silent_step_intensity,
-                                   logic [15:0] silent_step_phase);
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENT_STEP_INTENSITY, silent_step_intensity);
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENT_STEP_PHASE, silent_step_phase);
+  task automatic write_silencer_update_rate(logic [15:0] intensity, logic [15:0] phase);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_UPDATE_RATE_INTENSITY, intensity);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_UPDATE_RATE_PHASE, phase);
+  endtask
+
+  task automatic write_silencer_completion_steps(logic [15:0] intensity, logic [15:0] phase);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_COMPLETION_STEPS_INTENSITY, intensity);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_COMPLETION_STEPS_PHASE, phase);
+  endtask
+
+  task automatic set_silencer_ctl_flag(logic fixed_completion_step);
+    automatic
+    logic [15:0]
+    ctl_reg = fixed_completion_step << SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS;
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_CTL_FLAG, ctl_reg);
   endtask
 
   task automatic write_stm_cycle(logic [15:0] stm_cycle);

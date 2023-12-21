@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/12/2023
+ * Last Modified: 21/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -36,8 +36,11 @@ localparam bit [13:0] ADDR_MOD_FREQ_DIV_0 = 14'h022;
 localparam bit [13:0] ADDR_MOD_FREQ_DIV_1 = 14'h023;
 localparam bit [13:0] ADDR_VERSION_NUM_MAJOR = 14'h030;
 localparam bit [13:0] ADDR_VERSION_NUM_MINOR = 14'h031;
-localparam bit [13:0] ADDR_SILENT_STEP_INTENSITY = 14'h040;
-localparam bit [13:0] ADDR_SILENT_STEP_PHASE = 14'h041;
+localparam bit [13:0] ADDR_SILENCER_UPDATE_RATE_INTENSITY = 14'h040;
+localparam bit [13:0] ADDR_SILENCER_UPDATE_RATE_PHASE = 14'h041;
+localparam bit [13:0] ADDR_SILENCER_CTL_FLAG = 14'h042;
+localparam bit [13:0] ADDR_SILENCER_COMPLETION_STEPS_INTENSITY = 14'h043;
+localparam bit [13:0] ADDR_SILENCER_COMPLETION_STEPS_PHASE = 14'h044;
 localparam bit [13:0] ADDR_STM_MEM_PAGE = 14'h050;
 localparam bit [13:0] ADDR_STM_CYCLE = 14'h051;
 localparam bit [13:0] ADDR_STM_FREQ_DIV_0 = 14'h052;
@@ -56,3 +59,5 @@ localparam int CTL_FLAG_USE_STM_FINISH_IDX_BIT = 11;
 localparam int CTL_FLAG_USE_STM_START_IDX_BIT = 12;
 localparam int CTL_FLAG_FORCE_FAN_EX_BIT = 13;
 localparam int CTL_FLAG_SYNC_BIT = 15;
+
+localparam int SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS = 0;
