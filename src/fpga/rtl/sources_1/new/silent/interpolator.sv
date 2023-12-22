@@ -4,7 +4,7 @@
  * Created Date: 22/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/12/2023
+ * Last Modified: 22/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -175,7 +175,7 @@ module interpolator #(
             add_phase_fg <= 1'b0;
           end
         end else begin
-          if (-18'sd65536 <= phase_step) begin
+          if (-18'sd32768 <= phase_step) begin
             b_phase_fg <= '0;
           end else begin
             b_phase_fg   <= 18'sd65536;
