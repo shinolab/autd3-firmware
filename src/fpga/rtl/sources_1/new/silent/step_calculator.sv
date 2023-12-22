@@ -49,9 +49,11 @@ module step_calculator #(
   logic [15:0] completion_steps_phase;
   logic [15:0] current_target_intensity[DEPTH] = '{DEPTH{0}};
   logic [7:0] current_target_phase[DEPTH] = '{DEPTH{0}};
-  logic [15:0] diff_intensity_a, diff_intensity_b, diff_intensity;
+  logic [15:0] diff_intensity_a, diff_intensity_b, diff_intensity_tmp;
   logic [15:0] diff_intensity_buf[3];
-  logic [7:0] diff_phase_a, diff_phase_b, diff_phase;
+  logic [7:0] diff_phase_a, diff_phase_b, diff_phase_tmp;
+  logic [15:0] diff_intensity[DEPTH];
+  logic [7:0] diff_phase[DEPTH];
   logic [15:0] intensity_step_quo, intensity_step_rem_unused;
   logic [15:0] phase_step_quo, phase_step_rem_unused;
   logic [8:0] phase_fold_a, phase_fold_b, phase_fold_s;
@@ -69,7 +71,7 @@ module step_calculator #(
       .A  (diff_intensity_a),
       .B  (diff_intensity_b),
       .ADD(1'b0),
-      .S  (diff_intensity)
+      .S  (diff_intensity_tmp)
   );
 
   addsub #(
@@ -79,7 +81,7 @@ module step_calculator #(
       .A  (diff_phase_a),
       .B  (diff_phase_b),
       .ADD(1'b0),
-      .S  (diff_phase)
+      .S  (diff_phase_tmp)
   );
 
   addsub #(
@@ -155,8 +157,19 @@ module step_calculator #(
           diff_intensity_b <= current_target_intensity[load_cnt];
         end
 
+        load_cnt <= load_cnt + 1;
+        if (load_cnt > AddSubLatency) begin
+          if (diff_intensity_tmp != 0) begin
+            diff_intensity[target_set_cnt] <= diff_intensity_tmp;
+            diff_intensity_buf[0] <= diff_intensity_tmp;
+            current_target_intensity[target_set_cnt] <= intensity_buf[AddSubLatency+1+AddSubLatency];
+          end else begin
+            diff_intensity_buf[0] <= diff_intensity[target_set_cnt];
+          end
+          target_set_cnt <= target_set_cnt + 1;
+        end
+
         // wait phase fold
-        diff_intensity_buf[0] <= diff_intensity;
         diff_intensity_buf[1] <= diff_intensity_buf[0];
         diff_intensity_buf[2] <= diff_intensity_buf[1];
 
@@ -170,23 +183,26 @@ module step_calculator #(
         end
 
         // phase fold
-        if (diff_phase >= 8'd128) begin
-          phase_fold_a <= 9'd256;
-          phase_fold_b <= {1'b0, diff_phase};
-        end else begin
-          phase_fold_a <= {1'b0, diff_phase};
-          phase_fold_b <= 9'd0;
-        end
-
-        load_cnt <= load_cnt + 1;
         if (load_cnt > AddSubLatency) begin
-          if (diff_intensity != 0) begin
-            current_target_intensity[target_set_cnt] <= intensity_buf[AddSubLatency+1+AddSubLatency];
-          end
-          if (diff_phase != 0) begin
+          if (diff_phase_tmp != 0) begin
+            diff_phase[target_set_cnt] <= diff_phase_tmp;
+            if (diff_phase_tmp >= 8'd128) begin
+              phase_fold_a <= 9'd256;
+              phase_fold_b <= {1'b0, diff_phase_tmp};
+            end else begin
+              phase_fold_a <= {1'b0, diff_phase_tmp};
+              phase_fold_b <= 9'd0;
+            end
             current_target_phase[target_set_cnt] <= phase_buf[AddSubLatency+1+AddSubLatency];
+          end else begin
+            if (diff_phase[target_set_cnt] >= 8'd128) begin
+              phase_fold_a <= 9'd256;
+              phase_fold_b <= {1'b0, diff_phase[target_set_cnt]};
+            end else begin
+              phase_fold_a <= {1'b0, diff_phase[target_set_cnt]};
+              phase_fold_b <= 9'd0;
+            end
           end
-          target_set_cnt <= target_set_cnt + 1;
         end
 
         if (load_cnt > AddSubLatency + AddSubLatency + 1 + DivLatency) begin
