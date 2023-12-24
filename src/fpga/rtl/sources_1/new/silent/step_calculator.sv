@@ -51,9 +51,9 @@ module step_calculator #(
   logic [15:0] current_target_intensity[DEPTH] = '{DEPTH{0}};
   logic [7:0] current_target_phase[DEPTH] = '{DEPTH{0}};
   logic [15:0] diff_intensity_a, diff_intensity_b, diff_intensity_tmp;
-  logic [15:0] diff_intensity_buf[3];
+  logic [15:0] diff_intensity_buf[3] = '{3{0}};
   logic [7:0] diff_phase_a, diff_phase_b, diff_phase_tmp;
-  logic [15:0] diff_intensity[DEPTH];
+  logic [15:0] diff_intensity[DEPTH] = '{DEPTH{0}};
   logic [7:0] diff_phase[DEPTH];
   logic [15:0] intensity_step_quo, intensity_step_rem;
   logic [15:0] phase_step_quo, phase_step_rem;
@@ -169,7 +169,7 @@ module step_calculator #(
             is_intensity_reset[0] <= 1'b1;
             diff_intensity[target_set_cnt] <= diff_intensity_tmp;
             diff_intensity_buf[0] <= diff_intensity_tmp;
-            current_target_intensity[target_set_cnt] <= intensity_buf[AddSubLatency+1+AddSubLatency];
+            current_target_intensity[target_set_cnt] <= intensity_buf[AddSubLatency+1];
           end else begin
             is_intensity_reset[0] <= 1'b0;
             diff_intensity_buf[0] <= diff_intensity[target_set_cnt];
@@ -202,7 +202,7 @@ module step_calculator #(
               phase_fold_a <= {1'b0, diff_phase_tmp};
               phase_fold_b <= 9'd0;
             end
-            current_target_phase[target_set_cnt] <= phase_buf[AddSubLatency+1+AddSubLatency];
+            current_target_phase[target_set_cnt] <= phase_buf[AddSubLatency+1];
           end else begin
             is_phase_reset[0] <= 1'b0;
             if (diff_phase[target_set_cnt] >= 8'd128) begin
