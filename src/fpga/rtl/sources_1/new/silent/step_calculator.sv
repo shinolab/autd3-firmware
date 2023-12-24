@@ -54,11 +54,11 @@ module step_calculator #(
   logic [15:0] diff_intensity_buf[3] = '{3{0}};
   logic [7:0] diff_phase_a, diff_phase_b, diff_phase_tmp;
   logic [15:0] diff_intensity[DEPTH] = '{DEPTH{0}};
-  logic [7:0] diff_phase[DEPTH];
+  logic [7:0] diff_phase[DEPTH] = '{DEPTH{0}};
   logic [15:0] intensity_step_quo, intensity_step_rem;
   logic [15:0] phase_step_quo, phase_step_rem;
-  logic [15:0] phase_step_remainds[DEPTH];
-  logic [15:0] intensity_step_remainds[DEPTH];
+  logic [15:0] phase_step_remainds[DEPTH] = '{DEPTH{0}};
+  logic [15:0] intensity_step_remainds[DEPTH] = '{DEPTH{0}};
   logic [8:0] phase_fold_a, phase_fold_b, phase_fold_s;
   logic is_phase_reset[DivLatency+3];
   logic is_intensity_reset[DivLatency+3];
