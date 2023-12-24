@@ -4,7 +4,7 @@
  * Created Date: 21/12/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/12/2023
+ * Last Modified: 24/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -44,6 +44,7 @@ module step_calculator #(
 
   logic [$clog2(DEPTH+AddSubLatency+1+AddSubLatency+DivLatency)-1:0] load_cnt;
   logic [$clog2(DEPTH+AddSubLatency+DivLatency)-1:0] target_set_cnt;
+  logic [$clog2(DEPTH+AddSubLatency)-1:0] remainds_set_cnt;
 
   logic [15:0] completion_steps_intensity;
   logic [15:0] completion_steps_phase;
@@ -54,9 +55,13 @@ module step_calculator #(
   logic [7:0] diff_phase_a, diff_phase_b, diff_phase_tmp;
   logic [15:0] diff_intensity[DEPTH];
   logic [7:0] diff_phase[DEPTH];
-  logic [15:0] intensity_step_quo, intensity_step_rem_unused;
-  logic [15:0] phase_step_quo, phase_step_rem_unused;
+  logic [15:0] intensity_step_quo, intensity_step_rem;
+  logic [15:0] phase_step_quo, phase_step_rem;
+  logic [15:0] phase_step_remainds[DEPTH];
+  logic [15:0] intensity_step_remainds[DEPTH];
   logic [8:0] phase_fold_a, phase_fold_b, phase_fold_s;
+  logic is_phase_reset[DivLatency+3];
+  logic is_intensity_reset[DivLatency+3];
 
   assign INTENSITY_OUT = intensity;
   assign PHASE_OUT = phase;
@@ -100,7 +105,7 @@ module step_calculator #(
       .s_axis_divisor_tdata(completion_steps_intensity),
       .s_axis_divisor_tvalid(1'b1),
       .aclk(CLK),
-      .m_axis_dout_tdata({intensity_step_quo, intensity_step_rem_unused}),
+      .m_axis_dout_tdata({intensity_step_quo, intensity_step_rem}),
       .m_axis_dout_tvalid()
   );
 
@@ -110,7 +115,7 @@ module step_calculator #(
       .s_axis_divisor_tdata(completion_steps_phase),
       .s_axis_divisor_tvalid(1'b1),
       .aclk(CLK),
-      .m_axis_dout_tdata({phase_step_quo, phase_step_rem_unused}),
+      .m_axis_dout_tdata({phase_step_quo, phase_step_rem}),
       .m_axis_dout_tvalid()
   );
 
@@ -129,6 +134,7 @@ module step_calculator #(
         if (DIN_VALID) begin
           load_cnt <= 0;
           target_set_cnt <= 0;
+          remainds_set_cnt <= 0;
 
           completion_steps_intensity <= COMPLETION_STEPS_INTENSITY_S;
           completion_steps_phase <= COMPLETION_STEPS_PHASE_S;
@@ -160,10 +166,12 @@ module step_calculator #(
         load_cnt <= load_cnt + 1;
         if (load_cnt > AddSubLatency) begin
           if (diff_intensity_tmp != 0) begin
+            is_intensity_reset[0] <= 1'b1;
             diff_intensity[target_set_cnt] <= diff_intensity_tmp;
             diff_intensity_buf[0] <= diff_intensity_tmp;
             current_target_intensity[target_set_cnt] <= intensity_buf[AddSubLatency+1+AddSubLatency];
           end else begin
+            is_intensity_reset[0] <= 1'b0;
             diff_intensity_buf[0] <= diff_intensity[target_set_cnt];
           end
           target_set_cnt <= target_set_cnt + 1;
@@ -185,6 +193,7 @@ module step_calculator #(
         // phase fold
         if (load_cnt > AddSubLatency) begin
           if (diff_phase_tmp != 0) begin
+            is_phase_reset[0] <= 1'b1;
             diff_phase[target_set_cnt] <= diff_phase_tmp;
             if (diff_phase_tmp >= 8'd128) begin
               phase_fold_a <= 9'd256;
@@ -195,6 +204,7 @@ module step_calculator #(
             end
             current_target_phase[target_set_cnt] <= phase_buf[AddSubLatency+1+AddSubLatency];
           end else begin
+            is_phase_reset[0] <= 1'b0;
             if (diff_phase[target_set_cnt] >= 8'd128) begin
               phase_fold_a <= 9'd256;
               phase_fold_b <= {1'b0, diff_phase[target_set_cnt]};
@@ -205,11 +215,48 @@ module step_calculator #(
           end
         end
 
+        // wait phase fold
+        is_phase_reset[1] <= is_phase_reset[0];
+        is_phase_reset[2] <= is_phase_reset[1];
+
         if (load_cnt > AddSubLatency + AddSubLatency + 1 + DivLatency) begin
           intensity <= intensity_buf[AddSubLatency+1+AddSubLatency+1+DivLatency];
           phase <= {phase_buf[AddSubLatency+1+AddSubLatency+1+DivLatency], 8'h00};
-          update_rate_intensity <= intensity_step_quo;
-          update_rate_phase <= phase_step_quo;
+
+          if (is_intensity_reset[DivLatency+2]) begin
+            if (intensity_step_rem == 0) begin
+              intensity_step_remainds[remainds_set_cnt] <= 0;
+              update_rate_intensity <= intensity_step_quo;
+            end else begin
+              update_rate_intensity <= intensity_step_quo + 1;
+              intensity_step_remainds[remainds_set_cnt] <= intensity_step_rem - 1;
+            end
+          end else begin
+            if (intensity_step_remainds[remainds_set_cnt] == 0) begin
+              update_rate_intensity <= intensity_step_quo;
+            end else begin
+              update_rate_intensity <= intensity_step_quo + 1;
+              intensity_step_remainds[remainds_set_cnt] <= intensity_step_remainds[remainds_set_cnt] - 1;
+            end
+          end
+          if (is_phase_reset[DivLatency+2]) begin
+            if (phase_step_rem == 0) begin
+              phase_step_remainds[remainds_set_cnt] <= 0;
+              update_rate_phase <= phase_step_quo;
+            end else begin
+              update_rate_phase <= phase_step_quo + 1;
+              phase_step_remainds[remainds_set_cnt] <= phase_step_rem - 1;
+            end
+          end else begin
+            if (phase_step_remainds[remainds_set_cnt] == 0) begin
+              update_rate_phase <= phase_step_quo;
+            end else begin
+              update_rate_phase <= phase_step_quo + 1;
+              phase_step_remainds[remainds_set_cnt] <= phase_step_remainds[remainds_set_cnt] - 1;
+            end
+          end
+          remainds_set_cnt <= remainds_set_cnt + 1;
+
           dout_valid <= 1'b1;
           if (load_cnt == DEPTH + AddSubLatency + AddSubLatency + 1 + DivLatency) begin
             state <= WAITING;
@@ -230,6 +277,13 @@ module step_calculator #(
     always_ff @(posedge CLK) begin
       intensity_buf[i] <= intensity_buf[i-1];
       phase_buf[i] <= phase_buf[i-1];
+    end
+  end
+
+  for (genvar i = 1; i < DivLatency + 2; i++) begin : g_reset_buf
+    always_ff @(posedge CLK) begin
+      is_intensity_reset[i] <= is_intensity_reset[i-1];
+      is_phase_reset[i] <= is_phase_reset[i-1];
     end
   end
 
