@@ -16,11 +16,8 @@ module step_calculator #(
 ) (
     input var CLK,
     input var DIN_VALID,
-    input var [15:0] UPDATE_RATE_INTENSITY_FIXED,
-    input var [15:0] UPDATE_RATE_PHASE_FIXED,
-    input var [15:0] COMPLETION_STEPS_INTENSITY_S,
-    input var [15:0] COMPLETION_STEPS_PHASE_S,
-    input var FIXED_COMPLETION_STEPS_S,
+    input var [15:0] COMPLETION_STEPS_INTENSITY,
+    input var [15:0] COMPLETION_STEPS_PHASE,
     input var [15:0] INTENSITY_IN,
     input var [7:0] PHASE_IN,
     output var [15:0] INTENSITY_OUT,
@@ -119,10 +116,9 @@ module step_calculator #(
       .m_axis_dout_tvalid()
   );
 
-  typedef enum logic [1:0] {
+  typedef enum logic {
     WAITING,
-    RUN_FIXED,
-    RUN_VARIABLE
+    RUN
   } state_t;
 
   state_t state = WAITING;
@@ -136,24 +132,13 @@ module step_calculator #(
           target_set_cnt <= 0;
           remainds_set_cnt <= 0;
 
-          completion_steps_intensity <= COMPLETION_STEPS_INTENSITY_S;
-          completion_steps_phase <= COMPLETION_STEPS_PHASE_S;
+          completion_steps_intensity <= COMPLETION_STEPS_INTENSITY;
+          completion_steps_phase <= COMPLETION_STEPS_PHASE;
 
-          state <= FIXED_COMPLETION_STEPS_S ? RUN_VARIABLE : RUN_FIXED;
+          state <= RUN;
         end
       end
-      RUN_FIXED: begin
-        dout_valid <= 1'b1;
-        intensity <= intensity_buf[0];
-        phase <= {phase_buf[0], 8'h00};
-        update_rate_intensity <= UPDATE_RATE_INTENSITY_FIXED;
-        update_rate_phase <= UPDATE_RATE_PHASE_FIXED;
-        load_cnt <= load_cnt + 1;
-        if (load_cnt == DEPTH - 1) begin
-          state <= WAITING;
-        end
-      end
-      RUN_VARIABLE: begin
+      RUN: begin
         // intensity
         if (intensity_buf[0] < current_target_intensity[load_cnt]) begin
           diff_intensity_a <= current_target_intensity[load_cnt];

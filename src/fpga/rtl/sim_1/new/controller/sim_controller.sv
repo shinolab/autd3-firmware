@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/12/2023
+ * Last Modified: 24/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -36,8 +36,8 @@ module sim_controller ();
   logic [31:0] freq_div_m;
   logic [15:0] delay_m[DEPTH];
   logic [15:0] update_rate_intensity_s, update_rate_phase_s;
-  logic [15:0] completion_steps_intensity_s, completion_steps_phase_s;
-  logic fixed_completion_steps_s;
+  logic [15:0] completion_steps_intensity, completion_steps_phase;
+  logic fixed_completion_steps;
   logic [15:0] cycle_stm;
   logic [31:0] freq_div_stm;
   logic [31:0] sound_speed;
@@ -62,9 +62,9 @@ module sim_controller ();
       .DELAY_M(delay_m),
       .UPDATE_RATE_INTENSITY_S(update_rate_intensity_s),
       .UPDATE_RATE_PHASE_S(update_rate_phase_s),
-      .COMPLETION_STEPS_INTENSITY_S(completion_steps_intensity_s),
-      .COMPLETION_STEPS_PHASE_S(completion_steps_phase_s),
-      .FIXED_COMPLETION_STEPS_S(fixed_completion_steps_s),
+      .COMPLETION_STEPS_INTENSITY(completion_steps_intensity),
+      .COMPLETION_STEPS_PHASE(completion_steps_phase),
+      .FIXED_COMPLETION_STEPS(fixed_completion_steps),
       .CYCLE_STM(cycle_stm),
       .FREQ_DIV_STM(freq_div_stm),
       .SOUND_SPEED(sound_speed),
@@ -81,7 +81,7 @@ module sim_controller ();
     logic [31:0] freq_div_m_buf;
     logic [15:0] delay_buf[DEPTH];
     logic [15:0] update_rate_intensity_s_buf, update_rate_phase_s_buf;
-    logic [15:0] completion_steps_intensity_s_buf, completion_steps_phase_s_buf;
+    logic [15:0] completion_steps_intensity_buf, completion_steps_phase_buf;
     logic [15:0] cycle_stm_buf;
     logic [31:0] freq_div_stm_buf;
     logic [31:0] sound_speed_buf;
@@ -111,10 +111,10 @@ module sim_controller ();
     sim_helper_bram.write_silencer_update_rate(update_rate_intensity_s_buf,
                                                update_rate_phase_s_buf);
 
-    completion_steps_intensity_s_buf = sim_helper_random.range(16'hFFFF, 0);
-    completion_steps_phase_s_buf = sim_helper_random.range(16'hFFFF, 0);
-    sim_helper_bram.write_silencer_completion_steps(completion_steps_intensity_s_buf,
-                                                    completion_steps_phase_s_buf);
+    completion_steps_intensity_buf = sim_helper_random.range(16'hFFFF, 0);
+    completion_steps_phase_buf = sim_helper_random.range(16'hFFFF, 0);
+    sim_helper_bram.write_silencer_completion_steps(completion_steps_intensity_buf,
+                                                    completion_steps_phase_buf);
 
     cycle_stm_buf = sim_helper_random.range(16'hFFFF, 0);
     sim_helper_bram.write_stm_cycle(cycle_stm_buf);
@@ -157,16 +157,16 @@ module sim_controller ();
       $error("Failed at update_rate_phase_s");
       $finish();
     end
-    if (completion_steps_intensity_s_buf !== completion_steps_intensity_s) begin
-      $error("Failed at completion_steps_intensity_s");
+    if (completion_steps_intensity_buf !== completion_steps_intensity) begin
+      $error("Failed at completion_steps_intensity");
       $finish();
     end
-    if (completion_steps_phase_s_buf !== completion_steps_phase_s) begin
-      $error("Failed at completion_steps_phase_s");
+    if (completion_steps_phase_buf !== completion_steps_phase) begin
+      $error("Failed at completion_steps_phase");
       $finish();
     end
-    if (fixed_completion_steps_s) begin
-      $error("Failed at fixed_completion_steps_s");
+    if (fixed_completion_steps) begin
+      $error("Failed at fixed_completion_steps");
       $finish();
     end
     if (cycle_stm_buf !== cycle_stm) begin
@@ -198,8 +198,8 @@ module sim_controller ();
       $error("Failed at ecat_sync_time");
       $finish();
     end
-    if (~fixed_completion_steps_s) begin
-      $error("Failed at fixed_completion_steps_s");
+    if (~fixed_completion_steps) begin
+      $error("Failed at fixed_completion_steps");
       $finish();
     end
 

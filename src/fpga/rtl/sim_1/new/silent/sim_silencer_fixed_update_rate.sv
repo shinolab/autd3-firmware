@@ -4,7 +4,7 @@
  * Created Date: 22/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/12/2023
+ * Last Modified: 24/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -45,9 +45,9 @@ module sim_silencer_fixed_update_rate ();
       .DIN_VALID(din_valid),
       .UPDATE_RATE_INTENSITY(update_rate_intensity),
       .UPDATE_RATE_PHASE(update_rate_phase),
-      .COMPLETION_STEPS_INTENSITY_S(),
-      .COMPLETION_STEPS_PHASE_S(),
-      .FIXED_COMPLETION_STEPS_S(1'b0),
+      .COMPLETION_STEPS_INTENSITY(),
+      .COMPLETION_STEPS_PHASE(),
+      .FIXED_COMPLETION_STEPS(1'b0),
       .INTENSITY_IN(intensity),
       .PHASE_IN(phase),
       .INTENSITY_OUT(intensity_s),

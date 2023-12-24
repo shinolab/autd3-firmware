@@ -4,7 +4,7 @@
  * Created Date: 01/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/12/2023
+ * Last Modified: 24/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Hapis Lab. All rights reserved.
@@ -28,9 +28,9 @@ module controller #(
     output var [15:0] DELAY_M[DEPTH],
     output var [15:0] UPDATE_RATE_INTENSITY_S,
     output var [15:0] UPDATE_RATE_PHASE_S,
-    output var FIXED_COMPLETION_STEPS_S,
-    output var [15:0] COMPLETION_STEPS_INTENSITY_S,
-    output var [15:0] COMPLETION_STEPS_PHASE_S,
+    output var FIXED_COMPLETION_STEPS,
+    output var [15:0] COMPLETION_STEPS_INTENSITY,
+    output var [15:0] COMPLETION_STEPS_PHASE,
     output var [15:0] CYCLE_STM,
     output var [31:0] FREQ_DIV_STM,
     output var [31:0] SOUND_SPEED,
@@ -70,8 +70,8 @@ module controller #(
 
   logic [15:0] update_rate_intensity_s;
   logic [15:0] update_rate_phase_s;
-  logic [15:0] completion_steps_intensity_s;
-  logic [15:0] completion_steps_phase_s;
+  logic [15:0] completion_steps_intensity;
+  logic [15:0] completion_steps_phase;
   logic [15:0] ctl_flags_s;
 
   logic [15:0] cycle_stm;
@@ -107,8 +107,8 @@ module controller #(
   assign UPDATE_RATE_INTENSITY_S = update_rate_intensity_s;
   assign UPDATE_RATE_PHASE_S = update_rate_phase_s;
   assign FIXED_COMPLETION_STEPS = ctl_flags_s[SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS];
-  assign COMPLETION_STEPS_INTENSITY_S = completion_steps_intensity_s;
-  assign COMPLETION_STEPS_PHASE_S = completion_steps_phase_s;
+  assign COMPLETION_STEPS_INTENSITY = completion_steps_intensity;
+  assign COMPLETION_STEPS_PHASE = completion_steps_phase;
   assign CYCLE_STM = cycle_stm;
   assign FREQ_DIV_STM = freq_div_stm;
   assign SOUND_SPEED = sound_speed;
@@ -282,14 +282,14 @@ module controller #(
       RD_SILENCER_COMPLETION_STEPS_INTENSITY_REQ_RD_STM_CYCLE: begin
         addr <= ADDR_STM_CYCLE;
 
-        completion_steps_intensity_s <= dout;
+        completion_steps_intensity <= dout;
 
         state <= RD_SILENCER_COMPLETION_STEPS_PHASE_REQ_RD_STM_FREQ_DIV_0;
       end
       RD_SILENCER_COMPLETION_STEPS_PHASE_REQ_RD_STM_FREQ_DIV_0: begin
         addr <= ADDR_STM_FREQ_DIV_0;
 
-        completion_steps_phase_s <= dout;
+        completion_steps_phase <= dout;
 
         state <= RD_SILENCER_CTL_FLAG_REQ_RD_STM_FREQ_DIV_1;
       end
