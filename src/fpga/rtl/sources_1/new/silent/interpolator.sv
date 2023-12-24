@@ -4,7 +4,7 @@
  * Created Date: 22/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/12/2023
+ * Last Modified: 24/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,10 +28,10 @@ module interpolator #(
 
   localparam int AddSubLatency = 2;
 
-  logic signed [17:0] update_rate_intensity[3];
-  logic signed [17:0] update_rate_intensity_n[3];
-  logic signed [17:0] update_rate_phase[3];
-  logic signed [17:0] update_rate_phase_n[3];
+  logic signed [17:0] update_rate_intensity[7];
+  logic signed [17:0] update_rate_intensity_n[7];
+  logic signed [17:0] update_rate_phase[7];
+  logic signed [17:0] update_rate_phase_n[7];
   logic [15:0] intensity_buf;
   logic [15:0] phase_buf;
 
@@ -138,9 +138,6 @@ module interpolator #(
         end
       end
       RUN: begin
-        update_rate_intensity[0] <= {2'b00, UPDATE_RATE_INTENSITY};
-        update_rate_intensity_n[0] <= -{2'b00, UPDATE_RATE_INTENSITY};
-
         // intensity 1: calculate step
         a_intensity_step <= {2'b00, intensity_buf};
         b_intensity_step <= current_intensity[calc_step_cnt];
@@ -153,20 +150,17 @@ module interpolator #(
         // intensity 3: calculate next intensity
         a_intensity <= current_intensity[calc_cnt];
         if (intensity_step_buf[2][17] == 1'b0) begin
-          b_intensity <= (intensity_step_buf[2] < update_rate_intensity[2]) ? intensity_step_buf[2] : update_rate_intensity[2];
+          b_intensity <= (intensity_step_buf[2] < update_rate_intensity[6]) ? intensity_step_buf[2] : update_rate_intensity[6];
         end else begin
-          b_intensity <= (update_rate_intensity_n[2] < intensity_step_buf[2]) ? intensity_step_buf[2] : update_rate_intensity_n[2];
+          b_intensity <= (update_rate_intensity_n[6] < intensity_step_buf[2]) ? intensity_step_buf[2] : update_rate_intensity_n[6];
         end
-
-        update_rate_phase[0] <= {2'b00, UPDATE_RATE_PHASE};
-        update_rate_phase_n[0] <= -{2'b00, UPDATE_RATE_PHASE};
 
         // phase 1: calculate step
         a_phase_step <= {2'b00, phase_buf};
         b_phase_step <= current_phase[calc_step_cnt];
 
         // phase 2: should phase go forward or back?
-        a_phase_fg <= phase_step;
+        a_phase_fg   <= phase_step;
         if (phase_step[17] == 1'b0) begin
           if (phase_step <= 18'sd32768) begin
             b_phase_fg <= '0;
@@ -186,9 +180,9 @@ module interpolator #(
         // phase 3: calculate next phase
         a_phase <= current_phase[calc_cnt];
         if (s_phase_fg[17] == 1'b0) begin
-          b_phase <= (s_phase_fg < update_rate_phase[2]) ? s_phase_fg : update_rate_phase[2];
+          b_phase <= (s_phase_fg < update_rate_phase[6]) ? s_phase_fg : update_rate_phase[6];
         end else begin
-          b_phase <= (update_rate_phase_n[2] < s_phase_fg) ? s_phase_fg : update_rate_phase_n[2];
+          b_phase <= (update_rate_phase_n[6] < s_phase_fg) ? s_phase_fg : update_rate_phase_n[6];
         end
 
         // phase 4: make phase be in [0, T-1]
@@ -234,14 +228,19 @@ module interpolator #(
     intensity_buf <= INTENSITY_IN;
     phase_buf <= PHASE_IN;
 
-    update_rate_intensity[1] <= update_rate_intensity[0];
-    update_rate_intensity[2] <= update_rate_intensity[1];
-    update_rate_intensity_n[1] <= update_rate_intensity_n[0];
-    update_rate_intensity_n[2] <= update_rate_intensity_n[1];
-    update_rate_phase[1] <= update_rate_phase[0];
-    update_rate_phase[2] <= update_rate_phase[1];
-    update_rate_phase_n[1] <= update_rate_phase_n[0];
-    update_rate_phase_n[2] <= update_rate_phase_n[1];
+    update_rate_intensity[0] <= {2'b00, UPDATE_RATE_INTENSITY};
+    update_rate_intensity_n[0] <= -{2'b00, UPDATE_RATE_INTENSITY};
+    update_rate_phase[0] <= {2'b00, UPDATE_RATE_PHASE};
+    update_rate_phase_n[0] <= -{2'b00, UPDATE_RATE_PHASE};
+  end
+
+  for (genvar i = 1; i < 7; i++) begin : g_update_rate_buf
+    always_ff @(posedge CLK) begin
+      update_rate_intensity[i] <= update_rate_intensity[i-1];
+      update_rate_intensity_n[i] <= update_rate_intensity_n[i-1];
+      update_rate_phase[i] <= update_rate_phase[i-1];
+      update_rate_phase_n[i] <= update_rate_phase_n[i-1];
+    end
   end
 
 endmodule
