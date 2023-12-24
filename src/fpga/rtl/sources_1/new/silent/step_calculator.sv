@@ -280,7 +280,7 @@ module step_calculator #(
     end
   end
 
-  for (genvar i = 1; i < DivLatency + 2; i++) begin : g_reset_buf
+  for (genvar i = 1; i < DivLatency + 3; i++) begin : g_reset_buf
     always_ff @(posedge CLK) begin
       is_intensity_reset[i] <= is_intensity_reset[i-1];
       is_phase_reset[i] <= is_phase_reset[i-1];
