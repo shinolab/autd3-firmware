@@ -4,7 +4,7 @@
  * Created Date: 01/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/12/2023
+ * Last Modified: 25/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Hapis Lab. All rights reserved.
@@ -55,6 +55,7 @@ module controller #(
   logic [15:0] din;
   logic [15:0] dout;
 
+  logic dly_ena;
   logic [7:0] dly_cnt = 0;
   logic [7:0] dly_set = DEPTH - 2;
   logic [15:0] dly_dout;
