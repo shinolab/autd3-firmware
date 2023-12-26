@@ -84,7 +84,7 @@ extern void update(void);
 
 typedef struct {
   uint8_t msg_id;
-  uint8_t _fpga_ctl_flag;  // only used before v4.1.0
+  uint8_t _pad;
   uint16_t slot_2_offset;
 } Header;
 
@@ -481,16 +481,16 @@ inline static uint16_t read_fpga_info(void) { return bram_read(BRAM_SELECT_CONTR
 
 void init_app(void) { clear(); }
 
-void handle_payload(uint8_t tag, const volatile uint8_t* p_data) {
+uint8_t handle_payload(uint8_t tag, const volatile uint8_t* p_data) {
   switch (tag) {
     case TAG_NONE:
-      break;
+      return ERR_NONE;
     case TAG_CLEAR:
       clear();
-      break;
+      return ERR_NONE;
     case TAG_SYNC:
       synchronize();
-      break;
+      return ERR_NONE;
     case TAG_FIRM_INFO:
       switch (p_data[1]) {
         case INFO_TYPE_CPU_VERSION_MAJOR:
@@ -512,36 +512,36 @@ void handle_payload(uint8_t tag, const volatile uint8_t* p_data) {
           _rx_data = 0;
           break;
       }
-      break;
-    case TAG_UPDATE_FLAGS:
-      break;
+      return ERR_NONE;
     case TAG_MODULATION:
       write_mod(p_data);
-      break;
+      return ERR_NONE;
     case TAG_MODULATION_DELAY:
       write_mod_delay(p_data + 2);
-      break;
+      return ERR_NONE;
     case TAG_SILENCER:
       config_silencer(p_data + 2);
-      break;
+      return ERR_NONE;
     case TAG_GAIN:
       write_gain(p_data);
-      break;
+      return ERR_NONE;
     case TAG_FOCUS_STM:
       write_focus_stm(p_data);
-      break;
+      return ERR_NONE;
     case TAG_GAIN_STM:
       write_gain_stm(p_data);
-      break;
+      return ERR_NONE;
     case TAG_FORCE_FAN:
       configure_force_fan(p_data + 2);
-      break;
+      return ERR_NONE;
     case TAG_READS_FPGA_INFO:
       configure_reads_fpga_info(p_data + 2);
-      break;
+      return ERR_NONE;
     case TAG_DEBUG:
       configure_debug(p_data + 2);
-      break;
+      return ERR_NONE;
+    default:
+      return ERR_NOT_SUPPORTED_TAG;
   }
 }
 
@@ -562,19 +562,25 @@ void update(void) {
   if (pop(&_data)) {
     p_data = (volatile uint8_t*)&_data;
     header = (Header*)p_data;
-    _ack = header->msg_id;
-
-    handle_payload(p_data[sizeof(Header)], &p_data[sizeof(Header)]);
-
-    if (header->slot_2_offset != 0) {
-      handle_payload(p_data[sizeof(Header) + header->slot_2_offset], &p_data[sizeof(Header) + header->slot_2_offset]);
+    if ((header->msg_id & 0x80) != 0) {
+      _ack = ERR_INVALID_MSG_ID;
+      goto FINISH;
     }
 
+    _ack = handle_payload(p_data[sizeof(Header)], &p_data[sizeof(Header)]);
+    if (_ack != ERR_NONE) goto FINISH;
+    if (header->slot_2_offset != 0) {
+      _ack = handle_payload(p_data[sizeof(Header) + header->slot_2_offset], &p_data[sizeof(Header) + header->slot_2_offset]);
+      if (_ack != ERR_NONE) goto FINISH;
+    }
+
+    _ack = header->msg_id;
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG, _fpga_flags_internal);
   } else {
     dly_tsk(1);
   }
 
+FINISH:
   if (_read_fpga_info) _rx_data = read_fpga_info();
   _sTx.ack = (((uint16_t)_ack) << 8) | _rx_data;
 }
