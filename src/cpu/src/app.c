@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/12/2023
+ * Last Modified: 26/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -18,8 +18,8 @@
 #include "params.h"
 #include "utils.h"
 
-#define CPU_VERSION_MAJOR (0x8C) /* v4.1 */
-#define CPU_VERSION_MINOR (0x02)
+#define CPU_VERSION_MAJOR (0x8D) /* v5.0 */
+#define CPU_VERSION_MINOR (0x00)
 
 #define MOD_BUF_PAGE_SIZE_WIDTH (15)
 #define MOD_BUF_PAGE_SIZE (1 << MOD_BUF_PAGE_SIZE_WIDTH)
@@ -171,10 +171,18 @@ void write_mod(const volatile uint8_t* p_data) {
 
 void config_silencer(const volatile uint8_t* p_data) {
   const uint16_t* p = (const uint16_t*)&p_data[0];
-  uint16_t step_intensity = p[0];
-  uint16_t step_phase = p[1];
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_INTENSITY_STEP, step_intensity);
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_PHASE_STEP, step_phase);
+  const uint16_t value_intensity = p[0];
+  const uint16_t value_phase = p[1];
+  const uint16_t flags = p[2];
+
+  if ((flags & SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS) != 0) {
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_COMPLETION_STEPS_INTENSITY, value_intensity);
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_COMPLETION_STEPS_PHASE, value_phase);
+  } else {
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_UPDATE_RATE_INTENSITY, value_intensity);
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_UPDATE_RATE_PHASE, value_phase);
+  }
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_CTL_FLAG, flags);
 }
 
 static void write_mod_delay(const volatile uint8_t* p_data) {
@@ -444,8 +452,11 @@ static void clear(void) {
   _fpga_flags_internal = 0;
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG, _fpga_flags_internal);
 
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_INTENSITY_STEP, 256);
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_PHASE_STEP, 256);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_UPDATE_RATE_INTENSITY, 256);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_UPDATE_RATE_PHASE, 256);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_CTL_FLAG, SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_COMPLETION_STEPS_INTENSITY, 40);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_COMPLETION_STEPS_PHASE, 40);
 
   _stm_cycle = 0;
 
