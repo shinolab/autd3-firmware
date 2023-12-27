@@ -4,7 +4,7 @@
  * Created Date: 18/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/12/2023
+ * Last Modified: 27/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -29,7 +29,7 @@ module main #(
 
   `include "params.vh"
 
-  localparam string ENABLE_STM = "FALSE";
+  localparam string ENABLE_STM = "TRUE";
 
   logic [63:0] sys_time;
   logic skip_one_assert;
