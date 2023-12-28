@@ -3,7 +3,7 @@
 // Created Date: 22/04/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/12/2023
+// Last Modified: 27/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -64,8 +64,9 @@
 #define CTL_FLAG_SYNC (1 << CTL_FLAG_SYNC_BIT)
 
 #define SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS_BIT (0)
-
+#define SILENCER_CTL_FLAG_STRICT_MODE_BIT (8)
 #define SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS (1 << SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS_BIT)
+#define SILENCER_CTL_FLAG_STRICT_MODE (1 << SILENCER_CTL_FLAG_STRICT_MODE_BIT)
 
 #define TAG_NONE (0x00)
 #define TAG_CLEAR (0x01)
@@ -108,5 +109,7 @@
 #define ERR_NONE (0x00)
 #define ERR_NOT_SUPPORTED_TAG (0x80)
 #define ERR_INVALID_MSG_ID (0x81)
+#define ERR_FREQ_DIV_TOO_SMALL (0x82)
+#define ERR_COMPLETION_STEPS_TOO_LARGE (0x83)
 
 #endif  // INC_PARAMS_H_

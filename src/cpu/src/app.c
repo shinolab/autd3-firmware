@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/12/2023
+ * Last Modified: 28/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -94,11 +94,17 @@ static volatile bool_t _read_fpga_info;
 static volatile bool_t _read_fpga_info_store;
 
 static volatile uint32_t _mod_cycle = 0;
+static volatile uint32_t _mod_freq_div = 0;
 
 static volatile uint32_t _stm_cycle = 0;
+static volatile uint32_t _stm_freq_div = 0;
 static volatile uint16_t _gain_stm_mode = GAIN_STM_MODE_INTENSITY_PHASE_FULL;
 
 static volatile uint16_t _fpga_flags_internal = 0;
+
+static volatile bool_t _silencer_strict_mode;
+static volatile uint32_t _min_freq_div_intensity;
+static volatile uint32_t _min_freq_div_phase;
 
 static volatile short _wdt_cnt = WDT_CNT_MAX;
 
@@ -112,7 +118,7 @@ inline static uint64_t get_next_sync0() {
   return next_sync0;
 }
 
-void synchronize() {
+void synchronize(void) {
   volatile uint64_t next_sync0;
   volatile uint16_t flag;
 
@@ -132,7 +138,7 @@ inline static void change_mod_page(uint16_t page) {
   asm("dmb");
 }
 
-void write_mod(const volatile uint8_t* p_data) {
+uint8_t write_mod(const volatile uint8_t* p_data) {
   uint32_t page_capacity;
   uint32_t freq_div;
 
@@ -145,6 +151,9 @@ void write_mod(const volatile uint8_t* p_data) {
     _mod_cycle = 0;
     change_mod_page(0);
     freq_div = *((const uint32_t*)&p_data[4]);
+    if (_silencer_strict_mode & (freq_div < _min_freq_div_intensity)) return ERR_FREQ_DIV_TOO_SMALL;
+    _mod_freq_div = freq_div;
+
     bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_FREQ_DIV_0, (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
     data = (const uint16_t*)(&p_data[8]);
   } else {
@@ -167,22 +176,34 @@ void write_mod(const volatile uint8_t* p_data) {
   if ((flag & MODULATION_FLAG_END) == MODULATION_FLAG_END) {
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_CYCLE, max(1, _mod_cycle) - 1);
   }
+
+  return ERR_NONE;
 }
 
-void config_silencer(const volatile uint8_t* p_data) {
+uint8_t config_silencer(const volatile uint8_t* p_data) {
   const uint16_t* p = (const uint16_t*)&p_data[0];
   const uint16_t value_intensity = p[0];
   const uint16_t value_phase = p[1];
   const uint16_t flags = p[2];
 
   if ((flags & SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS) != 0) {
+    _silencer_strict_mode = (flags & SILENCER_CTL_FLAG_STRICT_MODE) != 0;
+    _min_freq_div_intensity = (uint32_t)value_intensity << 9;
+    _min_freq_div_phase = (uint32_t)value_phase << 9;
+    if (_silencer_strict_mode) {
+      if (_mod_freq_div < _min_freq_div_intensity) return ERR_COMPLETION_STEPS_TOO_LARGE;
+      if ((_stm_freq_div < _min_freq_div_intensity) || (_stm_freq_div < _min_freq_div_phase)) return ERR_COMPLETION_STEPS_TOO_LARGE;
+    }
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_COMPLETION_STEPS_INTENSITY, value_intensity);
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_COMPLETION_STEPS_PHASE, value_phase);
   } else {
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_UPDATE_RATE_INTENSITY, value_intensity);
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_UPDATE_RATE_PHASE, value_phase);
+    _silencer_strict_mode = false;
   }
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_CTL_FLAG, flags);
+
+  return ERR_NONE;
 }
 
 static void write_mod_delay(const volatile uint8_t* p_data) {
@@ -204,6 +225,8 @@ static void write_gain(const volatile uint8_t* p_data) {
 
   _fpga_flags_internal &= ~CTL_FLAG_OP_MODE;
   word_cpy_volatile(dst, src, cnt);
+
+  _stm_freq_div = 0xFFFFFFFF;
 }
 
 inline static void change_stm_page(uint16_t page) {
@@ -212,7 +235,7 @@ inline static void change_stm_page(uint16_t page) {
   asm("dmb");
 }
 
-static void write_focus_stm(const volatile uint8_t* p_data) {
+static uint8_t write_focus_stm(const volatile uint8_t* p_data) {
   volatile uint16_t* base = (volatile uint16_t*)FPGA_BASE;
   uint8_t flag = p_data[1];
   uint16_t size;
@@ -236,6 +259,11 @@ static void write_focus_stm(const volatile uint8_t* p_data) {
     sound_speed = *((const uint32_t*)&p_data[8]);
     start_idx = *((const uint16_t*)&p_data[12]);
     finish_idx = *((const uint16_t*)&p_data[14]);
+
+    if (_silencer_strict_mode) {
+      if ((freq_div < _min_freq_div_intensity) || (freq_div < _min_freq_div_phase)) return ERR_FREQ_DIV_TOO_SMALL;
+    }
+    _stm_freq_div = freq_div;
 
     bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0, (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
     bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SOUND_SPEED_0, (uint16_t*)&sound_speed, sizeof(uint32_t) >> 1);
@@ -304,9 +332,11 @@ static void write_focus_stm(const volatile uint8_t* p_data) {
     _fpga_flags_internal &= ~CTL_FLAG_STM_GAIN_MODE;
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, max(1, _stm_cycle) - 1);
   }
+
+  return ERR_NONE;
 }
 
-static void write_gain_stm(const volatile uint8_t* p_data) {
+static uint8_t write_gain_stm(const volatile uint8_t* p_data) {
   volatile uint16_t* base = (volatile uint16_t*)FPGA_BASE;
 
   uint8_t flag = p_data[1];
@@ -328,6 +358,10 @@ static void write_gain_stm(const volatile uint8_t* p_data) {
     _gain_stm_mode = *((const uint16_t*)&p_data[2]);
 
     freq_div = *((const uint32_t*)&p_data[4]);
+    if (_silencer_strict_mode) {
+      if ((freq_div < _min_freq_div_intensity) || (freq_div < _min_freq_div_phase)) return ERR_FREQ_DIV_TOO_SMALL;
+    }
+    _stm_freq_div = freq_div;
     bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0, (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
 
     start_idx = *((const uint16_t*)&p_data[8]);
@@ -432,6 +466,8 @@ static void write_gain_stm(const volatile uint8_t* p_data) {
     _fpga_flags_internal |= CTL_FLAG_STM_GAIN_MODE;
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, max(1, _stm_cycle) - 1);
   }
+
+  return ERR_NONE;
 }
 
 static void configure_force_fan(const volatile uint8_t* p_data) {
@@ -445,7 +481,8 @@ static void configure_force_fan(const volatile uint8_t* p_data) {
 static void configure_reads_fpga_info(const volatile uint8_t* p_data) { _read_fpga_info = p_data[0] != 0; }
 
 static void clear(void) {
-  uint32_t freq_div_4k = 5120;
+  _mod_freq_div = 5120;
+  _stm_freq_div = 0xFFFFFFFF;
 
   _read_fpga_info = false;
 
@@ -455,14 +492,17 @@ static void clear(void) {
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_UPDATE_RATE_INTENSITY, 256);
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_UPDATE_RATE_PHASE, 256);
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_CTL_FLAG, SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS);
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_COMPLETION_STEPS_INTENSITY, 40);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_COMPLETION_STEPS_INTENSITY, 10);
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_COMPLETION_STEPS_PHASE, 40);
+  _silencer_strict_mode = true;
+  _min_freq_div_intensity = 10 << 9;
+  _min_freq_div_phase = 40 << 9;
 
   _stm_cycle = 0;
 
   _mod_cycle = 2;
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_CYCLE, max(1, _mod_cycle) - 1);
-  bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_FREQ_DIV_0, (uint16_t*)&freq_div_4k, sizeof(uint32_t) >> 1);
+  bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_FREQ_DIV_0, (uint16_t*)&_mod_freq_div, sizeof(uint32_t) >> 1);
   change_mod_page(0);
   bram_write(BRAM_SELECT_MOD, 0, 0xFFFF);
 
@@ -514,23 +554,19 @@ uint8_t handle_payload(uint8_t tag, const volatile uint8_t* p_data) {
       }
       return ERR_NONE;
     case TAG_MODULATION:
-      write_mod(p_data);
-      return ERR_NONE;
+      return write_mod(p_data);
     case TAG_MODULATION_DELAY:
       write_mod_delay(p_data + 2);
       return ERR_NONE;
     case TAG_SILENCER:
-      config_silencer(p_data + 2);
-      return ERR_NONE;
+      return config_silencer(p_data + 2);
     case TAG_GAIN:
       write_gain(p_data);
       return ERR_NONE;
     case TAG_FOCUS_STM:
-      write_focus_stm(p_data);
-      return ERR_NONE;
+      return write_focus_stm(p_data);
     case TAG_GAIN_STM:
-      write_gain_stm(p_data);
-      return ERR_NONE;
+      return write_gain_stm(p_data);
     case TAG_FORCE_FAN:
       configure_force_fan(p_data + 2);
       return ERR_NONE;
