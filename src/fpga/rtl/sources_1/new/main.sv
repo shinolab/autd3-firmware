@@ -4,7 +4,7 @@
  * Created Date: 18/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/12/2023
+ * Last Modified: 27/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -68,8 +68,11 @@ module main #(
   logic [15:0] delay_m[DEPTH];
   logic dout_valid_m;
 
-  logic [15:0] step_intensity_s;
-  logic [15:0] step_phase_s;
+  logic [15:0] update_rate_intensity_s;
+  logic [15:0] update_rate_phase_s;
+  logic fixed_completion_steps;
+  logic [15:0] completion_steps_intensity_s;
+  logic [15:0] completion_steps_phase_s;
   logic [15:0] intensity_s;
   logic [7:0] phase_s;
   logic dout_valid_s;
@@ -104,8 +107,11 @@ module main #(
       .CYCLE_M(cycle_m),
       .FREQ_DIV_M(freq_div_m),
       .DELAY_M(delay_m),
-      .STEP_INTENSITY_S(step_intensity_s),
-      .STEP_PHASE_S(step_phase_s),
+      .UPDATE_RATE_INTENSITY_S(update_rate_intensity_s),
+      .UPDATE_RATE_PHASE_S(update_rate_phase_s),
+      .FIXED_COMPLETION_STEPS(fixed_completion_steps),
+      .COMPLETION_STEPS_INTENSITY(completion_steps_intensity_s),
+      .COMPLETION_STEPS_PHASE(completion_steps_phase_s),
       .CYCLE_STM(cycle_stm),
       .FREQ_DIV_STM(freq_div_stm),
       .SOUND_SPEED(sound_speed),
@@ -209,8 +215,11 @@ module main #(
   ) silencer (
       .CLK(CLK),
       .DIN_VALID(dout_valid_m),
-      .STEP_INTENSITY(step_intensity_s),
-      .STEP_PHASE(step_phase_s),
+      .UPDATE_RATE_INTENSITY(update_rate_intensity_s),
+      .UPDATE_RATE_PHASE(update_rate_phase_s),
+      .COMPLETION_STEPS_INTENSITY(completion_steps_intensity_s),
+      .COMPLETION_STEPS_PHASE(completion_steps_phase_s),
+      .FIXED_COMPLETION_STEPS(fixed_completion_steps),
       .INTENSITY_IN(intensity_m),
       .PHASE_IN(phase_m),
       .INTENSITY_OUT(intensity_s),

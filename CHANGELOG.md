@@ -1,3 +1,8 @@
+# 5.0.0
+
+- Add Silencer with fixed completion steps algorithm
+- An error is now returned for invalid data
+
 # 4.1.2
 
 - Fix [#2](https://github.com/shinolab/autd3-firmware/issues/2): Page is not update when Modulation or FocusSTM is sent with a data length that is an integer multiple of Page size

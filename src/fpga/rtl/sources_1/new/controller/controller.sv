@@ -4,7 +4,7 @@
  * Created Date: 01/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/12/2023
+ * Last Modified: 25/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Hapis Lab. All rights reserved.
@@ -26,8 +26,11 @@ module controller #(
     output var [15:0] CYCLE_M,
     output var [31:0] FREQ_DIV_M,
     output var [15:0] DELAY_M[DEPTH],
-    output var [15:0] STEP_INTENSITY_S,
-    output var [15:0] STEP_PHASE_S,
+    output var [15:0] UPDATE_RATE_INTENSITY_S,
+    output var [15:0] UPDATE_RATE_PHASE_S,
+    output var FIXED_COMPLETION_STEPS,
+    output var [15:0] COMPLETION_STEPS_INTENSITY,
+    output var [15:0] COMPLETION_STEPS_PHASE,
     output var [15:0] CYCLE_STM,
     output var [31:0] FREQ_DIV_STM,
     output var [31:0] SOUND_SPEED,
@@ -52,11 +55,12 @@ module controller #(
   logic [15:0] din;
   logic [15:0] dout;
 
+  logic dly_ena;
   logic [7:0] dly_cnt = 0;
   logic [7:0] dly_set = DEPTH - 2;
   logic [15:0] dly_dout;
 
-  logic [15:0] ctl_reg;
+  logic [15:0] ctl_flags;
 
   logic [63:0] ecat_sync_time;
   logic sync_set;
@@ -65,7 +69,11 @@ module controller #(
   logic [31:0] freq_div_m;
   logic [15:0] delay_m[DEPTH];
 
-  logic [15:0] step_intensity_s, step_phase_s;
+  logic [15:0] update_rate_intensity_s;
+  logic [15:0] update_rate_phase_s;
+  logic [15:0] completion_steps_intensity;
+  logic [15:0] completion_steps_phase;
+  logic [15:0] ctl_flags_s;
 
   logic [15:0] cycle_stm;
   logic [31:0] freq_div_stm;
@@ -73,9 +81,9 @@ module controller #(
   logic [15:0] stm_start_idx;
   logic [15:0] stm_finish_idx;
 
-  logic [ 7:0] debug_output_idx;
+  logic [7:0] debug_output_idx;
 
-  logic [ 2:0] ctl_page;
+  logic [2:0] ctl_page;
 
   assign ctl_page = CPU_BUS.BRAM_ADDR[10:8];
   assign bus_clk = CPU_BUS.BUS_CLK;
@@ -87,18 +95,21 @@ module controller #(
   assign cpu_data_in = CPU_BUS.DATA_IN;
   assign CPU_BUS.DATA_OUT = cpu_data_out;
 
-  assign FORCE_FAN = ctl_reg[CTL_FLAG_FORCE_FAN_BIT] | ctl_reg[CTL_FLAG_FORCE_FAN_EX_BIT];
-  assign OP_MODE = ctl_reg[CTL_FLAG_OP_MODE_BIT];
-  assign STM_GAIN_MODE = ctl_reg[CTL_FLAG_STM_GAIN_MODE_BIT];
-  assign USE_STM_START_IDX = ctl_reg[CTL_FLAG_USE_STM_START_IDX_BIT];
-  assign USE_STM_FINISH_IDX = ctl_reg[CTL_FLAG_USE_STM_FINISH_IDX_BIT];
+  assign FORCE_FAN = ctl_flags[CTL_FLAG_FORCE_FAN_BIT] | ctl_flags[CTL_FLAG_FORCE_FAN_EX_BIT];
+  assign OP_MODE = ctl_flags[CTL_FLAG_OP_MODE_BIT];
+  assign STM_GAIN_MODE = ctl_flags[CTL_FLAG_STM_GAIN_MODE_BIT];
+  assign USE_STM_START_IDX = ctl_flags[CTL_FLAG_USE_STM_START_IDX_BIT];
+  assign USE_STM_FINISH_IDX = ctl_flags[CTL_FLAG_USE_STM_FINISH_IDX_BIT];
 
   assign ECAT_SYNC_TIME = ecat_sync_time;
   assign SYNC_SET = sync_set;
   assign CYCLE_M = cycle_m;
   assign FREQ_DIV_M = freq_div_m;
-  assign STEP_INTENSITY_S = step_intensity_s;
-  assign STEP_PHASE_S = step_phase_s;
+  assign UPDATE_RATE_INTENSITY_S = update_rate_intensity_s;
+  assign UPDATE_RATE_PHASE_S = update_rate_phase_s;
+  assign FIXED_COMPLETION_STEPS = ctl_flags_s[SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS];
+  assign COMPLETION_STEPS_INTENSITY = completion_steps_intensity;
+  assign COMPLETION_STEPS_PHASE = completion_steps_phase;
   assign CYCLE_STM = cycle_stm;
   assign FREQ_DIV_STM = freq_div_stm;
   assign SOUND_SPEED = sound_speed;
@@ -148,11 +159,14 @@ module controller #(
     RD_CTL_FLAG_REQ_RD_MOD_FREQ_DIV_0,
     WR_FPGA_INFO_REQ_RD_MOD_FREQ_DIV_1,
     RD_MOD_CYCLE_REQ_RD_DEBUG_OUTPUT,
-    RD_MOD_FREQ_DIV_0_REQ_RD_SILENT_STEP_INTENSITY,
-    RD_MOD_FREQ_DIV_1_REQ_RD_SILENT_STEP_PHASE,
-    RD_DEBUG_OUTPUT_REQ_RD_STM_CYCLE,
-    RD_SILENT_STEP_INTENSITY_REQ_RD_STM_FREQ_DIV_0,
-    RD_SILENT_STEP_PHASE_REQ_RD_STM_FREQ_DIV_1,
+    RD_MOD_FREQ_DIV_0_REQ_RD_SILENCER_UPDATE_RATE_INTENSITY,
+    RD_MOD_FREQ_DIV_1_REQ_RD_SILENCER_UPDATE_RATE_PHASE,
+    RD_DEBUG_OUTPUT_REQ_RD_SILENCER_COMPLETION_STEPS_INTENSITY,
+    RD_SILENCER_UPDATE_RATE_INTENSITY_REQ_RD_SILENCER_COMPLETION_STEPS_PHASE,
+    RD_SILENCER_UPDATE_RATE_PHASE_REQ_RD_SILENCER_CTL_FLAG,
+    RD_SILENCER_COMPLETION_STEPS_INTENSITY_REQ_RD_STM_CYCLE,
+    RD_SILENCER_COMPLETION_STEPS_PHASE_REQ_RD_STM_FREQ_DIV_0,
+    RD_SILENCER_CTL_FLAG_REQ_RD_STM_FREQ_DIV_1,
     RD_STM_CYCLE_REQ_RD_SOUND_SPEED_0,
     RD_STM_FREQ_DIV_0_REQ_RD_SOUND_SPEED_1,
     RD_STM_FREQ_DIV_1_REQ_RD_STM_START_IDX,
@@ -206,11 +220,11 @@ module controller #(
 
       //////////////////////////// run ////////////////////////////
       RD_CTL_FLAG_REQ_RD_MOD_FREQ_DIV_0: begin
-        ctl_reg <= dout;
-        if (ctl_reg[CTL_FLAG_SYNC_BIT]) begin
+        ctl_flags <= dout;
+        if (ctl_flags[CTL_FLAG_SYNC_BIT]) begin
           we <= 1'b1;
           addr <= ADDR_CTL_FLAG;
-          din <= ctl_reg & ~(1 << CTL_FLAG_SYNC_BIT);
+          din <= ctl_flags & ~(1 << CTL_FLAG_SYNC_BIT);
 
           state <= REQ_RD_EC_SYNC_TIME_0;
         end else begin
@@ -229,40 +243,61 @@ module controller #(
 
         cycle_m <= dout;
 
-        state <= RD_MOD_FREQ_DIV_0_REQ_RD_SILENT_STEP_INTENSITY;
+        state <= RD_MOD_FREQ_DIV_0_REQ_RD_SILENCER_UPDATE_RATE_INTENSITY;
       end
-      RD_MOD_FREQ_DIV_0_REQ_RD_SILENT_STEP_INTENSITY: begin
-        addr <= ADDR_SILENT_STEP_INTENSITY;
+      RD_MOD_FREQ_DIV_0_REQ_RD_SILENCER_UPDATE_RATE_INTENSITY: begin
+        addr <= ADDR_SILENCER_UPDATE_RATE_INTENSITY;
 
         freq_div_m[15:0] <= dout;
 
-        state <= RD_MOD_FREQ_DIV_1_REQ_RD_SILENT_STEP_PHASE;
+        state <= RD_MOD_FREQ_DIV_1_REQ_RD_SILENCER_UPDATE_RATE_PHASE;
       end
-      RD_MOD_FREQ_DIV_1_REQ_RD_SILENT_STEP_PHASE: begin
-        addr <= ADDR_SILENT_STEP_PHASE;
+      RD_MOD_FREQ_DIV_1_REQ_RD_SILENCER_UPDATE_RATE_PHASE: begin
+        addr <= ADDR_SILENCER_UPDATE_RATE_PHASE;
 
         freq_div_m[31:16] <= dout;
 
-        state <= RD_DEBUG_OUTPUT_REQ_RD_STM_CYCLE;
+        state <= RD_DEBUG_OUTPUT_REQ_RD_SILENCER_COMPLETION_STEPS_INTENSITY;
       end
-      RD_DEBUG_OUTPUT_REQ_RD_STM_CYCLE: begin
-        addr <= ADDR_STM_CYCLE;
+      RD_DEBUG_OUTPUT_REQ_RD_SILENCER_COMPLETION_STEPS_INTENSITY: begin
+        addr <= ADDR_SILENCER_COMPLETION_STEPS_INTENSITY;
 
         debug_output_idx <= dout[7:0];
 
-        state <= RD_SILENT_STEP_INTENSITY_REQ_RD_STM_FREQ_DIV_0;
+        state <= RD_SILENCER_UPDATE_RATE_INTENSITY_REQ_RD_SILENCER_COMPLETION_STEPS_PHASE;
       end
-      RD_SILENT_STEP_INTENSITY_REQ_RD_STM_FREQ_DIV_0: begin
+      RD_SILENCER_UPDATE_RATE_INTENSITY_REQ_RD_SILENCER_COMPLETION_STEPS_PHASE: begin
+        addr <= ADDR_SILENCER_COMPLETION_STEPS_PHASE;
+
+        update_rate_intensity_s <= dout;
+
+        state <= RD_SILENCER_UPDATE_RATE_PHASE_REQ_RD_SILENCER_CTL_FLAG;
+      end
+      RD_SILENCER_UPDATE_RATE_PHASE_REQ_RD_SILENCER_CTL_FLAG: begin
+        addr <= ADDR_SILENCER_CTL_FLAG;
+
+        update_rate_phase_s <= dout;
+
+        state <= RD_SILENCER_COMPLETION_STEPS_INTENSITY_REQ_RD_STM_CYCLE;
+      end
+      RD_SILENCER_COMPLETION_STEPS_INTENSITY_REQ_RD_STM_CYCLE: begin
+        addr <= ADDR_STM_CYCLE;
+
+        completion_steps_intensity <= dout;
+
+        state <= RD_SILENCER_COMPLETION_STEPS_PHASE_REQ_RD_STM_FREQ_DIV_0;
+      end
+      RD_SILENCER_COMPLETION_STEPS_PHASE_REQ_RD_STM_FREQ_DIV_0: begin
         addr <= ADDR_STM_FREQ_DIV_0;
 
-        step_intensity_s <= dout;
+        completion_steps_phase <= dout;
 
-        state <= RD_SILENT_STEP_PHASE_REQ_RD_STM_FREQ_DIV_1;
+        state <= RD_SILENCER_CTL_FLAG_REQ_RD_STM_FREQ_DIV_1;
       end
-      RD_SILENT_STEP_PHASE_REQ_RD_STM_FREQ_DIV_1: begin
+      RD_SILENCER_CTL_FLAG_REQ_RD_STM_FREQ_DIV_1: begin
         addr <= ADDR_STM_FREQ_DIV_1;
 
-        step_phase_s <= dout;
+        ctl_flags_s <= dout;
 
         state <= RD_STM_CYCLE_REQ_RD_SOUND_SPEED_0;
       end
@@ -364,7 +399,7 @@ module controller #(
         state <= CLR_SYNC_BIT;
       end
       CLR_SYNC_BIT: begin
-        ctl_reg <= dout;
+        ctl_flags <= dout;
 
         sync_set <= 1'b0;
 

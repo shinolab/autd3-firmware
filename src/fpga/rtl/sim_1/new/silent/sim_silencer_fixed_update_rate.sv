@@ -1,10 +1,10 @@
 /*
- * File: sim_silencer.sv
+ * File: sim_silencer_fixed_update_rate.sv
  * Project: silent
  * Created Date: 22/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 24/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -12,7 +12,7 @@
  */
 
 `timescale 1ns / 1ps
-module sim_silencer ();
+module sim_silencer_fixed_update_rate ();
 
   parameter int DEPTH = 249;
 
@@ -26,7 +26,7 @@ module sim_silencer ();
 
   sim_helper_random sim_helper_random ();
 
-  logic [15:0] step_intensity, step_phase;
+  logic [15:0] update_rate_intensity, update_rate_phase;
   logic [15:0] intensity;
   logic [ 7:0] phase;
   logic [15:0] intensity_s;
@@ -43,8 +43,11 @@ module sim_silencer ();
   ) silencer (
       .CLK(CLK_20P48M),
       .DIN_VALID(din_valid),
-      .STEP_INTENSITY(step_intensity),
-      .STEP_PHASE(step_phase),
+      .UPDATE_RATE_INTENSITY(update_rate_intensity),
+      .UPDATE_RATE_PHASE(update_rate_phase),
+      .COMPLETION_STEPS_INTENSITY(),
+      .COMPLETION_STEPS_PHASE(),
+      .FIXED_COMPLETION_STEPS(1'b0),
       .INTENSITY_IN(intensity),
       .PHASE_IN(phase),
       .INTENSITY_OUT(intensity_s),
@@ -83,13 +86,13 @@ module sim_silencer ();
   task automatic check_manual(logic [15:0] expect_intensity, logic [7:0] expect_phase);
     for (int i = 0; i < DEPTH; i++) begin
       if (phase_s_buf[i] !== expect_phase) begin
-        $display("ERR: PHASE(%d) !== %d in %d-th transducer, step = %d", phase_buf[i],
-                 expect_phase, i, step_phase);
+        $display("ERR: PHASE(%d) !== %d in %d-th transducer, step = %d", phase_s_buf[i],
+                 expect_phase, i, update_rate_phase);
         $finish;
       end
       if (intensity_s_buf[i] !== expect_intensity) begin
-        $display("ERR: INTENSITY(%d) !== %d in %d-th transducer, step = %d", intensity_buf[i],
-                 expect_intensity, i, step_intensity);
+        $display("ERR: INTENSITY(%d) !== %d in %d-th transducer, step = %d", intensity_s_buf[i],
+                 expect_intensity, i, update_rate_intensity);
         $finish;
       end
     end
@@ -99,12 +102,12 @@ module sim_silencer ();
     for (int i = 0; i < DEPTH; i++) begin
       if (phase_s_buf[i] !== phase_buf[i]) begin
         $display("ERR: PHASE(%d) !== PHASE_S(%d) in %d-th transducer, step = %d", phase_buf[i],
-                 phase_s_buf[i], i, step_phase);
+                 phase_s_buf[i], i, update_rate_phase);
         $finish;
       end
       if (intensity_s_buf[i] !== intensity_buf[i]) begin
         $display("ERR: INTENSITY(%d) !== INTENSITY_S(%d) in %d-th transducer, step = %d",
-                 intensity_buf[i], intensity_s_buf[i], i, step_intensity);
+                 intensity_buf[i], intensity_s_buf[i], i, update_rate_intensity);
         $finish;
       end
     end
@@ -112,8 +115,8 @@ module sim_silencer ();
 
   initial begin
     din_valid = 0;
-    step_intensity = 0;
-    step_phase = 0;
+    update_rate_intensity = 0;
+    update_rate_phase = 0;
     phase = 0;
     intensity = 0;
     sim_helper_random.init();
@@ -121,8 +124,8 @@ module sim_silencer ();
     @(posedge locked);
 
     //////////////// Manual check ////////////////
-    step_intensity = 1;
-    step_phase = 256;
+    update_rate_intensity = 1;
+    update_rate_phase = 256;
 
     for (int i = 0; i < DEPTH; i++) begin
       phase_buf[i] = 1;
@@ -150,8 +153,8 @@ module sim_silencer ();
     join
     check_manual(3, 255);
 
-    step_intensity = 16'd65535;
-    step_phase = 16'd65535;
+    update_rate_intensity = 16'd65535;
+    update_rate_phase = 16'd65535;
     for (int i = 0; i < DEPTH; i++) begin
       phase_buf[i] = 0;
       intensity_buf[i] = 0;
@@ -187,9 +190,9 @@ module sim_silencer ();
     // from random to random with random step
     for (int i = 0; i < 100; i++) begin
       $display("Random test %d/100", i);
-      step_intensity = sim_helper_random.range(65535, 1);
-      step_phase = sim_helper_random.range(65535, 1);
-      n_repeat = step_intensity < step_phase ? int'(65536 / step_intensity) + 1 : int'(65536 / step_phase) + 1;
+      update_rate_intensity = sim_helper_random.range(65535, 1);
+      update_rate_phase = sim_helper_random.range(65535, 1);
+      n_repeat = update_rate_intensity < update_rate_phase ? int'(65536 / update_rate_intensity) + 1 : int'(65536 / update_rate_phase) + 1;
       for (int i = 0; i < DEPTH; i++) begin
         intensity_buf[i] = sim_helper_random.range(255 * 255, 0);
         phase_buf[i] = sim_helper_random.range(255, 0);
@@ -208,8 +211,8 @@ module sim_silencer ();
     end
 
     // disable
-    step_intensity = 16'd65535;
-    step_phase = 16'd65535;
+    update_rate_intensity = 16'd65535;
+    update_rate_phase = 16'd65535;
     n_repeat = 1;
 
     for (int i = 0; i < DEPTH; i++) begin
