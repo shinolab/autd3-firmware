@@ -1,0 +1,51 @@
+name: build
+
+on:
+  push:
+    branches:
+      - 'develop'
+  pull_request:
+    types: [opened, reopened, review_requested]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    name: check if files changed
+    outputs:
+      status: ${{ steps.changed-files.outputs.modified_files }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: tj-actions/changed-files@v40
+        id: changed-files
+        with:
+          files: |
+            .github/workflows/build.yml
+            build.py
+            ./src/cpu/tests/CMakeLists.txt
+            ./src/cpu/**/*.h
+            ./src/cpu/**/*.c
+            ./src/cpu/**/*.hpp
+            ./src/cpu/**/*.cpp
+
+  build:
+    needs: check
+    name: build-cpu
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python
+        if: needs.check.outputs.status
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+      - name: Install packaging
+        shell: bash
+        run: |
+          python3 -m pip install -U packaging requests
+
+      - name: Run CPU src tests
+        run: |
+          python3 build.py cpu test --cmake-extra="-DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12"
+        if: needs.check.outputs.status

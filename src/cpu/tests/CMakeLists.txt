@@ -26,8 +26,9 @@ include(${PROJECT_SOURCE_DIR}/gtest.cmake)
 
 enable_testing()
 
-add_executable(test_autd3-firmware main.cpp ${PROJECT_SOURCE_DIR}/../src/app.c)
+add_executable(test_autd3-firmware main.cpp ${PROJECT_SOURCE_DIR}/../src/app.c utils.cpp)
 set_target_properties(test_autd3-firmware PROPERTIES LINKER_LANGUAGE CXX)
+add_subdirectory(op)
 
 target_include_directories(test_autd3-firmware PRIVATE ${PROJECT_SOURCE_DIR}/inc)
 target_include_directories(test_autd3-firmware PRIVATE ${PROJECT_SOURCE_DIR}/../inc)

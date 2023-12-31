@@ -1,4 +1,4 @@
-// File: iodefine.h
+// File: sync.h
 // Project: inc
 // Created Date: 31/12/2023
 // Author: Shun Suzuki
@@ -11,13 +11,22 @@
 
 #pragma once
 
-typedef struct {
-  union {
-    unsigned short WORD;
-    struct {
-      unsigned short STATUSCODE : 16;
-    } BIT;
-  } AL_STATUS_CODE;
-} st_ecatc_t;
+#include <stdint.h>
+#include <stdio.h>
 
-st_ecatc_t ECATC;
+#include "params.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern int is_sync;
+
+static inline uint8_t synchronize(void) {
+  is_sync = 1;
+  return ERR_NONE;
+}
+
+#ifdef __cplusplus
+}
+#endif

@@ -12,6 +12,8 @@
 #ifndef APP_H_
 #define APP_H_
 
+#define ALIGN2 __attribute__((aligned(2)))
+
 #ifndef true
 #define true 1
 #endif
@@ -90,7 +92,7 @@ inline static void bram_cpy_gain_stm_phase_half(uint16_t base_bram_addr, const v
   volatile uint16_t *dst = &base[base_addr];
   uint16_t phase;
   while (cnt--) {
-    phase = ((*src++) >> shift) & 0x000F;
+    phase = ((*values++) >> shift) & 0x000F;
     *dst++ = 0xFF00 | (phase << 4) | phase;
   }
 }

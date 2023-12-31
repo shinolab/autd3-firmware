@@ -117,10 +117,63 @@ def cpu_test(args):
             command = ["cmake", "--build", ".", "--parallel", "8"]
             subprocess.run(command).check_returncode()
 
-            target_dir = "Debug"
+            target_dir = "."
+            if config.is_windows():
+                target_dir = "Debug"
             subprocess.run(
                 [f"{target_dir}/test_autd3-firmware{config.exe_ext()}"]
             ).check_returncode()
+
+
+def cpp_cov(args):
+    config = Config(args)
+    if not config.is_linux():
+        err("Coverage is only supported on Linux.")
+        return
+
+    with working_dir("src/cpu/tests"):
+        os.makedirs("build", exist_ok=True)
+        with working_dir("build"):
+            command = ["cmake", "..", "-DCOVERAGE=ON"]
+            if config.cmake_extra is not None:
+                for cmd in config.cmake_extra:
+                    command.append(cmd)
+            subprocess.run(command).check_returncode()
+            command = ["cmake", "--build", ".", "--parallel", "8"]
+            subprocess.run(command).check_returncode()
+
+            target_dir = "."
+            if config.is_windows():
+                target_dir = "Debug"
+            subprocess.run(
+                [f"{target_dir}/test_autd3-firmware{config.exe_ext()}"]
+            ).check_returncode()
+
+            with working_dir("CMakeFiles/test_autd3-firmware.dir"):
+                command = ["lcov", "-d", ".", "-c", "-o", "coverage.raw.info"]
+                subprocess.run(command).check_returncode()
+                command = [
+                    "lcov",
+                    "-r",
+                    "coverage.raw.info",
+                    "*/googletest/*",
+                    "*/tests/*",
+                    "*/c++/*",
+                    "*/gcc/*",
+                    "-o",
+                    "coverage.info",
+                ]
+                subprocess.run(command).check_returncode()
+                if args.html:
+                    command = [
+                        "genhtml",
+                        "-o",
+                        "html",
+                        "--num-spaces",
+                        "4",
+                        "coverage.info",
+                    ]
+                    subprocess.run(command).check_returncode()
 
 
 def cpu_clear(_):
