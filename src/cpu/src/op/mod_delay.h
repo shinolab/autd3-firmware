@@ -17,6 +17,7 @@
 
 typedef ALIGN2 struct {
   uint8_t tag;
+  uint8_t _pad;
 } ModDelay;
 
 uint8_t write_mod_delay(const volatile uint8_t* p_data) {

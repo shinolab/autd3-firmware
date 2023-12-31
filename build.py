@@ -125,7 +125,7 @@ def cpu_test(args):
             ).check_returncode()
 
 
-def cpp_cov(args):
+def cpu_cov(args):
     config = Config(args)
     if not config.is_linux():
         err("Coverage is only supported on Linux.")
@@ -197,6 +197,12 @@ if __name__ == "__main__":
         parser_cpu_test = subparsers_cpu.add_parser("test", help="see `build -h`")
         parser_cpu_test.add_argument("--cmake-extra", help="cmake extra args")
         parser_cpu_test.set_defaults(handler=cpu_test)
+
+        # cov
+        parser_cpu_cov = subparsers_cpu.add_parser("cov", help="see `build -h`")
+        parser_cpu_cov.add_argument("--cmake-extra", help="cmake extra args")
+        parser_cpu_cov.add_argument("--html", action="store_true", help="generate html")
+        parser_cpu_cov.set_defaults(handler=cpu_cov)
 
         # clear
         parser_cpu_clear = subparsers_cpu.add_parser("clear", help="see `clear -h`")

@@ -49,10 +49,10 @@ inline static void change_mod_page(uint16_t page) {
 uint8_t write_mod(const volatile uint8_t* p_data) {
   const Modulation* p = (const Modulation*)p_data;
 
-  uint32_t page_capacity;
+  volatile uint32_t page_capacity;
   uint32_t freq_div;
 
-  uint16_t write = p->subseq.size;
+  volatile uint16_t write = p->subseq.size;
 
   const uint16_t* data;
   if ((p->subseq.flag & MODULATION_FLAG_BEGIN) == MODULATION_FLAG_BEGIN) {
@@ -71,14 +71,14 @@ uint8_t write_mod(const volatile uint8_t* p_data) {
   page_capacity = (_mod_cycle & ~MOD_BUF_PAGE_SIZE_MASK) + MOD_BUF_PAGE_SIZE - _mod_cycle;
   if (write < page_capacity) {
     bram_cpy(BRAM_SELECT_MOD, (_mod_cycle & MOD_BUF_PAGE_SIZE_MASK) >> 1, data, (write + 1) >> 1);
-    _mod_cycle += write;
+    _mod_cycle = _mod_cycle + write;
   } else {
     bram_cpy(BRAM_SELECT_MOD, (_mod_cycle & MOD_BUF_PAGE_SIZE_MASK) >> 1, data, page_capacity >> 1);
-    _mod_cycle += page_capacity;
+    _mod_cycle = _mod_cycle + page_capacity;
     data += (page_capacity >> 1);
     change_mod_page((_mod_cycle & ~MOD_BUF_PAGE_SIZE_MASK) >> MOD_BUF_PAGE_SIZE_WIDTH);
     bram_cpy(BRAM_SELECT_MOD, (_mod_cycle & MOD_BUF_PAGE_SIZE_MASK) >> 1, data, (write - page_capacity + 1) >> 1);
-    _mod_cycle += write - page_capacity;
+    _mod_cycle = _mod_cycle + write - page_capacity;
   }
 
   if ((p->subseq.flag & MODULATION_FLAG_END) == MODULATION_FLAG_END) {

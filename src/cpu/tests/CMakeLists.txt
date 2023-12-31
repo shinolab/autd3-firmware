@@ -28,7 +28,9 @@ enable_testing()
 
 add_executable(test_autd3-firmware main.cpp ${PROJECT_SOURCE_DIR}/../src/app.c utils.cpp)
 set_target_properties(test_autd3-firmware PROPERTIES LINKER_LANGUAGE CXX)
+set_source_files_properties(${PROJECT_SOURCE_DIR}/../src/app.c PROPERTIES LANGUAGE CXX)
 add_subdirectory(op)
+
 
 target_include_directories(test_autd3-firmware PRIVATE ${PROJECT_SOURCE_DIR}/inc)
 target_include_directories(test_autd3-firmware PRIVATE ${PROJECT_SOURCE_DIR}/../inc)

@@ -46,7 +46,7 @@ typedef ALIGN2 struct {
   uint16_t send_num;
 } FocusSTMSubseq;
 
-typedef ALIGN2 union {
+typedef union {
   FocusSTMHead head;
   FocusSTMSubseq subseq;
 } FocusSTM;
@@ -54,7 +54,7 @@ typedef ALIGN2 union {
 static uint8_t write_focus_stm(const volatile uint8_t* p_data) {
   const FocusSTM* p = (const FocusSTM*)p_data;
 
-  uint16_t size = p->subseq.send_num;
+  volatile uint16_t size = p->subseq.send_num;
 
   const uint16_t* src;
   uint32_t freq_div;
@@ -62,7 +62,7 @@ static uint8_t write_focus_stm(const volatile uint8_t* p_data) {
   uint16_t start_idx;
   uint16_t finish_idx;
   uint32_t cnt;
-  uint32_t page_capacity;
+  volatile uint32_t page_capacity;
 
   if ((p->subseq.flag & FOCUS_STM_FLAG_BEGIN) == FOCUS_STM_FLAG_BEGIN) {
     _stm_cycle = 0;
@@ -102,15 +102,15 @@ static uint8_t write_focus_stm(const volatile uint8_t* p_data) {
   page_capacity = (_stm_cycle & ~FOCUS_STM_BUF_PAGE_SIZE_MASK) + FOCUS_STM_BUF_PAGE_SIZE - _stm_cycle;
   if (size < page_capacity) {
     bram_cpy_focus_stm((_stm_cycle & FOCUS_STM_BUF_PAGE_SIZE_MASK) << 3, src, size);
-    _stm_cycle += size;
+    _stm_cycle = _stm_cycle + size;
   } else {
     bram_cpy_focus_stm((_stm_cycle & FOCUS_STM_BUF_PAGE_SIZE_MASK) << 3, src, page_capacity);
-    _stm_cycle += page_capacity;
+    _stm_cycle = _stm_cycle + page_capacity;
 
     change_stm_page((_stm_cycle & ~FOCUS_STM_BUF_PAGE_SIZE_MASK) >> FOCUS_STM_BUF_PAGE_SIZE_WIDTH);
 
     bram_cpy_focus_stm((_stm_cycle & FOCUS_STM_BUF_PAGE_SIZE_MASK) << 3, src + 4 * page_capacity, size - page_capacity);
-    _stm_cycle += size - page_capacity;
+    _stm_cycle = _stm_cycle + size - page_capacity;
   }
 
   if ((p->subseq.flag & FOCUS_STM_FLAG_END) == FOCUS_STM_FLAG_END) {

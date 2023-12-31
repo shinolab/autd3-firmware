@@ -45,7 +45,7 @@ typedef ALIGN2 struct {
   uint8_t flag;
 } GainSTMSubseq;
 
-typedef ALIGN2 union {
+typedef union {
   GainSTMHead head;
   GainSTMSubseq subseq;
 } GainSTM;
@@ -101,38 +101,38 @@ static uint8_t write_gain_stm(const volatile uint8_t* p_data) {
   switch (_gain_stm_mode) {
     case GAIN_STM_MODE_INTENSITY_PHASE_FULL:
       bram_cpy_volatile(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src, TRANS_NUM);
-      _stm_cycle += 1;
+      _stm_cycle = _stm_cycle + 1;
       break;
     case GAIN_STM_MODE_PHASE_FULL:
       bram_cpy_gain_stm_phase_full((_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src, 0, TRANS_NUM);
-      _stm_cycle += 1;
+      _stm_cycle = _stm_cycle + 1;
 
       if (send > 1) {
         src = src_base;
         bram_cpy_gain_stm_phase_full((_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src, 8, TRANS_NUM);
-        _stm_cycle += 1;
+        _stm_cycle = _stm_cycle + 1;
       }
       break;
     case GAIN_STM_MODE_PHASE_HALF:
       bram_cpy_gain_stm_phase_half((_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src, 0, TRANS_NUM);
-      _stm_cycle += 1;
+      _stm_cycle = _stm_cycle + 1;
 
       if (send > 1) {
         src = src_base;
         bram_cpy_gain_stm_phase_half((_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src, 4, TRANS_NUM);
-        _stm_cycle += 1;
+        _stm_cycle = _stm_cycle + 1;
       }
 
       if (send > 2) {
         src = src_base;
         bram_cpy_gain_stm_phase_half((_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src, 8, TRANS_NUM);
-        _stm_cycle += 1;
+        _stm_cycle = _stm_cycle + 1;
       }
 
       if (send > 3) {
         src = src_base;
         bram_cpy_gain_stm_phase_half((_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src, 12, TRANS_NUM);
-        _stm_cycle += 1;
+        _stm_cycle = _stm_cycle + 1;
       }
       break;
     default:

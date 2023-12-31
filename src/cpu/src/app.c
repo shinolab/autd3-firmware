@@ -11,6 +11,10 @@
  *
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "app.h"
 
 #include "ecat.h"
@@ -144,7 +148,8 @@ void update(void) {
 
   if ((ECATC.AL_STATUS_CODE.WORD == AL_STATUS_CODE_SYNC_ERR) || (ECATC.AL_STATUS_CODE.WORD == AL_STATUS_CODE_SYNC_MANAGER_WATCHDOG)) {
     if (_wdt_cnt < 0) return;
-    if (_wdt_cnt-- == 0) clear();
+    if (_wdt_cnt == 0) clear();
+    _wdt_cnt = _wdt_cnt - 1;
   } else {
     _wdt_cnt = WDT_CNT_MAX;
   }
@@ -181,3 +186,7 @@ void recv_ethercat(uint16_t* p_data) {
   if (header->msg_id == _last_msg_id) return;
   if (push(p_data)) _last_msg_id = header->msg_id;
 }
+
+#ifdef __cplusplus
+}
+#endif

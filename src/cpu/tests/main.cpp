@@ -11,7 +11,10 @@
 
 #include <gtest/gtest.h>
 
+#include <cstring>
+
 extern "C" {
+
 #include "app.h"
 #include "ecat.h"
 #include "params.h"
@@ -30,7 +33,7 @@ uint16_t* modulator_bram = new uint16_t[32768];
 uint16_t* normal_op_bram = new uint16_t[512];
 uint16_t* stm_op_bram = new uint16_t[524288];
 
-uint16_t bram_read_raw(uint8_t bram_select, size_t bram_addr) {
+uint16_t bram_read_raw(uint8_t bram_select, uint32_t bram_addr) {
   switch (bram_select) {
     case BRAM_SELECT_CONTROLLER:
       return controller_bram[bram_addr];

@@ -11,6 +11,8 @@
 
 #include <gtest/gtest.h>
 
+#include <cstring>
+
 #include "app.h"
 #include "ecat.h"
 #include "params.h"

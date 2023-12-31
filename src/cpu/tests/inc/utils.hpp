@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <cstring>
 #include <vector>
 
 #include "ecat.h"

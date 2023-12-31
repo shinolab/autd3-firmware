@@ -20,6 +20,7 @@ extern volatile uint32_t _stm_freq_div;
 
 typedef ALIGN2 struct {
   uint8_t tag;
+  uint8_t _pad;
 } Gain;
 
 uint8_t write_gain(const volatile uint8_t* p_data) {
