@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/12/2023
+ * Last Modified: 31/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,6 +13,7 @@
 
 #include "app.h"
 
+#include "ecat.h"
 #include "iodefine.h"
 #include "kernel.h"
 #include "params.h"
@@ -32,6 +33,8 @@
 #define GAIN_STM_BUF_PAGE_SIZE_WIDTH (6)
 #define GAIN_STM_BUF_PAGE_SIZE (1 << GAIN_STM_BUF_PAGE_SIZE_WIDTH)
 #define GAIN_STM_BUF_PAGE_SIZE_MASK (GAIN_STM_BUF_PAGE_SIZE - 1)
+
+#define TRANS_NUM (249)
 
 #define WDT_CNT_MAX (1000)
 
@@ -217,14 +220,8 @@ static void configure_debug(const volatile uint8_t* p_data) {
 }
 
 static void write_gain(const volatile uint8_t* p_data) {
-  volatile const uint16_t* src = (volatile const uint16_t*)(&p_data[2]);
-  volatile uint16_t* base = (volatile uint16_t*)FPGA_BASE;
-  uint16_t addr = get_addr(BRAM_SELECT_NORMAL, 0);
-  uint32_t cnt = TRANS_NUM;
-  volatile uint16_t* dst = &base[addr];
-
   _fpga_flags_internal &= ~CTL_FLAG_OP_MODE;
-  word_cpy_volatile(dst, src, cnt);
+  bram_cpy_volatile(BRAM_SELECT_NORMAL, 0, (volatile const uint16_t*)(&p_data[2]), TRANS_NUM);
 
   _stm_freq_div = 0xFFFFFFFF;
 }
@@ -236,12 +233,9 @@ inline static void change_stm_page(uint16_t page) {
 }
 
 static uint8_t write_focus_stm(const volatile uint8_t* p_data) {
-  volatile uint16_t* base = (volatile uint16_t*)FPGA_BASE;
   uint8_t flag = p_data[1];
-  uint16_t size;
 
-  uint16_t addr;
-  volatile uint16_t* dst;
+  uint16_t size;
   const uint16_t* src;
   uint32_t freq_div;
   uint32_t sound_speed;
@@ -288,42 +282,15 @@ static uint8_t write_focus_stm(const volatile uint8_t* p_data) {
 
   page_capacity = (_stm_cycle & ~FOCUS_STM_BUF_PAGE_SIZE_MASK) + FOCUS_STM_BUF_PAGE_SIZE - _stm_cycle;
   if (size < page_capacity) {
-    cnt = size;
-    addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & FOCUS_STM_BUF_PAGE_SIZE_MASK) << 3);
-    dst = &base[addr];
-    while (cnt--) {
-      *dst++ = *src++;
-      *dst++ = *src++;
-      *dst++ = *src++;
-      *dst++ = *src++;
-      dst += 4;
-    }
+    bram_cpy_focus_stm((_stm_cycle & FOCUS_STM_BUF_PAGE_SIZE_MASK) << 3, src, size);
     _stm_cycle += size;
   } else {
-    cnt = page_capacity;
-    addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & FOCUS_STM_BUF_PAGE_SIZE_MASK) << 3);
-    dst = &base[addr];
-    while (cnt--) {
-      *dst++ = *src++;
-      *dst++ = *src++;
-      *dst++ = *src++;
-      *dst++ = *src++;
-      dst += 4;
-    }
+    bram_cpy_focus_stm((_stm_cycle & FOCUS_STM_BUF_PAGE_SIZE_MASK) << 3, src, page_capacity);
     _stm_cycle += page_capacity;
 
     change_stm_page((_stm_cycle & ~FOCUS_STM_BUF_PAGE_SIZE_MASK) >> FOCUS_STM_BUF_PAGE_SIZE_WIDTH);
 
-    cnt = size - page_capacity;
-    addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & FOCUS_STM_BUF_PAGE_SIZE_MASK) << 3);
-    dst = &base[addr];
-    while (cnt--) {
-      *dst++ = *src++;
-      *dst++ = *src++;
-      *dst++ = *src++;
-      *dst++ = *src++;
-      dst += 4;
-    }
+    bram_cpy_focus_stm((_stm_cycle & FOCUS_STM_BUF_PAGE_SIZE_MASK) << 3, src + page_capacity, size - page_capacity);
     _stm_cycle += size - page_capacity;
   }
 
@@ -337,13 +304,9 @@ static uint8_t write_focus_stm(const volatile uint8_t* p_data) {
 }
 
 static uint8_t write_gain_stm(const volatile uint8_t* p_data) {
-  volatile uint16_t* base = (volatile uint16_t*)FPGA_BASE;
-
   uint8_t flag = p_data[1];
   uint8_t send = (flag >> 6) + 1;
 
-  uint16_t addr;
-  volatile uint16_t* dst;
   const volatile uint16_t *src, *src_base;
   uint32_t freq_div;
   uint16_t start_idx;
@@ -386,72 +349,41 @@ static uint8_t write_gain_stm(const volatile uint8_t* p_data) {
   }
 
   src = src_base;
-  addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8);
 
   switch (_gain_stm_mode) {
     case GAIN_STM_MODE_INTENSITY_PHASE_FULL:
-      dst = &base[addr];
+      bram_cpy_volatile(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src, TRANS_NUM);
       _stm_cycle += 1;
-      cnt = TRANS_NUM;
-      while (cnt--) *dst++ = *src++;
       break;
     case GAIN_STM_MODE_PHASE_FULL:
-      dst = &base[addr];
-      cnt = TRANS_NUM;
-      while (cnt--) *dst++ = 0xFF00 | ((*src++) & 0x00FF);
+      bram_cpy_gain_stm_phase_full((_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src, 0, TRANS_NUM);
       _stm_cycle += 1;
 
       if (send > 1) {
         src = src_base;
-        addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8);
-        dst = &base[addr];
-        cnt = TRANS_NUM;
-        while (cnt--) *dst++ = 0xFF00 | (((*src++) >> 8) & 0x00FF);
+        bram_cpy_gain_stm_phase_full((_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src, 8, TRANS_NUM);
         _stm_cycle += 1;
       }
       break;
     case GAIN_STM_MODE_PHASE_HALF:
-      dst = &base[addr];
-      cnt = TRANS_NUM;
-      while (cnt--) {
-        phase = (*src++) & 0x000F;
-        *dst++ = 0xFF00 | (phase << 4) | phase;
-      }
+      bram_cpy_gain_stm_phase_half((_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src, 0, TRANS_NUM);
       _stm_cycle += 1;
 
       if (send > 1) {
         src = src_base;
-        addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8);
-        dst = &base[addr];
-        cnt = TRANS_NUM;
-        while (cnt--) {
-          phase = ((*src++) >> 4) & 0x000F;
-          *dst++ = 0xFF00 | (phase << 4) | phase;
-        }
+        bram_cpy_gain_stm_phase_half((_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src, 4, TRANS_NUM);
         _stm_cycle += 1;
       }
 
       if (send > 2) {
         src = src_base;
-        addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8);
-        dst = &base[addr];
-        cnt = TRANS_NUM;
-        while (cnt--) {
-          phase = ((*src++) >> 8) & 0x000F;
-          *dst++ = 0xFF00 | (phase << 4) | phase;
-        }
+        bram_cpy_gain_stm_phase_half((_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src, 8, TRANS_NUM);
         _stm_cycle += 1;
       }
 
       if (send > 3) {
         src = src_base;
-        addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8);
-        dst = &base[addr];
-        cnt = TRANS_NUM;
-        while (cnt--) {
-          phase = ((*src++) >> 12) & 0x000F;
-          *dst++ = 0xFF00 | (phase << 4) | phase;
-        }
+        bram_cpy_gain_stm_phase_half((_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src, 12, TRANS_NUM);
         _stm_cycle += 1;
       }
       break;

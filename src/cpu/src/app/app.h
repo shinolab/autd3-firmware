@@ -3,7 +3,7 @@
 // Created Date: 25/04/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/11/2023
+// Last Modified: 31/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -33,8 +33,6 @@ typedef long long unsigned int uint64_t;
 #ifndef bool_t
 typedef int bool_t;
 #endif
-
-#define TRANS_NUM (249)
 
 #define FPGA_BASE (0x44000000) /* CS1 FPGA address */
 
@@ -66,20 +64,42 @@ inline static void bram_cpy_volatile(uint8_t bram_select, uint16_t base_bram_add
   while (cnt-- > 0) *dst++ = *values++;
 }
 
+inline static void bram_cpy_focus_stm(uint16_t base_bram_addr, const volatile uint16_t *values, uint32_t cnt) {
+  uint16_t base_addr = get_addr(BRAM_SELECT_STM, base_bram_addr);
+  volatile uint16_t *base = (volatile uint16_t *)FPGA_BASE;
+  volatile uint16_t *dst = &base[base_addr];
+  while (cnt--) {
+    *dst++ = *values++;
+    *dst++ = *values++;
+    *dst++ = *values++;
+    *dst++ = *values++;
+    dst += 4;
+  }
+}
+
+inline static void bram_cpy_gain_stm_phase_full(uint16_t base_bram_addr, const volatile uint16_t *values, const int shift, uint32_t cnt) {
+  uint16_t base_addr = get_addr(BRAM_SELECT_STM, base_bram_addr);
+  volatile uint16_t *base = (volatile uint16_t *)FPGA_BASE;
+  volatile uint16_t *dst = &base[base_addr];
+  while (cnt--) *dst++ = 0xFF00 | (((*values++) >> shift) & 0x00FF);
+}
+
+inline static void bram_cpy_gain_stm_phase_half(uint16_t base_bram_addr, const volatile uint16_t *values, const int shift, uint32_t cnt) {
+  uint16_t base_addr = get_addr(BRAM_SELECT_STM, base_bram_addr);
+  volatile uint16_t *base = (volatile uint16_t *)FPGA_BASE;
+  volatile uint16_t *dst = &base[base_addr];
+  uint16_t phase;
+  while (cnt--) {
+    phase = ((*src++) >> shift) & 0x000F;
+    *dst++ = 0xFF00 | (phase << 4) | phase;
+  }
+}
+
 inline static void bram_set(uint8_t bram_select, uint16_t base_bram_addr, uint16_t value, uint32_t cnt) {
   uint16_t base_addr = get_addr(bram_select, base_bram_addr);
   volatile uint16_t *base = (volatile uint16_t *)FPGA_BASE;
   volatile uint16_t *dst = &base[base_addr];
   while (cnt-- > 0) *dst++ = value;
 }
-
-typedef struct {
-  uint16_t data[313];
-} RX_STR;
-
-typedef struct {
-  uint16_t reserved;
-  uint16_t ack;
-} TX_STR;
 
 #endif /* APP_H_ */
