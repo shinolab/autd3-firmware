@@ -112,6 +112,26 @@ TEST(Op, Info) {
 
     const auto data_body = reinterpret_cast<uint8_t*>(data.data);
     data_body[sizeof(Header)] = TAG_FIRM_INFO;
+    data_body[sizeof(Header) + 1] = INFO_TYPE_FPGA_FUNCTIONS;
+
+    auto frame = to_frame_data(data);
+
+    recv_ethercat(&frame[0]);
+    update();
+
+    const auto ack = _sTx.ack >> 8;
+    ASSERT_EQ(ack, header->msg_id);
+
+    ASSERT_EQ(_sTx.ack & 0xFF, 0x00);
+  }
+
+  {
+    Header* header = reinterpret_cast<Header*>(data.data);
+    header->msg_id = get_msg_id();
+    header->slot_2_offset = 0;
+
+    const auto data_body = reinterpret_cast<uint8_t*>(data.data);
+    data_body[sizeof(Header)] = TAG_FIRM_INFO;
     data_body[sizeof(Header) + 1] = INFO_TYPE_CLEAR;
 
     auto frame = to_frame_data(data);

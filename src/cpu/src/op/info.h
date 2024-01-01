@@ -53,6 +53,9 @@ uint8_t firmware_info(const volatile uint8_t* p_data) {
     case INFO_TYPE_FPGA_VERSION_MINOR:
       _rx_data = get_fpga_version_minor() & 0xFF;
       break;
+    case INFO_TYPE_FPGA_FUNCTIONS:
+      _rx_data = (get_fpga_version() >> 8) & 0xFF;
+      break;
     case INFO_TYPE_CLEAR:
       _read_fpga_info = _read_fpga_info_store;
       _rx_data = 0;
