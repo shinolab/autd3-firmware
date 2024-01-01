@@ -150,7 +150,7 @@ static uint8_t write_gain_stm(const volatile uint8_t* p_data) {
       }
       break;
     default:
-      break;
+      return ERR_INVALID_GAIN_STM_MODE;
   }
 
   if ((_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) == 0) change_stm_page((_stm_cycle & ~GAIN_STM_BUF_PAGE_SIZE_MASK) >> GAIN_STM_BUF_PAGE_SIZE_WIDTH);

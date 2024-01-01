@@ -3,7 +3,7 @@
 // Created Date: 31/12/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 31/12/2023
+// Last Modified: 01/01/2024
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,4 +20,4 @@ typedef struct {
   } AL_STATUS_CODE;
 } st_ecatc_t;
 
-st_ecatc_t ECATC;
+extern st_ecatc_t ECATC;

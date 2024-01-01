@@ -106,10 +106,8 @@ static volatile short _wdt_cnt = WDT_CNT_MAX;
 
 void init_app(void) { clear(); }
 
-uint8_t handle_payload(uint8_t tag, const volatile uint8_t* p_data) {
-  switch (tag) {
-    case TAG_NONE:
-      return ERR_NONE;
+uint8_t handle_payload(const volatile uint8_t* p_data) {
+  switch (p_data[0]) {
     case TAG_CLEAR:
       return clear();
     case TAG_SYNC:
@@ -162,10 +160,10 @@ void update(void) {
       goto FINISH;
     }
 
-    _ack = handle_payload(p_data[sizeof(Header)], &p_data[sizeof(Header)]);
+    _ack = handle_payload(&p_data[sizeof(Header)]);
     if (_ack != ERR_NONE) goto FINISH;
     if (header->slot_2_offset != 0) {
-      _ack = handle_payload(p_data[sizeof(Header) + header->slot_2_offset], &p_data[sizeof(Header) + header->slot_2_offset]);
+      _ack = handle_payload(&p_data[sizeof(Header) + header->slot_2_offset]);
       if (_ack != ERR_NONE) goto FINISH;
     }
 
@@ -180,7 +178,7 @@ FINISH:
   _sTx.ack = (((uint16_t)_ack) << 8) | _rx_data;
 }
 
-static uint8_t _last_msg_id = 0;
+static uint8_t _last_msg_id = 0xFF;
 void recv_ethercat(uint16_t* p_data) {
   Header* header = (Header*)p_data;
   if (header->msg_id == _last_msg_id) return;

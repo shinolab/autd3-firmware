@@ -3,7 +3,7 @@
 // Created Date: 31/12/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 31/12/2023
+// Last Modified: 01/01/2024
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,6 +21,8 @@ extern TX_STR _sTx;
 }
 
 TEST(Op, Clear) {
+  init_app();
+
   RX_STR data;
   std::memset(data.data, 0, sizeof(RX_STR));
 

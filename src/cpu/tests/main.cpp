@@ -3,7 +3,7 @@
 // Created Date: 31/12/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 31/12/2023
+// Last Modified: 01/01/2024
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,9 +17,13 @@ extern "C" {
 
 #include "app.h"
 #include "ecat.h"
+#include "iodefine.h"
 #include "params.h"
 
 TX_STR _sTx = TX_STR{};
+st_ecatc_t ECATC = st_ecatc_t{
+    .AL_STATUS_CODE = {.WORD = 0x0000},
+};
 
 uint8_t get_msg_id(void) {
   static uint8_t msg_id = 0;
