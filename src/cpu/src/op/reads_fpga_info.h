@@ -3,7 +3,7 @@
 // Created Date: 31/12/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 31/12/2023
+// Last Modified: 01/01/2024
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,6 +11,9 @@
 
 #ifndef OP_READS_FPGA_INFO_H_
 #define OP_READS_FPGA_INFO_H_
+
+#include <assert.h>
+#include <stddef.h>
 
 #include "app.h"
 #include "params.h"
@@ -23,6 +26,10 @@ typedef ALIGN2 struct {
 } ConfigureReadsFPGAInfo;
 
 uint8_t configure_reads_fpga_info(const volatile uint8_t* p_data) {
+  static_assert(sizeof(ConfigureReadsFPGAInfo) == 2, "ConfigureReadsFPGAInfo is not valid.");
+  static_assert(offsetof(ConfigureReadsFPGAInfo, tag) == 0, "ConfigureReadsFPGAInfo is not valid.");
+  static_assert(offsetof(ConfigureReadsFPGAInfo, value) == 1, "ConfigureReadsFPGAInfo is not valid.");
+
   const ConfigureReadsFPGAInfo* p = (const ConfigureReadsFPGAInfo*)p_data;
   _read_fpga_info = p->value != 0;
   return ERR_NONE;

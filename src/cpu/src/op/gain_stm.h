@@ -3,7 +3,7 @@
 // Created Date: 31/12/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 31/12/2023
+// Last Modified: 01/01/2024
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,6 +11,9 @@
 
 #ifndef OP_GAIN_STM_H_
 #define OP_GAIN_STM_H_
+
+#include <assert.h>
+#include <stddef.h>
 
 #include "app.h"
 #include "params.h"
@@ -51,6 +54,19 @@ typedef union {
 } GainSTM;
 
 static uint8_t write_gain_stm(const volatile uint8_t* p_data) {
+  static_assert(sizeof(GainSTMHead) == 12, "GainSTM is not valid.");
+  static_assert(offsetof(GainSTMHead, tag) == 0, "GainSTM is not valid.");
+  static_assert(offsetof(GainSTMHead, flag) == 1, "GainSTM is not valid.");
+  static_assert(offsetof(GainSTMHead, mode) == 2, "GainSTM is not valid.");
+  static_assert(offsetof(GainSTMHead, freq_div) == 4, "GainSTM is not valid.");
+  static_assert(offsetof(GainSTMHead, start_idx) == 8, "GainSTM is not valid.");
+  static_assert(offsetof(GainSTMHead, finish_idx) == 10, "GainSTM is not valid.");
+  static_assert(sizeof(GainSTMSubseq) == 2, "GainSTM is not valid.");
+  static_assert(offsetof(GainSTMSubseq, tag) == 0, "GainSTM is not valid.");
+  static_assert(offsetof(GainSTMSubseq, flag) == 1, "GainSTM is not valid.");
+  static_assert(offsetof(GainSTM, head) == 0, "GainSTM is not valid.");
+  static_assert(offsetof(GainSTM, subseq) == 0, "GainSTM is not valid.");
+
   const GainSTM* p = (const GainSTM*)p_data;
 
   uint8_t send = (p->subseq.flag >> 6) + 1;

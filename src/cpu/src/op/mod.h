@@ -3,7 +3,7 @@
 // Created Date: 31/12/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 31/12/2023
+// Last Modified: 01/01/2024
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,6 +11,9 @@
 
 #ifndef OP_MOD_H_
 #define OP_MOD_H_
+
+#include <assert.h>
+#include <stddef.h>
 
 #include "app.h"
 #include "params.h"
@@ -47,6 +50,18 @@ inline static void change_mod_page(uint16_t page) {
 }
 
 uint8_t write_mod(const volatile uint8_t* p_data) {
+  static_assert(sizeof(ModulationHead) == 8, "Modulation is not valid.");
+  static_assert(offsetof(ModulationHead, tag) == 0, "Modulation is not valid.");
+  static_assert(offsetof(ModulationHead, flag) == 1, "Modulation is not valid.");
+  static_assert(offsetof(ModulationHead, size) == 2, "Modulation is not valid.");
+  static_assert(offsetof(ModulationHead, freq_div) == 4, "Modulation is not valid.");
+  static_assert(sizeof(ModulationSubseq) == 4, "Modulation is not valid.");
+  static_assert(offsetof(ModulationSubseq, tag) == 0, "Modulation is not valid.");
+  static_assert(offsetof(ModulationSubseq, flag) == 1, "Modulation is not valid.");
+  static_assert(offsetof(ModulationSubseq, size) == 2, "Modulation is not valid.");
+  static_assert(offsetof(Modulation, head) == 0, "Modulation is not valid.");
+  static_assert(offsetof(Modulation, subseq) == 0, "Modulation is not valid.");
+
   const Modulation* p = (const Modulation*)p_data;
 
   volatile uint32_t page_capacity;

@@ -3,7 +3,7 @@
 // Created Date: 31/12/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 31/12/2023
+// Last Modified: 01/01/2024
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,6 +11,9 @@
 
 #ifndef OP_INFO_H_
 #define OP_INFO_H_
+
+#include <assert.h>
+#include <stddef.h>
 
 #include "app.h"
 #include "params.h"
@@ -30,6 +33,10 @@ inline static uint16_t get_fpga_version(void) { return bram_read(BRAM_SELECT_CON
 inline static uint16_t get_fpga_version_minor(void) { return bram_read(BRAM_SELECT_CONTROLLER, BRAM_ADDR_VERSION_NUM_MINOR); }
 
 uint8_t firmware_info(const volatile uint8_t* p_data) {
+  static_assert(sizeof(FirmInfo) == 2, "FirmInfo is not valid.");
+  static_assert(offsetof(FirmInfo, tag) == 0, "FirmInfo is not valid.");
+  static_assert(offsetof(FirmInfo, ty) == 1, "FirmInfo is not valid.");
+
   const FirmInfo* p = (const FirmInfo*)p_data;
   switch (p->ty) {
     case INFO_TYPE_CPU_VERSION_MAJOR:

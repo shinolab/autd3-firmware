@@ -3,7 +3,7 @@
 // Created Date: 31/12/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 31/12/2023
+// Last Modified: 01/01/2024
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,6 +11,9 @@
 
 #ifndef OP_FOCUS_STM_H_
 #define OP_FOCUS_STM_H_
+
+#include <assert.h>
+#include <stddef.h>
 
 #include "app.h"
 #include "params.h"
@@ -52,6 +55,21 @@ typedef union {
 } FocusSTM;
 
 static uint8_t write_focus_stm(const volatile uint8_t* p_data) {
+  static_assert(sizeof(FocusSTMHead) == 16, "FocusSTM is not valid.");
+  static_assert(offsetof(FocusSTMHead, tag) == 0, "FocusSTM is not valid.");
+  static_assert(offsetof(FocusSTMHead, flag) == 1, "FocusSTM is not valid.");
+  static_assert(offsetof(FocusSTMHead, send_num) == 2, "FocusSTM is not valid.");
+  static_assert(offsetof(FocusSTMHead, freq_div) == 4, "FocusSTM is not valid.");
+  static_assert(offsetof(FocusSTMHead, sound_speed) == 8, "FocusSTM is not valid.");
+  static_assert(offsetof(FocusSTMHead, start_idx) == 12, "FocusSTM is not valid.");
+  static_assert(offsetof(FocusSTMHead, finish_idx) == 14, "FocusSTM is not valid.");
+  static_assert(sizeof(FocusSTMSubseq) == 4, "FocusSTM is not valid.");
+  static_assert(offsetof(FocusSTMSubseq, tag) == 0, "FocusSTM is not valid.");
+  static_assert(offsetof(FocusSTMSubseq, flag) == 1, "FocusSTM is not valid.");
+  static_assert(offsetof(FocusSTMSubseq, send_num) == 2, "FocusSTM is not valid.");
+  static_assert(offsetof(FocusSTM, head) == 0, "FocusSTM is not valid.");
+  static_assert(offsetof(FocusSTM, subseq) == 0, "FocusSTM is not valid.");
+
   const FocusSTM* p = (const FocusSTM*)p_data;
 
   volatile uint16_t size = p->subseq.send_num;

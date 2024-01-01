@@ -3,7 +3,7 @@
 // Created Date: 31/12/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 31/12/2023
+// Last Modified: 01/01/2024
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,6 +11,9 @@
 
 #ifndef OP_CLEAR_H_
 #define OP_CLEAR_H_
+
+#include <assert.h>
+#include <stddef.h>
 
 #include "app.h"
 #include "mod.h"
@@ -31,9 +34,13 @@ extern volatile uint32_t _min_freq_div_phase;
 
 typedef ALIGN2 struct {
   uint8_t tag;
+  uint8_t _pad;
 } Clear;
 
 uint8_t clear(void) {
+  static_assert(sizeof(Clear) == 2, "Clear is not valid.");
+  static_assert(offsetof(Clear, tag) == 0, "Clear is not valid.");
+
   _mod_freq_div = 5120;
   _stm_freq_div = 0xFFFFFFFF;
 
