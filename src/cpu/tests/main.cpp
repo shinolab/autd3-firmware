@@ -93,8 +93,8 @@ int main(int argc, char** argv) {
   std::memset(normal_op_bram, 0, sizeof(uint16_t) * 512);
   std::memset(stm_op_bram, 0, sizeof(uint16_t) * 524288);
 
-  controller_bram[BRAM_ADDR_VERSION_NUM] = 0x8D;
-  controller_bram[BRAM_ADDR_VERSION_NUM_MINOR] = 0x00;
+  controller_bram[BRAM_ADDR_VERSION_NUM] = 0x008D;
+  controller_bram[BRAM_ADDR_VERSION_NUM_MINOR] = 0x0001;
 
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
