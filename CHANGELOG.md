@@ -1,3 +1,7 @@
+# 5.0.1
+
+- Fix [#3](https://github.com/shinolab/autd3-firmware/issues/3): v5.0.0 firmware's emulator bit is set
+
 # 5.0.0
 
 - Add Silencer with fixed completion steps algorithm
