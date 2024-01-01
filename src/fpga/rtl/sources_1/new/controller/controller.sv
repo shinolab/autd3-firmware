@@ -4,7 +4,7 @@
  * Created Date: 01/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/12/2023
+ * Last Modified: 01/01/2024
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Hapis Lab. All rights reserved.
@@ -199,7 +199,7 @@ module controller #(
         state <= REQ_WR_VER;
       end
       REQ_WR_VER: begin
-        din   <= {8'hFF, VERSION_NUM};
+        din   <= {8'h00, VERSION_NUM};
         addr  <= ADDR_VERSION_NUM_MAJOR;
 
         state <= WAIT_WR_VER_0_REQ_RD_CTL_FLAG;
