@@ -12,6 +12,8 @@
 #ifndef APP_H_
 #define APP_H_
 
+#include "params.h"
+
 #define ALIGN2 __attribute__((aligned(2)))
 
 #ifndef true

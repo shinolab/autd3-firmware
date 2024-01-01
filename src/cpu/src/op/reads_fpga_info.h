@@ -28,6 +28,6 @@ uint8_t configure_reads_fpga_info(const volatile uint8_t* p_data) {
   return ERR_NONE;
 }
 
-inline uint16_t read_fpga_info(void) { return bram_read(BRAM_SELECT_CONTROLLER, BRAM_ADDR_FPGA_INFO); }
+uint16_t read_fpga_info(void) { return bram_read(BRAM_SELECT_CONTROLLER, BRAM_ADDR_FPGA_INFO); }
 
 #endif  // OP_READS_FPGA_INFO_H_

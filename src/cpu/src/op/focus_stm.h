@@ -61,7 +61,6 @@ static uint8_t write_focus_stm(const volatile uint8_t* p_data) {
   uint32_t sound_speed;
   uint16_t start_idx;
   uint16_t finish_idx;
-  uint32_t cnt;
   volatile uint32_t page_capacity;
 
   if ((p->subseq.flag & FOCUS_STM_FLAG_BEGIN) == FOCUS_STM_FLAG_BEGIN) {

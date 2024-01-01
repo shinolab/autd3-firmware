@@ -13,7 +13,6 @@
 #define OP_SYNC_H_
 
 #include "app.h"
-#include "mod.h"
 #include "params.h"
 
 inline static uint64_t get_next_sync0() {

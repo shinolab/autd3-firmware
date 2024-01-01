@@ -59,8 +59,6 @@ static uint8_t write_gain_stm(const volatile uint8_t* p_data) {
   uint32_t freq_div;
   uint16_t start_idx;
   uint16_t finish_idx;
-  uint32_t cnt;
-  uint16_t phase;
 
   if ((p->subseq.flag & GAIN_STM_FLAG_BEGIN) == GAIN_STM_FLAG_BEGIN) {
     _stm_cycle = 0;
