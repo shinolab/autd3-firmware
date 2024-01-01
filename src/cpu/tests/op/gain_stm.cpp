@@ -348,3 +348,221 @@ TEST(Op, GainSTMInvalidMode) {
   const auto ack = _sTx.ack >> 8;
   ASSERT_EQ(ack, ERR_INVALID_GAIN_STM_MODE);
 }
+
+TEST(Op, InvalidCompletionStepsIntensityGainSTM) {
+  init_app();
+
+  RX_STR data;
+  std::memset(data.data, 0, sizeof(RX_STR));
+
+  {
+    Header* header = reinterpret_cast<Header*>(data.data);
+    header->msg_id = get_msg_id();
+    header->slot_2_offset = 0;
+
+    const auto intensity = 10;  // 25us * 10 = 250us
+    const auto phase = 2;       // 25us * 2 = 50us
+    const auto flag = SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS | SILENCER_CTL_FLAG_STRICT_MODE;
+
+    auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+    data_body[0] = TAG_SILENCER;
+    *reinterpret_cast<uint16_t*>(data_body + 2) = intensity;
+    *reinterpret_cast<uint16_t*>(data_body + 4) = phase;
+    *reinterpret_cast<uint16_t*>(data_body + 6) = flag;
+
+    auto frame = to_frame_data(data);
+
+    recv_ethercat(&frame[0]);
+    update();
+
+    const auto ack = _sTx.ack >> 8;
+    ASSERT_EQ(ack, header->msg_id);
+  }
+
+  {
+    Header* header = reinterpret_cast<Header*>(data.data);
+    header->slot_2_offset = 0;
+
+    const uint32_t freq_div = 5120;  // 1/20.48MHz/5120 = 250us
+
+    header->msg_id = get_msg_id();
+
+    auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+    data_body[0] = TAG_GAIN_STM;
+    data_body[1] = GAIN_STM_FLAG_BEGIN | GAIN_STM_FLAG_END;
+    *reinterpret_cast<uint16_t*>(data_body + 2) = GAIN_STM_MODE_INTENSITY_PHASE_FULL;
+    *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
+    *reinterpret_cast<uint16_t*>(data_body + 8) = 0;
+    *reinterpret_cast<uint16_t*>(data_body + 10) = 0;
+
+    auto frame = to_frame_data(data);
+
+    recv_ethercat(&frame[0]);
+    update();
+
+    const auto ack = _sTx.ack >> 8;
+    ASSERT_EQ(ack, header->msg_id);
+  }
+
+  {
+    Header* header = reinterpret_cast<Header*>(data.data);
+    header->slot_2_offset = 0;
+
+    const uint32_t freq_div = 5119;  // 1/20.48MHz/5119 < 250us
+
+    header->msg_id = get_msg_id();
+
+    auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+    data_body[0] = TAG_GAIN_STM;
+    data_body[1] = GAIN_STM_FLAG_BEGIN | GAIN_STM_FLAG_END;
+    *reinterpret_cast<uint16_t*>(data_body + 2) = GAIN_STM_MODE_INTENSITY_PHASE_FULL;
+    *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
+    *reinterpret_cast<uint16_t*>(data_body + 8) = 0;
+    *reinterpret_cast<uint16_t*>(data_body + 10) = 0;
+
+    auto frame = to_frame_data(data);
+
+    recv_ethercat(&frame[0]);
+    update();
+
+    const auto ack = _sTx.ack >> 8;
+    ASSERT_EQ(ack, ERR_FREQ_DIV_TOO_SMALL);
+  }
+}
+
+TEST(Op, InvalidCompletionStepsPhaseGainSTM) {
+  init_app();
+
+  RX_STR data;
+  std::memset(data.data, 0, sizeof(RX_STR));
+
+  {
+    Header* header = reinterpret_cast<Header*>(data.data);
+    header->msg_id = get_msg_id();
+    header->slot_2_offset = 0;
+
+    const auto intensity = 2;  // 25us * 2 = 50us
+    const auto phase = 10;     // 25us * 10 = 250us
+    const auto flag = SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS | SILENCER_CTL_FLAG_STRICT_MODE;
+
+    auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+    data_body[0] = TAG_SILENCER;
+    *reinterpret_cast<uint16_t*>(data_body + 2) = intensity;
+    *reinterpret_cast<uint16_t*>(data_body + 4) = phase;
+    *reinterpret_cast<uint16_t*>(data_body + 6) = flag;
+
+    auto frame = to_frame_data(data);
+
+    recv_ethercat(&frame[0]);
+    update();
+
+    const auto ack = _sTx.ack >> 8;
+    ASSERT_EQ(ack, header->msg_id);
+  }
+
+  {
+    Header* header = reinterpret_cast<Header*>(data.data);
+    header->slot_2_offset = 0;
+
+    const uint32_t freq_div = 5120;  // 1/20.48MHz/5120 = 250us
+
+    header->msg_id = get_msg_id();
+
+    auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+    data_body[0] = TAG_GAIN_STM;
+    data_body[1] = GAIN_STM_FLAG_BEGIN | GAIN_STM_FLAG_END;
+    *reinterpret_cast<uint16_t*>(data_body + 2) = GAIN_STM_MODE_INTENSITY_PHASE_FULL;
+    *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
+    *reinterpret_cast<uint16_t*>(data_body + 8) = 0;
+    *reinterpret_cast<uint16_t*>(data_body + 10) = 0;
+
+    auto frame = to_frame_data(data);
+
+    recv_ethercat(&frame[0]);
+    update();
+
+    const auto ack = _sTx.ack >> 8;
+    ASSERT_EQ(ack, header->msg_id);
+  }
+
+  {
+    Header* header = reinterpret_cast<Header*>(data.data);
+    header->slot_2_offset = 0;
+
+    const uint32_t freq_div = 5119;  // 1/20.48MHz/5119 < 250us
+
+    header->msg_id = get_msg_id();
+
+    auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+    data_body[0] = TAG_GAIN_STM;
+    data_body[1] = GAIN_STM_FLAG_BEGIN | GAIN_STM_FLAG_END;
+    *reinterpret_cast<uint16_t*>(data_body + 2) = GAIN_STM_MODE_INTENSITY_PHASE_FULL;
+    *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
+    *reinterpret_cast<uint16_t*>(data_body + 8) = 0;
+    *reinterpret_cast<uint16_t*>(data_body + 10) = 0;
+
+    auto frame = to_frame_data(data);
+
+    recv_ethercat(&frame[0]);
+    update();
+
+    const auto ack = _sTx.ack >> 8;
+    ASSERT_EQ(ack, ERR_FREQ_DIV_TOO_SMALL);
+  }
+}
+
+TEST(Op, InvalidCompletionStepsWithPermisiveModeGainSTM) {
+  init_app();
+
+  RX_STR data;
+  std::memset(data.data, 0, sizeof(RX_STR));
+
+  {
+    Header* header = reinterpret_cast<Header*>(data.data);
+    header->msg_id = get_msg_id();
+    header->slot_2_offset = 0;
+
+    const auto intensity = 10;  // 25us *10 = 250us
+    const auto phase = 10;      // 25us * 10 = 250us
+    const auto flag = SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS;
+
+    auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+    data_body[0] = TAG_SILENCER;
+    *reinterpret_cast<uint16_t*>(data_body + 2) = intensity;
+    *reinterpret_cast<uint16_t*>(data_body + 4) = phase;
+    *reinterpret_cast<uint16_t*>(data_body + 6) = flag;
+
+    auto frame = to_frame_data(data);
+
+    recv_ethercat(&frame[0]);
+    update();
+
+    const auto ack = _sTx.ack >> 8;
+    ASSERT_EQ(ack, header->msg_id);
+  }
+
+  {
+    Header* header = reinterpret_cast<Header*>(data.data);
+    header->slot_2_offset = 0;
+
+    const uint32_t freq_div = 5119;  // 1/20.48MHz/5119 < 250us
+
+    header->msg_id = get_msg_id();
+
+    auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+    data_body[0] = TAG_GAIN_STM;
+    data_body[1] = GAIN_STM_FLAG_BEGIN | GAIN_STM_FLAG_END;
+    *reinterpret_cast<uint16_t*>(data_body + 2) = GAIN_STM_MODE_INTENSITY_PHASE_FULL;
+    *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
+    *reinterpret_cast<uint16_t*>(data_body + 8) = 0;
+    *reinterpret_cast<uint16_t*>(data_body + 10) = 0;
+
+    auto frame = to_frame_data(data);
+
+    recv_ethercat(&frame[0]);
+    update();
+
+    const auto ack = _sTx.ack >> 8;
+    ASSERT_EQ(ack, header->msg_id);
+  }
+}
