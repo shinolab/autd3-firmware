@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/12/2023
+ * Last Modified: 01/01/2024
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -35,7 +35,7 @@ extern "C" {
 #include "sync.h"
 #include "utils.h"
 
-#define WDT_CNT_MAX (1000)
+#define WDT_CNT_MAX (500)
 
 extern TX_STR _sTx;
 
