@@ -3,7 +3,7 @@
 // Created Date: 22/04/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/12/2023
+// Last Modified: 01/01/2024
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -11,6 +11,11 @@
 
 #ifndef INC_PARAMS_H_
 #define INC_PARAMS_H_
+
+#define CPU_VERSION_MAJOR (0x8D) /* v5.0 */
+#define CPU_VERSION_MINOR (0x00)
+
+#define TRANS_NUM (249)
 
 #define BRAM_SELECT_CONTROLLER (0x0)
 #define BRAM_SELECT_MOD (0x1)
@@ -45,8 +50,6 @@
 #define BRAM_ADDR_DEBUG_OUT_IDX (0x0F0)
 #define BRAM_ADDR_MOD_DELAY_BASE (0x200)
 
-#define CTL_FLAG_FORCE_FAN_BIT (0)
-#define CTL_FLAG_READS_FPGA_INFO_BIT (1)
 #define CTL_FLAG_OP_MODE_BIT (9)
 #define CTL_FLAG_STM_GAIN_MODE_BIT (10)
 #define CTL_FLAG_USE_STM_FINISH_IDX_BIT (11)
@@ -54,8 +57,6 @@
 #define CTL_FLAG_FORCE_FAN_EX_BIT (13)
 #define CTL_FLAG_SYNC_BIT (15)
 
-#define CTL_FLAG_FORCE_FAN (1 << CTL_FLAG_FORCE_FAN_BIT)
-#define CTL_FLAG_READS_FPGA_INFO (1 << CTL_FLAG_READS_FPGA_INFO_BIT)
 #define CTL_FLAG_OP_MODE (1 << CTL_FLAG_OP_MODE_BIT)
 #define CTL_FLAG_STM_GAIN_MODE (1 << CTL_FLAG_STM_GAIN_MODE_BIT)
 #define CTL_FLAG_USE_STM_FINISH_IDX (1 << CTL_FLAG_USE_STM_FINISH_IDX_BIT)
@@ -68,7 +69,6 @@
 #define SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS (1 << SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS_BIT)
 #define SILENCER_CTL_FLAG_STRICT_MODE (1 << SILENCER_CTL_FLAG_STRICT_MODE_BIT)
 
-#define TAG_NONE (0x00)
 #define TAG_CLEAR (0x01)
 #define TAG_SYNC (0x02)
 #define TAG_FIRM_INFO (0x03)
@@ -89,6 +89,9 @@
 #define INFO_TYPE_FPGA_VERSION_MINOR (0x04)
 #define INFO_TYPE_CLEAR (0x06)
 
+#define MOD_BUF_PAGE_SIZE_WIDTH (15)
+#define MOD_BUF_PAGE_SIZE (1 << MOD_BUF_PAGE_SIZE_WIDTH)
+#define MOD_BUF_PAGE_SIZE_MASK (MOD_BUF_PAGE_SIZE - 1)
 #define MODULATION_FLAG_BEGIN (1 << 0)
 #define MODULATION_FLAG_END (1 << 1)
 
@@ -111,5 +114,7 @@
 #define ERR_INVALID_MSG_ID (0x81)
 #define ERR_FREQ_DIV_TOO_SMALL (0x82)
 #define ERR_COMPLETION_STEPS_TOO_LARGE (0x83)
+#define ERR_INVALID_INFO_TYPE (0x84)
+#define ERR_INVALID_GAIN_STM_MODE (0x85)
 
 #endif  // INC_PARAMS_H_

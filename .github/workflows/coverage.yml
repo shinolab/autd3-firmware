@@ -1,0 +1,59 @@
+name: Coverage
+
+on:
+  push:
+    branches:
+      - 'develop'
+
+jobs:
+  check-src:
+    runs-on: ubuntu-latest
+    name: check if src files changed
+    outputs:
+      status: ${{ steps.changed-files.outputs.modified_files }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: tj-actions/changed-files@v40
+        id: changed-files
+        with:
+          files: |
+            .github/workflows/coverage.yml
+            build.py
+            ./src/cpu/tests/CMakeLists.txt
+            ./src/cpu/**/*.h
+            ./src/cpu/**/*.c
+            ./src/cpu/**/*.hpp
+            ./src/cpu/**/*.cpp
+
+  coverage:
+    needs: check-src
+    if: needs.check-src.outputs.status
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        if: needs.check.outputs.status
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+      - name: Install packaging
+        shell: bash
+        run: |
+          python3 -m pip install -U packaging requests numpy matplotlib
+      - name: Install lcov
+        run: |
+          sudo apt update && sudo apt -y install lcov
+
+      - name: Generate code coverage for cpp
+        run: |
+          sudo rm /usr/bin/gcov
+          sudo ln -s /usr/bin/gcov-12 /usr/bin/gcov
+          python3 build.py cpu cov --cmake-extra="-DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12"
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: src/cpu/tests/build/CMakeFiles/test_autd3-firmware.dir/coverage.info
+          fail_ci_if_error: true
