@@ -9,8 +9,9 @@
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
 
-#ifndef OP_DEBUG_H_
-#define OP_DEBUG_H_
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <assert.h>
 #include <stddef.h>
@@ -34,4 +35,6 @@ uint8_t configure_debug(const volatile uint8_t* p_data) {
   return ERR_NONE;
 }
 
-#endif  // OP_DEBUG_H_
+#ifdef __cplusplus
+}
+#endif

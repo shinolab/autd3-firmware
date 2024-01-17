@@ -9,8 +9,9 @@
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
 
-#ifndef OP_CLEAR_H_
-#define OP_CLEAR_H_
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <assert.h>
 #include <stddef.h>
@@ -19,7 +20,7 @@
 #include "mod.h"
 #include "params.h"
 
-extern volatile bool_t _read_fpga_info;
+extern volatile bool_t _read_fpga_state;
 extern volatile uint16_t _fpga_flags_internal;
 
 extern volatile uint32_t _mod_cycle;
@@ -44,7 +45,7 @@ uint8_t clear(void) {
   _mod_freq_div = 5120;
   _stm_freq_div = 0xFFFFFFFF;
 
-  _read_fpga_info = false;
+  _read_fpga_state = false;
 
   _fpga_flags_internal = 0;
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG, _fpga_flags_internal);
@@ -75,4 +76,6 @@ uint8_t clear(void) {
   return ERR_NONE;
 }
 
-#endif  // OP_CLEAR_H_
+#ifdef __cplusplus
+}
+#endif

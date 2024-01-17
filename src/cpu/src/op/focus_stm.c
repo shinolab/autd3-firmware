@@ -9,8 +9,9 @@
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
 
-#ifndef OP_FOCUS_STM_H_
-#define OP_FOCUS_STM_H_
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <assert.h>
 #include <stddef.h>
@@ -54,7 +55,7 @@ typedef union {
   FocusSTMSubseq subseq;
 } FocusSTM;
 
-static uint8_t write_focus_stm(const volatile uint8_t* p_data) {
+uint8_t write_focus_stm(const volatile uint8_t* p_data) {
   static_assert(sizeof(FocusSTMHead) == 16, "FocusSTM is not valid.");
   static_assert(offsetof(FocusSTMHead, tag) == 0, "FocusSTM is not valid.");
   static_assert(offsetof(FocusSTMHead, flag) == 1, "FocusSTM is not valid.");
@@ -139,4 +140,6 @@ static uint8_t write_focus_stm(const volatile uint8_t* p_data) {
   return ERR_NONE;
 }
 
-#endif  // OP_FOCUS_STM_H_
+#ifdef __cplusplus
+}
+#endif

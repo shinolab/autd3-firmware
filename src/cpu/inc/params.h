@@ -3,7 +3,7 @@
 // Created Date: 22/04/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/01/2024
+// Last Modified: 17/01/2024
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -12,8 +12,8 @@
 #ifndef INC_PARAMS_H_
 #define INC_PARAMS_H_
 
-#define CPU_VERSION_MAJOR (0x8D) /* v5.0 */
-#define CPU_VERSION_MINOR (0x01)
+#define CPU_VERSION_MAJOR (0x8E) /* v5.1 */
+#define CPU_VERSION_MINOR (0x00)
 
 #define TRANS_NUM (249)
 
@@ -23,7 +23,7 @@
 #define BRAM_SELECT_STM (0x3)
 
 #define BRAM_ADDR_CTL_FLAG (0x000)
-#define BRAM_ADDR_FPGA_INFO (0x001)
+#define BRAM_ADDR_FPGA_STATE (0x001)
 #define BRAM_ADDR_EC_SYNC_TIME_0 (0x011)
 #define BRAM_ADDR_EC_SYNC_TIME_1 (BRAM_ADDR_EC_SYNC_TIME_0 + 1)
 #define BRAM_ADDR_EC_SYNC_TIME_2 (BRAM_ADDR_EC_SYNC_TIME_0 + 2)
@@ -64,6 +64,9 @@
 #define CTL_FLAG_FORCE_FAN_EX (1 << CTL_FLAG_FORCE_FAN_EX_BIT)
 #define CTL_FLAG_SYNC (1 << CTL_FLAG_SYNC_BIT)
 
+#define READS_FPGA_STATE_ENABLED_BIT (7)
+#define READS_FPGA_STATE_ENABLED (1 << READS_FPGA_STATE_ENABLED_BIT)
+
 #define SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS_BIT (0)
 #define SILENCER_CTL_FLAG_STRICT_MODE_BIT (8)
 #define SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS (1 << SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS_BIT)
@@ -80,7 +83,7 @@
 #define TAG_FOCUS_STM (0x40)
 #define TAG_GAIN_STM (0x50)
 #define TAG_FORCE_FAN (0x60)
-#define TAG_READS_FPGA_INFO (0x61)
+#define TAG_READS_FPGA_STATE (0x61)
 #define TAG_DEBUG (0xF0)
 
 #define INFO_TYPE_CPU_VERSION_MAJOR (0x01)

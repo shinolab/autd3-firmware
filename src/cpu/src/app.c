@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/01/2024
+ * Last Modified: 17/01/2024
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -20,62 +20,32 @@ extern "C" {
 #include "ecat.h"
 #include "iodefine.h"
 #include "kernel.h"
-#include "op/clear.h"
-#include "op/debug.h"
-#include "op/focus_stm.h"
-#include "op/force_fan.h"
-#include "op/gain.h"
-#include "op/gain_stm.h"
-#include "op/info.h"
-#include "op/mod.h"
-#include "op/mod_delay.h"
-#include "op/reads_fpga_info.h"
-#include "op/silencer.h"
 #include "params.h"
-#include "sync.h"
 #include "utils.h"
+
+extern uint8_t clear(void);
+extern uint8_t synchronize(void);
+extern uint8_t firmware_info(const volatile uint8_t*);
+extern uint8_t write_mod(const volatile uint8_t*);
+extern uint8_t write_mod_delay(const volatile uint8_t*);
+extern uint8_t config_silencer(const volatile uint8_t*);
+extern uint8_t write_gain(const volatile uint8_t*);
+extern uint8_t write_focus_stm(const volatile uint8_t*);
+extern uint8_t write_gain_stm(const volatile uint8_t*);
+extern uint8_t configure_force_fan(const volatile uint8_t*);
+extern uint8_t configure_reads_fpga_state(const volatile uint8_t*);
+extern uint8_t configure_debug(const volatile uint8_t*);
+extern uint8_t read_fpga_state(void);
 
 #define WDT_CNT_MAX (500)
 
+static volatile short _wdt_cnt = WDT_CNT_MAX;
+
 extern TX_STR _sTx;
 
-#define BUF_SIZE (64)
-static volatile RX_STR _buf[BUF_SIZE];
-volatile uint8_t _write_cursor;
-volatile uint8_t _read_cursor;
-
+extern bool_t push(const volatile uint16_t*);
+extern bool_t pop(volatile RX_STR*);
 static volatile RX_STR _data;
-
-bool_t push(const volatile uint16_t* p_data) {
-  uint32_t next;
-  next = _write_cursor + 1;
-
-  if (next >= BUF_SIZE) next = 0;
-
-  if (next == _read_cursor) return false;
-
-  word_cpy((uint16_t*)&_buf[_write_cursor], (uint16_t*)p_data, 249);
-  word_cpy(((uint16_t*)&_buf[_write_cursor]) + 249, (uint16_t*)&p_data[249 + 1], 64);
-
-  _write_cursor = next;
-
-  return true;
-}
-
-bool_t pop(volatile RX_STR* p_data) {
-  uint32_t next;
-
-  if (_read_cursor == _write_cursor) return false;
-
-  memcpy_volatile(p_data, &_buf[_read_cursor], sizeof(RX_STR));
-
-  next = _read_cursor + 1;
-  if (next >= BUF_SIZE) next = 0;
-
-  _read_cursor = next;
-
-  return true;
-}
 
 // fire when ethercat packet arrives
 extern void recv_ethercat(uint16_t* p_data);
@@ -86,23 +56,7 @@ extern void update(void);
 
 static volatile uint8_t _ack = 0;
 volatile uint8_t _rx_data = 0;
-volatile bool_t _read_fpga_info;
-volatile bool_t _read_fpga_info_store;
-
-volatile uint32_t _mod_cycle = 0;
-volatile uint32_t _mod_freq_div = 0;
-
-volatile uint32_t _stm_cycle = 0;
-volatile uint32_t _stm_freq_div = 0;
-volatile uint16_t _gain_stm_mode = GAIN_STM_MODE_INTENSITY_PHASE_FULL;
-
 volatile uint16_t _fpga_flags_internal = 0;
-
-volatile bool_t _silencer_strict_mode;
-volatile uint32_t _min_freq_div_intensity;
-volatile uint32_t _min_freq_div_phase;
-
-static volatile short _wdt_cnt = WDT_CNT_MAX;
 
 void init_app(void) { clear(); }
 
@@ -128,8 +82,8 @@ uint8_t handle_payload(const volatile uint8_t* p_data) {
       return write_gain_stm(p_data);
     case TAG_FORCE_FAN:
       return configure_force_fan(p_data);
-    case TAG_READS_FPGA_INFO:
-      return configure_reads_fpga_info(p_data);
+    case TAG_READS_FPGA_STATE:
+      return configure_reads_fpga_state(p_data);
     case TAG_DEBUG:
       return configure_debug(p_data);
     default:
@@ -151,6 +105,8 @@ void update(void) {
   } else {
     _wdt_cnt = WDT_CNT_MAX;
   }
+
+  read_fpga_state();
 
   if (pop(&_data)) {
     p_data = (volatile uint8_t*)&_data;
@@ -174,7 +130,6 @@ void update(void) {
   }
 
 FINISH:
-  if (_read_fpga_info) _rx_data = read_fpga_info();
   _sTx.ack = (((uint16_t)_ack) << 8) | _rx_data;
 }
 

@@ -3,7 +3,7 @@
 // Created Date: 31/12/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/01/2024
+// Last Modified: 17/01/2024
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -43,7 +43,7 @@ TEST(Op, Info) {
     const auto ack = _sTx.ack >> 8;
     ASSERT_EQ(ack, header->msg_id);
 
-    ASSERT_EQ(_sTx.ack & 0xFF, 0x8D);
+    ASSERT_EQ(_sTx.ack & 0xFF, 0x8E);
   }
 
   {
@@ -63,7 +63,7 @@ TEST(Op, Info) {
     const auto ack = _sTx.ack >> 8;
     ASSERT_EQ(ack, header->msg_id);
 
-    ASSERT_EQ(_sTx.ack & 0xFF, 0x01);
+    ASSERT_EQ(_sTx.ack & 0xFF, 0x00);
   }
   {
     Header* header = reinterpret_cast<Header*>(data.data);

@@ -4,7 +4,7 @@
  * Created Date: 01/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/01/2024
+ * Last Modified: 17/01/2024
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Hapis Lab. All rights reserved.
@@ -157,7 +157,7 @@ module controller #(
     WR_VER_WAIT_RD_CTL_FLAG_1,
 
     RD_CTL_FLAG_REQ_RD_MOD_FREQ_DIV_0,
-    WR_FPGA_INFO_REQ_RD_MOD_FREQ_DIV_1,
+    WR_FPGA_STATE_REQ_RD_MOD_FREQ_DIV_1,
     RD_MOD_CYCLE_REQ_RD_DEBUG_OUTPUT,
     RD_MOD_FREQ_DIV_0_REQ_RD_SILENCER_UPDATE_RATE_INTENSITY,
     RD_MOD_FREQ_DIV_1_REQ_RD_SILENCER_UPDATE_RATE_PHASE,
@@ -172,7 +172,7 @@ module controller #(
     RD_STM_FREQ_DIV_1_REQ_RD_STM_START_IDX,
     RD_SOUND_SPEED_0_REQ_RD_STM_FINISH_IDX,
     RD_SOUND_SPEED_1_REQ_RD_CTL_FLAG,
-    RD_STM_START_IDX_REQ_WR_FPGA_INFO,
+    RD_STM_START_IDX_REQ_WR_FPGA_STATE,
     RD_STM_FINISH_IDX_REQ_RD_MOD_CYCLE,
 
     REQ_RD_EC_SYNC_TIME_0,
@@ -230,10 +230,10 @@ module controller #(
         end else begin
           addr  <= ADDR_MOD_FREQ_DIV_0;
 
-          state <= WR_FPGA_INFO_REQ_RD_MOD_FREQ_DIV_1;
+          state <= WR_FPGA_STATE_REQ_RD_MOD_FREQ_DIV_1;
         end
       end
-      WR_FPGA_INFO_REQ_RD_MOD_FREQ_DIV_1: begin
+      WR_FPGA_STATE_REQ_RD_MOD_FREQ_DIV_1: begin
         addr  <= ADDR_MOD_FREQ_DIV_1;
 
         state <= RD_MOD_CYCLE_REQ_RD_DEBUG_OUTPUT;
@@ -334,11 +334,11 @@ module controller #(
 
         sound_speed[31:16] <= dout;
 
-        state <= RD_STM_START_IDX_REQ_WR_FPGA_INFO;
+        state <= RD_STM_START_IDX_REQ_WR_FPGA_STATE;
       end
-      RD_STM_START_IDX_REQ_WR_FPGA_INFO: begin
+      RD_STM_START_IDX_REQ_WR_FPGA_STATE: begin
         we <= 1'b1;
-        addr <= ADDR_FPGA_INFO;
+        addr <= ADDR_FPGA_STATE;
         din <= {15'h00, THERMO};
         stm_start_idx <= dout;
 

@@ -1,6 +1,6 @@
 # AUTD3-CPU
 
-Version: 5.0.1
+Version: 5.1.0
 
 # CAUTION
 

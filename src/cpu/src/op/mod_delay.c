@@ -9,8 +9,9 @@
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
 
-#ifndef OP_MOD_DELAY_H_
-#define OP_MOD_DELAY_H_
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <assert.h>
 #include <stddef.h>
@@ -32,4 +33,6 @@ uint8_t write_mod_delay(const volatile uint8_t* p_data) {
   return ERR_NONE;
 }
 
-#endif  // OP_MOD_DELAY_H_
+#ifdef __cplusplus
+}
+#endif
