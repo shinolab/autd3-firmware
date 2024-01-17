@@ -9,9 +9,6 @@
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
 
-#ifndef OP_GAIN_STM_H_
-#define OP_GAIN_STM_H_
-
 #include <assert.h>
 #include <stddef.h>
 
@@ -26,9 +23,9 @@
 
 extern volatile uint16_t _fpga_flags_internal;
 
-extern volatile uint32_t _stm_cycle;
-extern volatile uint32_t _stm_freq_div;
-extern volatile uint16_t _gain_stm_mode;
+volatile uint32_t _stm_cycle;
+volatile uint32_t _stm_freq_div;
+volatile uint16_t _gain_stm_mode;
 
 extern volatile bool_t _silencer_strict_mode;
 extern volatile uint32_t _min_freq_div_intensity;
@@ -53,7 +50,7 @@ typedef union {
   GainSTMSubseq subseq;
 } GainSTM;
 
-static uint8_t write_gain_stm(const volatile uint8_t* p_data) {
+uint8_t write_gain_stm(const volatile uint8_t* p_data) {
   static_assert(sizeof(GainSTMHead) == 12, "GainSTM is not valid.");
   static_assert(offsetof(GainSTMHead, tag) == 0, "GainSTM is not valid.");
   static_assert(offsetof(GainSTMHead, flag) == 1, "GainSTM is not valid.");
@@ -163,5 +160,3 @@ static uint8_t write_gain_stm(const volatile uint8_t* p_data) {
 
   return ERR_NONE;
 }
-
-#endif  // OP_GAIN_STM_H_

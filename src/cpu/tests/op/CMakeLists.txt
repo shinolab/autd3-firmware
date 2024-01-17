@@ -1,4 +1,15 @@
 target_sources(test_autd3-firmware PRIVATE
+  ${PROJECT_SOURCE_DIR}/../src/op/clear.c
+  ${PROJECT_SOURCE_DIR}/../src/op/debug.c
+  ${PROJECT_SOURCE_DIR}/../src/op/focus_stm.c
+  ${PROJECT_SOURCE_DIR}/../src/op/force_fan.c
+  ${PROJECT_SOURCE_DIR}/../src/op/gain_stm.c
+  ${PROJECT_SOURCE_DIR}/../src/op/gain.c
+  ${PROJECT_SOURCE_DIR}/../src/op/info.c
+  ${PROJECT_SOURCE_DIR}/../src/op/mod_delay.c
+  ${PROJECT_SOURCE_DIR}/../src/op/mod.c
+  ${PROJECT_SOURCE_DIR}/../src/op/reads_fpga_info.c
+  ${PROJECT_SOURCE_DIR}/../src/op/silencer.c
   clear.cpp
   silencer.cpp
   debug.cpp

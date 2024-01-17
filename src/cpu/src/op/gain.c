@@ -9,9 +9,6 @@
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
 
-#ifndef OP_GAIN_H_
-#define OP_GAIN_H_
-
 #include <assert.h>
 #include <stddef.h>
 
@@ -37,5 +34,3 @@ uint8_t write_gain(const volatile uint8_t* p_data) {
 
   return ERR_NONE;
 }
-
-#endif  // OP_GAIN_H_

@@ -3,14 +3,11 @@
 // Created Date: 31/12/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/01/2024
+// Last Modified: 17/01/2024
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
-
-#ifndef OP_READS_FPGA_INFO_H_
-#define OP_READS_FPGA_INFO_H_
 
 #include <assert.h>
 #include <stddef.h>
@@ -18,7 +15,8 @@
 #include "app.h"
 #include "params.h"
 
-extern volatile bool_t _read_fpga_info;
+static volatile bool_t _read_fpga_info;
+extern volatile uint8_t _rx_data;
 
 typedef ALIGN2 struct {
   uint8_t tag;
@@ -35,6 +33,9 @@ uint8_t configure_reads_fpga_info(const volatile uint8_t* p_data) {
   return ERR_NONE;
 }
 
-uint16_t read_fpga_info(void) { return bram_read(BRAM_SELECT_CONTROLLER, BRAM_ADDR_FPGA_INFO); }
-
-#endif  // OP_READS_FPGA_INFO_H_
+void read_fpga_info(void) {
+  if (_read_fpga_info)
+    _rx_data = READS_FPGA_INFO_ENABLED | (uint8_t)bram_read(BRAM_SELECT_CONTROLLER, BRAM_ADDR_FPGA_INFO);
+  else
+    _rx_data &= ~READS_FPGA_INFO_ENABLED;
+}

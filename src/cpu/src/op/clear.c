@@ -9,9 +9,6 @@
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
 
-#ifndef OP_CLEAR_H_
-#define OP_CLEAR_H_
-
 #include <assert.h>
 #include <stddef.h>
 
@@ -74,5 +71,3 @@ uint8_t clear(void) {
 
   return ERR_NONE;
 }
-
-#endif  // OP_CLEAR_H_

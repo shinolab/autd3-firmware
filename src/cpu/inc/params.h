@@ -3,7 +3,7 @@
 // Created Date: 22/04/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/01/2024
+// Last Modified: 17/01/2024
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -12,8 +12,8 @@
 #ifndef INC_PARAMS_H_
 #define INC_PARAMS_H_
 
-#define CPU_VERSION_MAJOR (0x8D) /* v5.0 */
-#define CPU_VERSION_MINOR (0x01)
+#define CPU_VERSION_MAJOR (0x8E) /* v5.1 */
+#define CPU_VERSION_MINOR (0x00)
 
 #define TRANS_NUM (249)
 
@@ -63,6 +63,9 @@
 #define CTL_FLAG_USE_STM_START_IDX (1 << CTL_FLAG_USE_STM_START_IDX_BIT)
 #define CTL_FLAG_FORCE_FAN_EX (1 << CTL_FLAG_FORCE_FAN_EX_BIT)
 #define CTL_FLAG_SYNC (1 << CTL_FLAG_SYNC_BIT)
+
+#define READS_FPGA_INFO_ENABLED_BIT (7)
+#define READS_FPGA_INFO_ENABLED (1 << READS_FPGA_INFO_ENABLED_BIT)
 
 #define SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS_BIT (0)
 #define SILENCER_CTL_FLAG_STRICT_MODE_BIT (8)

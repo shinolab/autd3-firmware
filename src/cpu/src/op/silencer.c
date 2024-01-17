@@ -9,9 +9,6 @@
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
 
-#ifndef OP_SILENCER_H_
-#define OP_SILENCER_H_
-
 #include <assert.h>
 #include <stddef.h>
 
@@ -20,9 +17,10 @@
 
 extern volatile uint32_t _mod_freq_div;
 extern volatile uint32_t _stm_freq_div;
-extern volatile bool_t _silencer_strict_mode;
-extern volatile uint32_t _min_freq_div_intensity;
-extern volatile uint32_t _min_freq_div_phase;
+
+volatile bool_t _silencer_strict_mode;
+volatile uint32_t _min_freq_div_intensity;
+volatile uint32_t _min_freq_div_phase;
 
 typedef ALIGN2 struct {
   uint8_t tag;
@@ -62,5 +60,3 @@ uint8_t config_silencer(const volatile uint8_t* p_data) {
 
   return ERR_NONE;
 }
-
-#endif  // OP_SILENCER_H_

@@ -9,18 +9,16 @@
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
 
-#ifndef OP_INFO_H_
-#define OP_INFO_H_
-
 #include <assert.h>
 #include <stddef.h>
 
 #include "app.h"
 #include "params.h"
 
-extern volatile bool_t _read_fpga_info;
-extern volatile bool_t _read_fpga_info_store;
+volatile bool_t _read_fpga_info = false;
 extern volatile uint8_t _rx_data;
+
+static volatile bool_t _read_fpga_info_store;
 
 typedef ALIGN2 struct {
   uint8_t tag;
@@ -65,5 +63,3 @@ uint8_t firmware_info(const volatile uint8_t* p_data) {
   }
   return ERR_NONE;
 }
-
-#endif  // OP_INFO_H_

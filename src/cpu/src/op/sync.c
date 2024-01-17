@@ -1,16 +1,15 @@
-// File: sync.h
-// Project: app
-// Created Date: 31/12/2023
-// Author: Shun Suzuki
-// -----
-// Last Modified: 31/12/2023
-// Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
-// -----
-// Copyright (c) 2023 Shun Suzuki. All rights reserved.
-//
-
-#ifndef OP_SYNC_H_
-#define OP_SYNC_H_
+/*
+ * File: sync.c
+ * Project: op
+ * Created Date: 17/01/2024
+ * Author: Shun Suzuki
+ * -----
+ * Last Modified: 17/01/2024
+ * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+ * -----
+ * Copyright (c) 2024 Shun Suzuki. All rights reserved.
+ *
+ */
 
 #include "app.h"
 #include "params.h"
@@ -40,5 +39,3 @@ uint8_t synchronize(void) {
 
   return ERR_NONE;
 }
-
-#endif  // OP_SYNC_H_
