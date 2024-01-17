@@ -28,8 +28,23 @@ enable_testing()
 
 add_executable(test_autd3-firmware main.cpp ${PROJECT_SOURCE_DIR}/../src/app.c ${PROJECT_SOURCE_DIR}/../src/buf.c app.cpp)
 set_target_properties(test_autd3-firmware PROPERTIES LINKER_LANGUAGE CXX)
-set_source_files_properties(${PROJECT_SOURCE_DIR}/../src/app.c PROPERTIES LANGUAGE CXX)
 add_subdirectory(op)
+set_source_files_properties(
+  ${PROJECT_SOURCE_DIR}/../src/app.c
+  ${PROJECT_SOURCE_DIR}/../src/buf.c
+  ${PROJECT_SOURCE_DIR}/../src/op/clear.c
+  ${PROJECT_SOURCE_DIR}/../src/op/debug.c
+  ${PROJECT_SOURCE_DIR}/../src/op/focus_stm.c
+  ${PROJECT_SOURCE_DIR}/../src/op/force_fan.c
+  ${PROJECT_SOURCE_DIR}/../src/op/gain_stm.c
+  ${PROJECT_SOURCE_DIR}/../src/op/gain.c
+  ${PROJECT_SOURCE_DIR}/../src/op/info.c
+  ${PROJECT_SOURCE_DIR}/../src/op/mod_delay.c
+  ${PROJECT_SOURCE_DIR}/../src/op/mod.c
+  ${PROJECT_SOURCE_DIR}/../src/op/reads_fpga_info.c
+  ${PROJECT_SOURCE_DIR}/../src/op/silencer.c
+  PROPERTIES LANGUAGE CXX
+)
 
 target_include_directories(test_autd3-firmware PRIVATE ${PROJECT_SOURCE_DIR}/inc)
 target_include_directories(test_autd3-firmware PRIVATE ${PROJECT_SOURCE_DIR}/../inc)

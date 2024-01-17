@@ -9,6 +9,10 @@
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "mod.h"
 
 #include <assert.h>
@@ -95,3 +99,7 @@ uint8_t write_mod(const volatile uint8_t* p_data) {
 
   return ERR_NONE;
 }
+
+#ifdef __cplusplus
+}
+#endif

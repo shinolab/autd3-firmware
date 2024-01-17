@@ -9,6 +9,10 @@
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <assert.h>
 #include <stddef.h>
 
@@ -30,3 +34,7 @@ uint8_t configure_debug(const volatile uint8_t* p_data) {
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_DEBUG_OUT_IDX, idx);
   return ERR_NONE;
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -9,6 +9,10 @@
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <assert.h>
 #include <stddef.h>
 
@@ -71,3 +75,7 @@ uint8_t clear(void) {
 
   return ERR_NONE;
 }
+
+#ifdef __cplusplus
+}
+#endif

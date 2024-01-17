@@ -9,6 +9,10 @@
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <assert.h>
 #include <stddef.h>
 
@@ -34,3 +38,7 @@ uint8_t write_gain(const volatile uint8_t* p_data) {
 
   return ERR_NONE;
 }
+
+#ifdef __cplusplus
+}
+#endif

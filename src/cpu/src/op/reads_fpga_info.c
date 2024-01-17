@@ -9,6 +9,10 @@
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <assert.h>
 #include <stddef.h>
 
@@ -39,3 +43,7 @@ void read_fpga_info(void) {
   else
     _rx_data &= ~READS_FPGA_INFO_ENABLED;
 }
+
+#ifdef __cplusplus
+}
+#endif
