@@ -13,6 +13,9 @@
 
 #include "app.h"
 #include "params.h"
+#include "iodefine.h"
+
+extern volatile uint16_t _fpga_flags_internal;
 
 inline static uint64_t get_next_sync0() {
   volatile uint64_t next_sync0 = ECATC.DC_CYC_START_TIME.LONGLONG;

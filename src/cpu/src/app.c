@@ -21,7 +21,6 @@ extern "C" {
 #include "iodefine.h"
 #include "kernel.h"
 #include "params.h"
-#include "sync.h"
 #include "utils.h"
 
 extern uint8_t clear(void);
