@@ -1,6 +1,6 @@
 # 5.1.0
 
-- Return `READS_FPGA_INFO_ENABLED` in rx data if reads FPGA info is enabled
+- Return `READS_FPGA_STATE_ENABLED` in rx data if reads FPGA info is enabled
 
 # 5.0.1
 

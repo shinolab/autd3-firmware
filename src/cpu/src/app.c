@@ -33,9 +33,9 @@ extern uint8_t write_gain(const volatile uint8_t*);
 extern uint8_t write_focus_stm(const volatile uint8_t*);
 extern uint8_t write_gain_stm(const volatile uint8_t*);
 extern uint8_t configure_force_fan(const volatile uint8_t*);
-extern uint8_t configure_reads_fpga_info(const volatile uint8_t*);
+extern uint8_t configure_reads_fpga_state(const volatile uint8_t*);
 extern uint8_t configure_debug(const volatile uint8_t*);
-extern uint8_t read_fpga_info(void);
+extern uint8_t read_fpga_state(void);
 
 #define WDT_CNT_MAX (500)
 
@@ -82,8 +82,8 @@ uint8_t handle_payload(const volatile uint8_t* p_data) {
       return write_gain_stm(p_data);
     case TAG_FORCE_FAN:
       return configure_force_fan(p_data);
-    case TAG_READS_FPGA_INFO:
-      return configure_reads_fpga_info(p_data);
+    case TAG_READS_FPGA_STATE:
+      return configure_reads_fpga_state(p_data);
     case TAG_DEBUG:
       return configure_debug(p_data);
     default:
@@ -106,7 +106,7 @@ void update(void) {
     _wdt_cnt = WDT_CNT_MAX;
   }
 
-  read_fpga_info();
+  read_fpga_state();
 
   if (pop(&_data)) {
     p_data = (volatile uint8_t*)&_data;

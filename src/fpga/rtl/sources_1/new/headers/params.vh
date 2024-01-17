@@ -25,7 +25,7 @@ localparam bit [2:0] BRAM_SELECT_CONTROLLER_MAIN = 3'b000;
 localparam bit [2:0] BRAM_SELECT_CONTROLLER_DELAY = 3'b010;
 
 localparam bit [13:0] ADDR_CTL_FLAG = 14'h000;
-localparam bit [13:0] ADDR_FPGA_INFO = 14'h001;
+localparam bit [13:0] ADDR_FPGA_STATE = 14'h001;
 localparam bit [13:0] ADDR_EC_SYNC_TIME_0 = 14'h011;
 localparam bit [13:0] ADDR_EC_SYNC_TIME_1 = ADDR_EC_SYNC_TIME_0 + 1;
 localparam bit [13:0] ADDR_EC_SYNC_TIME_2 = ADDR_EC_SYNC_TIME_0 + 2;

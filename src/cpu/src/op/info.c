@@ -19,10 +19,10 @@ extern "C" {
 #include "app.h"
 #include "params.h"
 
-volatile bool_t _read_fpga_info = false;
+volatile bool_t _read_fpga_state = false;
 extern volatile uint8_t _rx_data;
 
-static volatile bool_t _read_fpga_info_store;
+static volatile bool_t _read_fpga_state_store;
 
 typedef ALIGN2 struct {
   uint8_t tag;
@@ -42,8 +42,8 @@ uint8_t firmware_info(const volatile uint8_t* p_data) {
   const FirmInfo* p = (const FirmInfo*)p_data;
   switch (p->ty) {
     case INFO_TYPE_CPU_VERSION_MAJOR:
-      _read_fpga_info_store = _read_fpga_info;
-      _read_fpga_info = false;
+      _read_fpga_state_store = _read_fpga_state;
+      _read_fpga_state = false;
       _rx_data = get_cpu_version() & 0xFF;
       break;
     case INFO_TYPE_CPU_VERSION_MINOR:
@@ -59,7 +59,7 @@ uint8_t firmware_info(const volatile uint8_t* p_data) {
       _rx_data = (get_fpga_version() >> 8) & 0xFF;
       break;
     case INFO_TYPE_CLEAR:
-      _read_fpga_info = _read_fpga_info_store;
+      _read_fpga_state = _read_fpga_state_store;
       _rx_data = 0;
       break;
     default:
