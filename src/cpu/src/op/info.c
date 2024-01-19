@@ -23,6 +23,7 @@ volatile bool_t _read_fpga_state = false;
 extern volatile uint8_t _rx_data;
 
 static volatile bool_t _read_fpga_state_store;
+extern volatile bool_t _is_rx_data_used;
 
 typedef ALIGN2 struct {
   uint8_t tag;
@@ -43,6 +44,7 @@ uint8_t firmware_info(const volatile uint8_t* p_data) {
   switch (p->ty) {
     case INFO_TYPE_CPU_VERSION_MAJOR:
       _read_fpga_state_store = _read_fpga_state;
+      _is_rx_data_used = true;
       _read_fpga_state = false;
       _rx_data = get_cpu_version() & 0xFF;
       break;
@@ -60,6 +62,7 @@ uint8_t firmware_info(const volatile uint8_t* p_data) {
       break;
     case INFO_TYPE_CLEAR:
       _read_fpga_state = _read_fpga_state_store;
+      _is_rx_data_used = false;
       _rx_data = 0;
       break;
     default:

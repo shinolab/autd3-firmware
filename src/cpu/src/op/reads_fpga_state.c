@@ -21,6 +21,7 @@ extern "C" {
 
 static volatile bool_t _read_fpga_state;
 extern volatile uint8_t _rx_data;
+volatile bool_t _is_rx_data_used = false;
 
 typedef ALIGN2 struct {
   uint8_t tag;
@@ -38,6 +39,7 @@ uint8_t configure_reads_fpga_state(const volatile uint8_t* p_data) {
 }
 
 void read_fpga_state(void) {
+  if (_is_rx_data_used) return;
   if (_read_fpga_state)
     _rx_data = READS_FPGA_STATE_ENABLED | (uint8_t)bram_read(BRAM_SELECT_CONTROLLER, BRAM_ADDR_FPGA_STATE);
   else
