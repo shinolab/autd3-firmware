@@ -13,7 +13,7 @@
 #define INC_PARAMS_H_
 
 #define CPU_VERSION_MAJOR (0x8E) /* v5.1 */
-#define CPU_VERSION_MINOR (0x00)
+#define CPU_VERSION_MINOR (0x01)
 
 #define TRANS_NUM (249)
 
