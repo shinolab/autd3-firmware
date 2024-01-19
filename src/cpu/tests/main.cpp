@@ -3,7 +3,7 @@
 // Created Date: 31/12/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/01/2024
+// Last Modified: 19/01/2024
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
   std::memset(normal_op_bram, 0, sizeof(uint16_t) * 512);
   std::memset(stm_op_bram, 0, sizeof(uint16_t) * 524288);
 
-  controller_bram[BRAM_ADDR_VERSION_NUM] = 0x008D;
+  controller_bram[BRAM_ADDR_VERSION_NUM] = 0x008E;
   controller_bram[BRAM_ADDR_VERSION_NUM_MINOR] = 0x0001;
 
   testing::InitGoogleTest(&argc, argv);
