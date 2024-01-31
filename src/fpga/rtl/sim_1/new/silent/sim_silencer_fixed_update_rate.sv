@@ -1,16 +1,3 @@
-/*
- * File: sim_silencer_fixed_update_rate.sv
- * Project: silent
- * Created Date: 22/03/2022
- * Author: Shun Suzuki
- * -----
- * Last Modified: 24/12/2023
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
- *
- */
-
 `timescale 1ns / 1ps
 module sim_silencer_fixed_update_rate ();
 

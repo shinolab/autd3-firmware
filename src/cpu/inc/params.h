@@ -1,14 +1,3 @@
-// File: param.h
-// Project: inc
-// Created Date: 22/04/2022
-// Author: Shun Suzuki
-// -----
-// Last Modified: 17/01/2024
-// Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
-// -----
-// Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
-//
-
 #ifndef INC_PARAMS_H_
 #define INC_PARAMS_H_
 
@@ -69,7 +58,8 @@
 
 #define SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS_BIT (0)
 #define SILENCER_CTL_FLAG_STRICT_MODE_BIT (8)
-#define SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS (1 << SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS_BIT)
+#define SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS \
+  (1 << SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS_BIT)
 #define SILENCER_CTL_FLAG_STRICT_MODE (1 << SILENCER_CTL_FLAG_STRICT_MODE_BIT)
 
 #define TAG_CLEAR (0x01)

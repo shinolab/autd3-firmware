@@ -1,16 +1,3 @@
-/*
- * File: pulse_width_encoder.sv
- * Project: modulation
- * Created Date: 17/11/2023
- * Author: Shun Suzuki
- * -----
- * Last Modified: 21/11/2023
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2023 Shun Suzuki. All rights reserved.
- *
- */
-
 module pulse_width_encoder #(
     parameter int DEPTH = 249
 ) (

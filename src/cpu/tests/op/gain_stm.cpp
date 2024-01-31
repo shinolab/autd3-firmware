@@ -1,14 +1,3 @@
-// File: gain_stm.cpp
-// Project: op
-// Created Date: 31/12/2023
-// Author: Shun Suzuki
-// -----
-// Last Modified: 01/01/2024
-// Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
-// -----
-// Copyright (c) 2023 Shun Suzuki. All rights reserved.
-//
-
 #include <gtest/gtest.h>
 
 #include "app.h"
@@ -76,13 +65,23 @@ TEST(Op, GainSTMPhaseIntensityFull) {
     ASSERT_EQ(ack, header->msg_id);
   }
 
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) & CTL_FLAG_OP_MODE, CTL_FLAG_OP_MODE);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) & CTL_FLAG_STM_GAIN_MODE, CTL_FLAG_STM_GAIN_MODE);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) & CTL_FLAG_USE_STM_FINISH_IDX, 0);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) & CTL_FLAG_USE_STM_START_IDX, 0);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) &
+                CTL_FLAG_OP_MODE,
+            CTL_FLAG_OP_MODE);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) &
+                CTL_FLAG_STM_GAIN_MODE,
+            CTL_FLAG_STM_GAIN_MODE);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) &
+                CTL_FLAG_USE_STM_FINISH_IDX,
+            0);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) &
+                CTL_FLAG_USE_STM_START_IDX,
+            0);
   ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE), 2047);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0), 0x5678);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_1), 0x1234);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0),
+            0x5678);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_1),
+            0x1234);
   ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_START_IDX), 0);
   ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FINISH_IDX), 0);
   for (uint16_t i = 0; i < 2048; i++) {
@@ -122,7 +121,8 @@ TEST(Op, GainSTMPhaseIntensityFullWithStartFinishIdx) {
     data_body[0] = TAG_GAIN_STM;
     auto offset = 2;
     if (cnt == 0) {
-      data_body[1] = GAIN_STM_FLAG_BEGIN | GAIN_STM_FLAG_USE_START_IDX | GAIN_STM_FLAG_USE_FINISH_IDX;
+      data_body[1] = GAIN_STM_FLAG_BEGIN | GAIN_STM_FLAG_USE_START_IDX |
+                     GAIN_STM_FLAG_USE_FINISH_IDX;
       *reinterpret_cast<uint16_t*>(data_body + 2) = mode;
       *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
       *reinterpret_cast<uint16_t*>(data_body + 8) = start_idx;
@@ -150,15 +150,27 @@ TEST(Op, GainSTMPhaseIntensityFullWithStartFinishIdx) {
     ASSERT_EQ(ack, header->msg_id);
   }
 
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) & CTL_FLAG_OP_MODE, CTL_FLAG_OP_MODE);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) & CTL_FLAG_STM_GAIN_MODE, CTL_FLAG_STM_GAIN_MODE);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) & CTL_FLAG_USE_STM_FINISH_IDX, CTL_FLAG_USE_STM_FINISH_IDX);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) & CTL_FLAG_USE_STM_START_IDX, CTL_FLAG_USE_STM_START_IDX);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) &
+                CTL_FLAG_OP_MODE,
+            CTL_FLAG_OP_MODE);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) &
+                CTL_FLAG_STM_GAIN_MODE,
+            CTL_FLAG_STM_GAIN_MODE);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) &
+                CTL_FLAG_USE_STM_FINISH_IDX,
+            CTL_FLAG_USE_STM_FINISH_IDX);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) &
+                CTL_FLAG_USE_STM_START_IDX,
+            CTL_FLAG_USE_STM_START_IDX);
   ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE), 2047);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0), 0x5678);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_1), 0x1234);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_START_IDX), 0x0123);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FINISH_IDX), 0x4567);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0),
+            0x5678);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_1),
+            0x1234);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_START_IDX),
+            0x0123);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FINISH_IDX),
+            0x4567);
   for (uint16_t i = 0; i < 2048; i++) {
     for (uint16_t j = 0; j < TRANS_NUM; j++) {
       ASSERT_EQ(bram_read_raw(BRAM_SELECT_STM, 256 * i + j), i + j);
@@ -176,7 +188,8 @@ TEST(Op, GainSTMPhaseFull) {
   for (uint16_t i = 0; i < 2048; i++) {
     std::vector<uint8_t> tmp;
     tmp.reserve(TRANS_NUM);
-    for (uint16_t j = 0; j < TRANS_NUM; j++) tmp.emplace_back(static_cast<uint8_t>(i + j));
+    for (uint16_t j = 0; j < TRANS_NUM; j++)
+      tmp.emplace_back(static_cast<uint8_t>(i + j));
     buf.emplace_back(std::move(tmp));
   }
 
@@ -196,7 +209,8 @@ TEST(Op, GainSTMPhaseFull) {
     data_body[0] = TAG_GAIN_STM;
     auto offset = 2;
     if (cnt == 0) {
-      data_body[1] = GAIN_STM_FLAG_BEGIN | GAIN_STM_FLAG_USE_START_IDX | GAIN_STM_FLAG_USE_FINISH_IDX;
+      data_body[1] = GAIN_STM_FLAG_BEGIN | GAIN_STM_FLAG_USE_START_IDX |
+                     GAIN_STM_FLAG_USE_FINISH_IDX;
       *reinterpret_cast<uint16_t*>(data_body + 2) = mode;
       *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
       *reinterpret_cast<uint16_t*>(data_body + 8) = start_idx;
@@ -207,7 +221,8 @@ TEST(Op, GainSTMPhaseFull) {
     }
 
     for (size_t i = 0; i < TRANS_NUM; i++) {
-      *reinterpret_cast<uint16_t*>(data_body + offset + 2 * i) = (buf[cnt + 1][i] << 8) | buf[cnt][i];
+      *reinterpret_cast<uint16_t*>(data_body + offset + 2 * i) =
+          (buf[cnt + 1][i] << 8) | buf[cnt][i];
     }
     cnt += 2;
 
@@ -226,18 +241,31 @@ TEST(Op, GainSTMPhaseFull) {
     ASSERT_EQ(ack, header->msg_id);
   }
 
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) & CTL_FLAG_OP_MODE, CTL_FLAG_OP_MODE);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) & CTL_FLAG_STM_GAIN_MODE, CTL_FLAG_STM_GAIN_MODE);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) & CTL_FLAG_USE_STM_FINISH_IDX, CTL_FLAG_USE_STM_FINISH_IDX);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) & CTL_FLAG_USE_STM_START_IDX, CTL_FLAG_USE_STM_START_IDX);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) &
+                CTL_FLAG_OP_MODE,
+            CTL_FLAG_OP_MODE);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) &
+                CTL_FLAG_STM_GAIN_MODE,
+            CTL_FLAG_STM_GAIN_MODE);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) &
+                CTL_FLAG_USE_STM_FINISH_IDX,
+            CTL_FLAG_USE_STM_FINISH_IDX);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) &
+                CTL_FLAG_USE_STM_START_IDX,
+            CTL_FLAG_USE_STM_START_IDX);
   ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE), 2047);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0), 0x5678);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_1), 0x1234);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_START_IDX), 0x0123);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FINISH_IDX), 0x4567);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0),
+            0x5678);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_1),
+            0x1234);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_START_IDX),
+            0x0123);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FINISH_IDX),
+            0x4567);
   for (uint16_t i = 0; i < 2048; i++) {
     for (uint16_t j = 0; j < TRANS_NUM; j++) {
-      ASSERT_EQ(bram_read_raw(BRAM_SELECT_STM, 256 * i + j), 0xFF00 | static_cast<uint8_t>(i + j));
+      ASSERT_EQ(bram_read_raw(BRAM_SELECT_STM, 256 * i + j),
+                0xFF00 | static_cast<uint8_t>(i + j));
     }
   }
 }
@@ -252,7 +280,8 @@ TEST(Op, GainSTMPhaseHalf) {
   for (uint16_t i = 0; i < 2048; i++) {
     std::vector<uint8_t> tmp;
     tmp.reserve(TRANS_NUM);
-    for (uint16_t j = 0; j < TRANS_NUM; j++) tmp.emplace_back(static_cast<uint8_t>(i + j));
+    for (uint16_t j = 0; j < TRANS_NUM; j++)
+      tmp.emplace_back(static_cast<uint8_t>(i + j));
     buf.emplace_back(std::move(tmp));
   }
 
@@ -272,7 +301,8 @@ TEST(Op, GainSTMPhaseHalf) {
     data_body[0] = TAG_GAIN_STM;
     auto offset = 2;
     if (cnt == 0) {
-      data_body[1] = GAIN_STM_FLAG_BEGIN | GAIN_STM_FLAG_USE_START_IDX | GAIN_STM_FLAG_USE_FINISH_IDX;
+      data_body[1] = GAIN_STM_FLAG_BEGIN | GAIN_STM_FLAG_USE_START_IDX |
+                     GAIN_STM_FLAG_USE_FINISH_IDX;
       *reinterpret_cast<uint16_t*>(data_body + 2) = mode;
       *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
       *reinterpret_cast<uint16_t*>(data_body + 8) = start_idx;
@@ -284,7 +314,8 @@ TEST(Op, GainSTMPhaseHalf) {
 
     for (size_t i = 0; i < TRANS_NUM; i++) {
       *reinterpret_cast<uint16_t*>(data_body + offset + 2 * i) =
-          ((buf[cnt + 3][i] >> 4) << 12) | ((buf[cnt + 2][i] >> 4) << 8) | ((buf[cnt + 1][i] >> 4) << 4) | (buf[cnt][i] >> 4);
+          ((buf[cnt + 3][i] >> 4) << 12) | ((buf[cnt + 2][i] >> 4) << 8) |
+          ((buf[cnt + 1][i] >> 4) << 4) | (buf[cnt][i] >> 4);
     }
     cnt += 4;
 
@@ -303,19 +334,32 @@ TEST(Op, GainSTMPhaseHalf) {
     ASSERT_EQ(ack, header->msg_id);
   }
 
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) & CTL_FLAG_OP_MODE, CTL_FLAG_OP_MODE);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) & CTL_FLAG_STM_GAIN_MODE, CTL_FLAG_STM_GAIN_MODE);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) & CTL_FLAG_USE_STM_FINISH_IDX, CTL_FLAG_USE_STM_FINISH_IDX);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) & CTL_FLAG_USE_STM_START_IDX, CTL_FLAG_USE_STM_START_IDX);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) &
+                CTL_FLAG_OP_MODE,
+            CTL_FLAG_OP_MODE);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) &
+                CTL_FLAG_STM_GAIN_MODE,
+            CTL_FLAG_STM_GAIN_MODE);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) &
+                CTL_FLAG_USE_STM_FINISH_IDX,
+            CTL_FLAG_USE_STM_FINISH_IDX);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) &
+                CTL_FLAG_USE_STM_START_IDX,
+            CTL_FLAG_USE_STM_START_IDX);
   ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE), 2047);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0), 0x5678);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_1), 0x1234);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_START_IDX), 0x0123);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FINISH_IDX), 0x4567);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0),
+            0x5678);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_1),
+            0x1234);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_START_IDX),
+            0x0123);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FINISH_IDX),
+            0x4567);
   for (uint16_t i = 0; i < 2048; i++) {
     for (uint16_t j = 0; j < TRANS_NUM; j++) {
       const auto phase = static_cast<uint8_t>(i + j) >> 4;
-      ASSERT_EQ(bram_read_raw(BRAM_SELECT_STM, 256 * i + j), 0xFF00 | phase << 4 | phase);
+      ASSERT_EQ(bram_read_raw(BRAM_SELECT_STM, 256 * i + j),
+                0xFF00 | phase << 4 | phase);
     }
   }
 }
@@ -362,7 +406,8 @@ TEST(Op, InvalidCompletionStepsIntensityGainSTM) {
 
     const auto intensity = 10;  // 25us * 10 = 250us
     const auto phase = 2;       // 25us * 2 = 50us
-    const auto flag = SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS | SILENCER_CTL_FLAG_STRICT_MODE;
+    const auto flag = SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS |
+                      SILENCER_CTL_FLAG_STRICT_MODE;
 
     auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     data_body[0] = TAG_SILENCER;
@@ -390,7 +435,8 @@ TEST(Op, InvalidCompletionStepsIntensityGainSTM) {
     auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     data_body[0] = TAG_GAIN_STM;
     data_body[1] = GAIN_STM_FLAG_BEGIN | GAIN_STM_FLAG_END;
-    *reinterpret_cast<uint16_t*>(data_body + 2) = GAIN_STM_MODE_INTENSITY_PHASE_FULL;
+    *reinterpret_cast<uint16_t*>(data_body + 2) =
+        GAIN_STM_MODE_INTENSITY_PHASE_FULL;
     *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
     *reinterpret_cast<uint16_t*>(data_body + 8) = 0;
     *reinterpret_cast<uint16_t*>(data_body + 10) = 0;
@@ -415,7 +461,8 @@ TEST(Op, InvalidCompletionStepsIntensityGainSTM) {
     auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     data_body[0] = TAG_GAIN_STM;
     data_body[1] = GAIN_STM_FLAG_BEGIN | GAIN_STM_FLAG_END;
-    *reinterpret_cast<uint16_t*>(data_body + 2) = GAIN_STM_MODE_INTENSITY_PHASE_FULL;
+    *reinterpret_cast<uint16_t*>(data_body + 2) =
+        GAIN_STM_MODE_INTENSITY_PHASE_FULL;
     *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
     *reinterpret_cast<uint16_t*>(data_body + 8) = 0;
     *reinterpret_cast<uint16_t*>(data_body + 10) = 0;
@@ -443,7 +490,8 @@ TEST(Op, InvalidCompletionStepsPhaseGainSTM) {
 
     const auto intensity = 2;  // 25us * 2 = 50us
     const auto phase = 10;     // 25us * 10 = 250us
-    const auto flag = SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS | SILENCER_CTL_FLAG_STRICT_MODE;
+    const auto flag = SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS |
+                      SILENCER_CTL_FLAG_STRICT_MODE;
 
     auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     data_body[0] = TAG_SILENCER;
@@ -471,7 +519,8 @@ TEST(Op, InvalidCompletionStepsPhaseGainSTM) {
     auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     data_body[0] = TAG_GAIN_STM;
     data_body[1] = GAIN_STM_FLAG_BEGIN | GAIN_STM_FLAG_END;
-    *reinterpret_cast<uint16_t*>(data_body + 2) = GAIN_STM_MODE_INTENSITY_PHASE_FULL;
+    *reinterpret_cast<uint16_t*>(data_body + 2) =
+        GAIN_STM_MODE_INTENSITY_PHASE_FULL;
     *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
     *reinterpret_cast<uint16_t*>(data_body + 8) = 0;
     *reinterpret_cast<uint16_t*>(data_body + 10) = 0;
@@ -496,7 +545,8 @@ TEST(Op, InvalidCompletionStepsPhaseGainSTM) {
     auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     data_body[0] = TAG_GAIN_STM;
     data_body[1] = GAIN_STM_FLAG_BEGIN | GAIN_STM_FLAG_END;
-    *reinterpret_cast<uint16_t*>(data_body + 2) = GAIN_STM_MODE_INTENSITY_PHASE_FULL;
+    *reinterpret_cast<uint16_t*>(data_body + 2) =
+        GAIN_STM_MODE_INTENSITY_PHASE_FULL;
     *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
     *reinterpret_cast<uint16_t*>(data_body + 8) = 0;
     *reinterpret_cast<uint16_t*>(data_body + 10) = 0;
@@ -552,7 +602,8 @@ TEST(Op, InvalidCompletionStepsWithPermisiveModeGainSTM) {
     auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     data_body[0] = TAG_GAIN_STM;
     data_body[1] = GAIN_STM_FLAG_BEGIN | GAIN_STM_FLAG_END;
-    *reinterpret_cast<uint16_t*>(data_body + 2) = GAIN_STM_MODE_INTENSITY_PHASE_FULL;
+    *reinterpret_cast<uint16_t*>(data_body + 2) =
+        GAIN_STM_MODE_INTENSITY_PHASE_FULL;
     *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
     *reinterpret_cast<uint16_t*>(data_body + 8) = 0;
     *reinterpret_cast<uint16_t*>(data_body + 10) = 0;

@@ -1,17 +1,3 @@
-/*
- * File: sim_pulse_width_encoder.sv
- * Project: pulse_width_encoder
- * Created Date: 17/11/2023
- * Author: Shun Suzuki
- * -----
- * Last Modified: 20/11/2023
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2023 Shun Suzuki. All rights reserved.
- *
- */
-
-
 module sim_pulse_width_encoder ();
   `define M_PI 3.14159265358979323846
 

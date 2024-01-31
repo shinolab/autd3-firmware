@@ -1,14 +1,3 @@
-// File: debug.h
-// Project: op
-// Created Date: 31/12/2023
-// Author: Shun Suzuki
-// -----
-// Last Modified: 01/01/2024
-// Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
-// -----
-// Copyright (c) 2023 Shun Suzuki. All rights reserved.
-//
-
 #ifdef __cplusplus
 extern "C" {
 #endif

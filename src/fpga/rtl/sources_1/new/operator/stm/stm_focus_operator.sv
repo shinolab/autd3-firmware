@@ -1,16 +1,3 @@
-/*
- * File: stm_focus_operator.sv
- * Project: stm
- * Created Date: 13/04/2022
- * Author: Shun Suzuki
- * -----
- * Last Modified: 20/11/2023
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
- *
- */
-
 `timescale 1ns / 1ps
 module stm_focus_operator #(
     parameter int DEPTH = 249

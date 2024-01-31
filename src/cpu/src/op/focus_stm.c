@@ -1,14 +1,3 @@
-// File: focus_stm.h
-// Project: op
-// Created Date: 31/12/2023
-// Author: Shun Suzuki
-// -----
-// Last Modified: 01/01/2024
-// Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
-// -----
-// Copyright (c) 2023 Shun Suzuki. All rights reserved.
-//
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -59,15 +48,21 @@ uint8_t write_focus_stm(const volatile uint8_t* p_data) {
   static_assert(sizeof(FocusSTMHead) == 16, "FocusSTM is not valid.");
   static_assert(offsetof(FocusSTMHead, tag) == 0, "FocusSTM is not valid.");
   static_assert(offsetof(FocusSTMHead, flag) == 1, "FocusSTM is not valid.");
-  static_assert(offsetof(FocusSTMHead, send_num) == 2, "FocusSTM is not valid.");
-  static_assert(offsetof(FocusSTMHead, freq_div) == 4, "FocusSTM is not valid.");
-  static_assert(offsetof(FocusSTMHead, sound_speed) == 8, "FocusSTM is not valid.");
-  static_assert(offsetof(FocusSTMHead, start_idx) == 12, "FocusSTM is not valid.");
-  static_assert(offsetof(FocusSTMHead, finish_idx) == 14, "FocusSTM is not valid.");
+  static_assert(offsetof(FocusSTMHead, send_num) == 2,
+                "FocusSTM is not valid.");
+  static_assert(offsetof(FocusSTMHead, freq_div) == 4,
+                "FocusSTM is not valid.");
+  static_assert(offsetof(FocusSTMHead, sound_speed) == 8,
+                "FocusSTM is not valid.");
+  static_assert(offsetof(FocusSTMHead, start_idx) == 12,
+                "FocusSTM is not valid.");
+  static_assert(offsetof(FocusSTMHead, finish_idx) == 14,
+                "FocusSTM is not valid.");
   static_assert(sizeof(FocusSTMSubseq) == 4, "FocusSTM is not valid.");
   static_assert(offsetof(FocusSTMSubseq, tag) == 0, "FocusSTM is not valid.");
   static_assert(offsetof(FocusSTMSubseq, flag) == 1, "FocusSTM is not valid.");
-  static_assert(offsetof(FocusSTMSubseq, send_num) == 2, "FocusSTM is not valid.");
+  static_assert(offsetof(FocusSTMSubseq, send_num) == 2,
+                "FocusSTM is not valid.");
   static_assert(offsetof(FocusSTM, head) == 0, "FocusSTM is not valid.");
   static_assert(offsetof(FocusSTM, subseq) == 0, "FocusSTM is not valid.");
 
@@ -92,21 +87,27 @@ uint8_t write_focus_stm(const volatile uint8_t* p_data) {
     finish_idx = p->head.finish_idx;
 
     if (_silencer_strict_mode) {
-      if ((freq_div < _min_freq_div_intensity) || (freq_div < _min_freq_div_phase)) return ERR_FREQ_DIV_TOO_SMALL;
+      if ((freq_div < _min_freq_div_intensity) ||
+          (freq_div < _min_freq_div_phase))
+        return ERR_FREQ_DIV_TOO_SMALL;
     }
     _stm_freq_div = freq_div;
 
-    bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0, (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
-    bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SOUND_SPEED_0, (uint16_t*)&sound_speed, sizeof(uint32_t) >> 1);
+    bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0,
+             (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
+    bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SOUND_SPEED_0,
+             (uint16_t*)&sound_speed, sizeof(uint32_t) >> 1);
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_START_IDX, start_idx);
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FINISH_IDX, finish_idx);
 
-    if ((p->head.flag & FOCUS_STM_FLAG_USE_START_IDX) == FOCUS_STM_FLAG_USE_START_IDX) {
+    if ((p->head.flag & FOCUS_STM_FLAG_USE_START_IDX) ==
+        FOCUS_STM_FLAG_USE_START_IDX) {
       _fpga_flags_internal |= CTL_FLAG_USE_STM_START_IDX;
     } else {
       _fpga_flags_internal &= ~CTL_FLAG_USE_STM_START_IDX;
     }
-    if ((p->head.flag & FOCUS_STM_FLAG_USE_FINISH_IDX) == FOCUS_STM_FLAG_USE_FINISH_IDX) {
+    if ((p->head.flag & FOCUS_STM_FLAG_USE_FINISH_IDX) ==
+        FOCUS_STM_FLAG_USE_FINISH_IDX) {
       _fpga_flags_internal |= CTL_FLAG_USE_STM_FINISH_IDX;
     } else {
       _fpga_flags_internal &= ~CTL_FLAG_USE_STM_FINISH_IDX;
@@ -117,24 +118,30 @@ uint8_t write_focus_stm(const volatile uint8_t* p_data) {
     src = (const uint16_t*)(&p_data[sizeof(FocusSTMSubseq)]);
   }
 
-  page_capacity = (_stm_cycle & ~FOCUS_STM_BUF_PAGE_SIZE_MASK) + FOCUS_STM_BUF_PAGE_SIZE - _stm_cycle;
+  page_capacity = (_stm_cycle & ~FOCUS_STM_BUF_PAGE_SIZE_MASK) +
+                  FOCUS_STM_BUF_PAGE_SIZE - _stm_cycle;
   if (size < page_capacity) {
-    bram_cpy_focus_stm((_stm_cycle & FOCUS_STM_BUF_PAGE_SIZE_MASK) << 3, src, size);
+    bram_cpy_focus_stm((_stm_cycle & FOCUS_STM_BUF_PAGE_SIZE_MASK) << 3, src,
+                       size);
     _stm_cycle = _stm_cycle + size;
   } else {
-    bram_cpy_focus_stm((_stm_cycle & FOCUS_STM_BUF_PAGE_SIZE_MASK) << 3, src, page_capacity);
+    bram_cpy_focus_stm((_stm_cycle & FOCUS_STM_BUF_PAGE_SIZE_MASK) << 3, src,
+                       page_capacity);
     _stm_cycle = _stm_cycle + page_capacity;
 
-    change_stm_page((_stm_cycle & ~FOCUS_STM_BUF_PAGE_SIZE_MASK) >> FOCUS_STM_BUF_PAGE_SIZE_WIDTH);
+    change_stm_page((_stm_cycle & ~FOCUS_STM_BUF_PAGE_SIZE_MASK) >>
+                    FOCUS_STM_BUF_PAGE_SIZE_WIDTH);
 
-    bram_cpy_focus_stm((_stm_cycle & FOCUS_STM_BUF_PAGE_SIZE_MASK) << 3, src + 4 * page_capacity, size - page_capacity);
+    bram_cpy_focus_stm((_stm_cycle & FOCUS_STM_BUF_PAGE_SIZE_MASK) << 3,
+                       src + 4 * page_capacity, size - page_capacity);
     _stm_cycle = _stm_cycle + size - page_capacity;
   }
 
   if ((p->subseq.flag & FOCUS_STM_FLAG_END) == FOCUS_STM_FLAG_END) {
     _fpga_flags_internal |= CTL_FLAG_OP_MODE;
     _fpga_flags_internal &= ~CTL_FLAG_STM_GAIN_MODE;
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, max(1, _stm_cycle) - 1);
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE,
+               max(1, _stm_cycle) - 1);
   }
 
   return ERR_NONE;

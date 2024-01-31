@@ -1,16 +1,3 @@
-/*
- * File: synchronizer.sv
- * Project: synchronizer
- * Created Date: 24/03/2022
- * Author: Shun Suzuki
- * -----
- * Last Modified: 20/11/2023
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
- *
- */
-
 `timescale 1ns / 1ps
 module synchronizer (
     input var CLK,

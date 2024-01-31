@@ -1,16 +1,3 @@
-/*
- * File: sim_modulator.sv
- * Project: modulation
- * Created Date: 25/03/2022
- * Author: Shun Suzuki
- * -----
- * Last Modified: 21/11/2023
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
- *
- */
-
 module sim_modulator ();
   `define M_PI 3.14159265358979323846
 

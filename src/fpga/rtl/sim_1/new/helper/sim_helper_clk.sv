@@ -1,17 +1,3 @@
-/*
- * File: sim_helper_clk.sv
- * Project: helper
- * Created Date: 15/03/2022
- * Author: Shun Suzuki
- * -----
- * Last Modified: 17/11/2023
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
- *
- */
-
-
 `timescale 1ns / 1ps
 module sim_helper_clk (
     output var CLK_20P48M,

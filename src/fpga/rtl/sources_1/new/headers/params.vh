@@ -1,16 +1,3 @@
-/*
- * File: params.vh
- * Project: headers
- * Created Date: 22/04/2022
- * Author: Shun Suzuki
- * -----
- * Last Modified: 19/01/2024
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
- * 
- */
-
 localparam int NUM_TRANSDUCERS = 249;
 
 localparam bit [7:0] VERSION_NUM = 8'h8E;

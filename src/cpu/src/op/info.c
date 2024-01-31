@@ -1,14 +1,3 @@
-// File: info.h
-// Project: op
-// Created Date: 31/12/2023
-// Author: Shun Suzuki
-// -----
-// Last Modified: 01/01/2024
-// Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
-// -----
-// Copyright (c) 2023 Shun Suzuki. All rights reserved.
-//
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -32,8 +21,12 @@ typedef ALIGN2 struct {
 
 inline static uint16_t get_cpu_version(void) { return CPU_VERSION_MAJOR; }
 inline static uint16_t get_cpu_version_minor(void) { return CPU_VERSION_MINOR; }
-inline static uint16_t get_fpga_version(void) { return bram_read(BRAM_SELECT_CONTROLLER, BRAM_ADDR_VERSION_NUM); }
-inline static uint16_t get_fpga_version_minor(void) { return bram_read(BRAM_SELECT_CONTROLLER, BRAM_ADDR_VERSION_NUM_MINOR); }
+inline static uint16_t get_fpga_version(void) {
+  return bram_read(BRAM_SELECT_CONTROLLER, BRAM_ADDR_VERSION_NUM);
+}
+inline static uint16_t get_fpga_version_minor(void) {
+  return bram_read(BRAM_SELECT_CONTROLLER, BRAM_ADDR_VERSION_NUM_MINOR);
+}
 
 uint8_t firmware_info(const volatile uint8_t* p_data) {
   static_assert(sizeof(FirmInfo) == 2, "FirmInfo is not valid.");

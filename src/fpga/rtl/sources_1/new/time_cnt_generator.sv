@@ -1,16 +1,3 @@
-/*
- * File: time_cnt_generator.sv
- * Project: new
- * Created Date: 17/10/2023
- * Author: Shun Suzuki
- * -----
- * Last Modified: 20/11/2023
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2023 Shun Suzuki. All rights reserved.
- *
- */
-
 `timescale 1ns / 1ps
 module time_cnt_generator #(
     parameter int DEPTH = 249

@@ -1,14 +1,3 @@
-// File: mod.h
-// Project: op
-// Created Date: 17/01/2024
-// Author: Shun Suzuki
-// -----
-// Last Modified: 17/01/2024
-// Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
-// -----
-// Copyright (c) 2024 Shun Suzuki. All rights reserved.
-//
-
 #ifndef OP_MOD_H_
 #define OP_MOD_H_
 

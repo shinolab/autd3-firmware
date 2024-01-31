@@ -1,14 +1,3 @@
-// File: force_fan.cpp
-// Project: op
-// Created Date: 31/12/2023
-// Author: Shun Suzuki
-// -----
-// Last Modified: 01/01/2024
-// Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
-// -----
-// Copyright (c) 2023 Shun Suzuki. All rights reserved.
-//
-
 #include <gtest/gtest.h>
 
 #include <cstring>
@@ -46,7 +35,8 @@ TEST(Op, ConfigureForceFan) {
     const auto ack = _sTx.ack >> 8;
     ASSERT_EQ(ack, header->msg_id);
 
-    ASSERT_TRUE((bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) & CTL_FLAG_FORCE_FAN_EX) == CTL_FLAG_FORCE_FAN_EX);
+    ASSERT_TRUE((bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) &
+                 CTL_FLAG_FORCE_FAN_EX) == CTL_FLAG_FORCE_FAN_EX);
   }
 
   {
@@ -65,6 +55,7 @@ TEST(Op, ConfigureForceFan) {
     const auto ack = _sTx.ack >> 8;
     ASSERT_EQ(ack, header->msg_id);
 
-    ASSERT_TRUE((bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) & CTL_FLAG_FORCE_FAN_EX) == 0);
+    ASSERT_TRUE((bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) &
+                 CTL_FLAG_FORCE_FAN_EX) == 0);
   }
 }

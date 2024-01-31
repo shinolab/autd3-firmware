@@ -1,14 +1,3 @@
-// File: silencer.cpp
-// Project: op
-// Created Date: 31/12/2023
-// Author: Shun Suzuki
-// -----
-// Last Modified: 01/01/2024
-// Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
-// -----
-// Copyright (c) 2023 Shun Suzuki. All rights reserved.
-//
-
 #include <gtest/gtest.h>
 
 #include "app.h"
@@ -48,9 +37,14 @@ TEST(Op, SilencerFixedUpdateRate) {
   const auto ack = _sTx.ack >> 8;
   ASSERT_EQ(ack, header->msg_id);
 
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_UPDATE_RATE_INTENSITY), intensity);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_UPDATE_RATE_PHASE), phase);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_CTL_FLAG), flag);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER,
+                          BRAM_ADDR_SILENCER_UPDATE_RATE_INTENSITY),
+            intensity);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER,
+                          BRAM_ADDR_SILENCER_UPDATE_RATE_PHASE),
+            phase);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_CTL_FLAG),
+            flag);
 }
 
 TEST(Op, SilencerFixedCompletionSteps) {
@@ -65,7 +59,8 @@ TEST(Op, SilencerFixedCompletionSteps) {
 
   const auto intensity = 0x0001;
   const auto phase = 0x0002;
-  const auto flag = SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS | SILENCER_CTL_FLAG_STRICT_MODE;
+  const auto flag =
+      SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS | SILENCER_CTL_FLAG_STRICT_MODE;
 
   auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
   data_body[0] = TAG_SILENCER;
@@ -81,9 +76,14 @@ TEST(Op, SilencerFixedCompletionSteps) {
   const auto ack = _sTx.ack >> 8;
   ASSERT_EQ(ack, header->msg_id);
 
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_COMPLETION_STEPS_INTENSITY), intensity);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_COMPLETION_STEPS_PHASE), phase);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_CTL_FLAG), flag);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER,
+                          BRAM_ADDR_SILENCER_COMPLETION_STEPS_INTENSITY),
+            intensity);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER,
+                          BRAM_ADDR_SILENCER_COMPLETION_STEPS_PHASE),
+            phase);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_CTL_FLAG),
+            flag);
 }
 
 TEST(Op, SilencerFixedCompletionStepsInvaidStepMod) {
@@ -126,7 +126,8 @@ TEST(Op, SilencerFixedCompletionStepsInvaidStepMod) {
 
     const auto intensity = 10;  // 25us * 10 = 250us
     const auto phase = 0xFF;
-    const auto flag = SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS | SILENCER_CTL_FLAG_STRICT_MODE;
+    const auto flag = SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS |
+                      SILENCER_CTL_FLAG_STRICT_MODE;
 
     auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     data_body[0] = TAG_SILENCER;
@@ -150,7 +151,8 @@ TEST(Op, SilencerFixedCompletionStepsInvaidStepMod) {
 
     const auto intensity = 0x0011;  // 25us * 11 > 250us
     const auto phase = 0xFF;
-    const auto flag = SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS | SILENCER_CTL_FLAG_STRICT_MODE;
+    const auto flag = SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS |
+                      SILENCER_CTL_FLAG_STRICT_MODE;
 
     auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     data_body[0] = TAG_SILENCER;
@@ -205,7 +207,8 @@ TEST(Op, SilencerFixedCompletionStepsInvaidStepSTM) {
 
     const auto intensity = 1;
     const auto phase = 1;
-    const auto flag = SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS | SILENCER_CTL_FLAG_STRICT_MODE;
+    const auto flag = SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS |
+                      SILENCER_CTL_FLAG_STRICT_MODE;
 
     auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     data_body[0] = TAG_SILENCER;
@@ -255,7 +258,8 @@ TEST(Op, SilencerFixedCompletionStepsInvaidStepSTM) {
 
     const auto intensity = 10;  // 25us * 10 = 250us
     const auto phase = 2;       // 25us * 2 = 50us
-    const auto flag = SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS | SILENCER_CTL_FLAG_STRICT_MODE;
+    const auto flag = SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS |
+                      SILENCER_CTL_FLAG_STRICT_MODE;
 
     auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     data_body[0] = TAG_SILENCER;
@@ -279,7 +283,8 @@ TEST(Op, SilencerFixedCompletionStepsInvaidStepSTM) {
 
     const auto intensity = 2;  // 25us * 2= 50us
     const auto phase = 10;     // 25us * 10 = 250us
-    const auto flag = SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS | SILENCER_CTL_FLAG_STRICT_MODE;
+    const auto flag = SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS |
+                      SILENCER_CTL_FLAG_STRICT_MODE;
 
     auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     data_body[0] = TAG_SILENCER;
@@ -303,7 +308,8 @@ TEST(Op, SilencerFixedCompletionStepsInvaidStepSTM) {
 
     const auto intensity = 11;  // 25us * 11 > 250us
     const auto phase = 10;
-    const auto flag = SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS | SILENCER_CTL_FLAG_STRICT_MODE;
+    const auto flag = SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS |
+                      SILENCER_CTL_FLAG_STRICT_MODE;
 
     auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     data_body[0] = TAG_SILENCER;
@@ -327,7 +333,8 @@ TEST(Op, SilencerFixedCompletionStepsInvaidStepSTM) {
 
     const auto intensity = 10;
     const auto phase = 11;  // 25us * 11 > 250us
-    const auto flag = SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS | SILENCER_CTL_FLAG_STRICT_MODE;
+    const auto flag = SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS |
+                      SILENCER_CTL_FLAG_STRICT_MODE;
 
     auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     data_body[0] = TAG_SILENCER;

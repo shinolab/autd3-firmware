@@ -1,16 +1,3 @@
-/*
- * File: sim_helper_bram.sv
- * Project: helper
- * Created Date: 25/03/2022
- * Author: Shun Suzuki
- * -----
- * Last Modified: 21/12/2023
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
- *
- */
-
 `timescale 1ns / 1ps
 module sim_helper_bram #(
     parameter int DEPTH = 249

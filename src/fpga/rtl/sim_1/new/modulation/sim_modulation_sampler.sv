@@ -1,16 +1,3 @@
-/*
- * File: sim_modulation_sampler.sv
- * Project: modulation
- * Created Date: 25/03/2022
- * Author: Shun Suzuki
- * -----
- * Last Modified: 17/11/2023
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
- *
- */
-
 module sim_modulation_sampler ();
 
   localparam int DivLatency = 66;

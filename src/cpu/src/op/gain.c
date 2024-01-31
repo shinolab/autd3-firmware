@@ -1,14 +1,3 @@
-// File: gain.h
-// Project: op
-// Created Date: 31/12/2023
-// Author: Shun Suzuki
-// -----
-// Last Modified: 01/01/2024
-// Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
-// -----
-// Copyright (c) 2023 Shun Suzuki. All rights reserved.
-//
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -32,7 +21,9 @@ uint8_t write_gain(const volatile uint8_t* p_data) {
   static_assert(offsetof(Gain, tag) == 0, "Gain is not valid.");
 
   _fpga_flags_internal &= ~CTL_FLAG_OP_MODE;
-  bram_cpy_volatile(BRAM_SELECT_NORMAL, 0, (volatile const uint16_t*)(&p_data[sizeof(Gain)]), TRANS_NUM);
+  bram_cpy_volatile(BRAM_SELECT_NORMAL, 0,
+                    (volatile const uint16_t*)(&p_data[sizeof(Gain)]),
+                    TRANS_NUM);
 
   _stm_freq_div = 0xFFFFFFFF;
 

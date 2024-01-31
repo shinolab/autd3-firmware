@@ -1,14 +1,3 @@
-// File: mod.cpp
-// Project: op
-// Created Date: 31/12/2023
-// Author: Shun Suzuki
-// -----
-// Last Modified: 01/01/2024
-// Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
-// -----
-// Copyright (c) 2023 Shun Suzuki. All rights reserved.
-//
-
 #include <gtest/gtest.h>
 
 #include "app.h"
@@ -68,10 +57,14 @@ TEST(Op, Mod) {
   }
 
   ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_CYCLE), 65535);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_FREQ_DIV_0), 0x5678);
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_FREQ_DIV_1), 0x1234);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_FREQ_DIV_0),
+            0x5678);
+  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_FREQ_DIV_1),
+            0x1234);
   for (size_t i = 0; i < 65536 >> 1; i++) {
-    ASSERT_EQ(bram_read_raw(BRAM_SELECT_MOD, i), ((static_cast<uint8_t>((i << 1) + 1)) << 8) | static_cast<uint8_t>(i << 1));
+    ASSERT_EQ(bram_read_raw(BRAM_SELECT_MOD, i),
+              ((static_cast<uint8_t>((i << 1) + 1)) << 8) |
+                  static_cast<uint8_t>(i << 1));
   }
 }
 
@@ -88,7 +81,8 @@ TEST(Op, InvalidCompletionStepsMod) {
 
     const auto intensity = 10;  // 25us * 10 = 250us
     const auto phase = 0xFF;
-    const auto flag = SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS | SILENCER_CTL_FLAG_STRICT_MODE;
+    const auto flag = SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS |
+                      SILENCER_CTL_FLAG_STRICT_MODE;
 
     auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     data_body[0] = TAG_SILENCER;

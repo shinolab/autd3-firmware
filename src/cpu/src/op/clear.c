@@ -1,14 +1,3 @@
-// File: clear.h
-// Project: op
-// Created Date: 31/12/2023
-// Author: Shun Suzuki
-// -----
-// Last Modified: 01/01/2024
-// Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
-// -----
-// Copyright (c) 2023 Shun Suzuki. All rights reserved.
-//
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -50,11 +39,15 @@ uint8_t clear(void) {
   _fpga_flags_internal = 0;
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG, _fpga_flags_internal);
 
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_UPDATE_RATE_INTENSITY, 256);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_UPDATE_RATE_INTENSITY,
+             256);
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_UPDATE_RATE_PHASE, 256);
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_CTL_FLAG, SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS);
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_COMPLETION_STEPS_INTENSITY, 10);
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_COMPLETION_STEPS_PHASE, 40);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_CTL_FLAG,
+             SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS);
+  bram_write(BRAM_SELECT_CONTROLLER,
+             BRAM_ADDR_SILENCER_COMPLETION_STEPS_INTENSITY, 10);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_COMPLETION_STEPS_PHASE,
+             40);
   _silencer_strict_mode = true;
   _min_freq_div_intensity = 10 << 9;
   _min_freq_div_phase = 40 << 9;
@@ -63,7 +56,8 @@ uint8_t clear(void) {
 
   _mod_cycle = 2;
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_CYCLE, _mod_cycle - 1);
-  bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_FREQ_DIV_0, (uint16_t*)&_mod_freq_div, sizeof(uint32_t) >> 1);
+  bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_FREQ_DIV_0,
+           (uint16_t*)&_mod_freq_div, sizeof(uint32_t) >> 1);
   change_mod_page(0);
   bram_write(BRAM_SELECT_MOD, 0, 0xFFFF);
 

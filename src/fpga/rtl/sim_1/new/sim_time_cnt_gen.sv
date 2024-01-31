@@ -1,17 +1,3 @@
-/*
- * File: sim_time_cnt_gen.sv
- * Project: new
- * Created Date: 17/10/2023
- * Author: Shun Suzuki
- * -----
- * Last Modified: 20/11/2023
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2023 Shun Suzuki. All rights reserved.
- *
- */
-
-
 module sim_time_cnt_gen ();
 
   logic CLK_20P48M;

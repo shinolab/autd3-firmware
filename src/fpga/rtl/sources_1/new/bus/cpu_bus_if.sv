@@ -1,16 +1,3 @@
-/*
- * File: cpu_bus_if.sv
- * Project: bus
- * Created Date: 25/03/2022
- * Author: Shun Suzuki
- * -----
- * Last Modified: 20/11/2023
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
- *
- */
-
 interface cpu_bus_if ();
 
   `include "params.vh"

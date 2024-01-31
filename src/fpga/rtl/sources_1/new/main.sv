@@ -1,16 +1,3 @@
-/*
- * File: main.sv
- * Project: new
- * Created Date: 18/05/2023
- * Author: Shun Suzuki
- * -----
- * Last Modified: 27/12/2023
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2023 Shun Suzuki. All rights reserved.
- *
- */
-
 `timescale 1ns / 1ps
 module main #(
     parameter int DEPTH = 249

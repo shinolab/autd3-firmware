@@ -1,16 +1,3 @@
-/*
- * File: mult.sv
- * Project: common
- * Created Date: 07/01/2022
- * Author: Shun Suzuki
- * -----
- * Last Modified: 28/07/2022
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
- * 
- */
-
 `timescale 1ns / 1ps
 module mult #(
     parameter int WIDTH_A = 16,

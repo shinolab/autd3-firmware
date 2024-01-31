@@ -1,22 +1,8 @@
-/*
- * File: app.c
- * Project: src
- * Created Date: 22/04/2022
- * Author: Shun Suzuki
- * -----
- * Last Modified: 17/01/2024
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
- *
- */
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include "app.h"
-
 #include "ecat.h"
 #include "iodefine.h"
 #include "kernel.h"
@@ -98,7 +84,8 @@ void update(void) {
   volatile uint8_t* p_data;
   Header* header;
 
-  if ((ECATC.AL_STATUS_CODE.WORD == AL_STATUS_CODE_SYNC_ERR) || (ECATC.AL_STATUS_CODE.WORD == AL_STATUS_CODE_SYNC_MANAGER_WATCHDOG)) {
+  if ((ECATC.AL_STATUS_CODE.WORD == AL_STATUS_CODE_SYNC_ERR) ||
+      (ECATC.AL_STATUS_CODE.WORD == AL_STATUS_CODE_SYNC_MANAGER_WATCHDOG)) {
     if (_wdt_cnt < 0) return;
     if (_wdt_cnt == 0) clear();
     _wdt_cnt = _wdt_cnt - 1;
@@ -124,7 +111,8 @@ void update(void) {
     }
 
     _ack = header->msg_id;
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG, _fpga_flags_internal);
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG,
+               _fpga_flags_internal);
   } else {
     dly_tsk(1);
   }
