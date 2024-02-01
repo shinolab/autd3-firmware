@@ -1,8 +1,8 @@
 `timescale 1ns / 1ps
-interface modulation_bus_if ();
+interface normal_bus_if ();
 
-  logic [14:0] ADDR;
-  logic [7:0] VALUE;
+  logic [7:0] ADDR;
+  logic [15:0] VALUE;
   logic PAGE;
 
   modport in_port(input ADDR, output VALUE, input PAGE);

@@ -72,9 +72,13 @@ module sim_helper_bram #(
 
   endtask
 
-  // task automatic write_intensity_phase(int idx, logic [7:0] intensity, logic [7:0] phase);
-  //   bram_write(BRAM_SELECT_NORMAL, idx, {intensity, phase});
-  // endtask
+  task automatic write_intensity_phase(input logic page, logic [7:0] intensity[],
+                                       logic [7:0] phase[], int cnt);
+    for (int i = 0; i < cnt; i++) begin
+      bram_write(BRAM_SELECT_NORMAL, {7'h00, page, i[7:0]}, {intensity[i], phase[i]});
+    end
+
+  endtask
 
   // task automatic set_ctl_reg(logic force_fan, logic sync);
   //   automatic

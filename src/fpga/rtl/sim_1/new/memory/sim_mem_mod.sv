@@ -16,20 +16,23 @@ module sim_mem_mod ();
   localparam int SIZE = 32768;
 
   modulation_bus_if mod_bus ();
+  normal_bus_if normal_bus ();
 
   memory memory (
       .CLK(CLK),
-      .MEM_BUS(sim_helper_bram.memory_bus.mod_port),
-      .MOD_BUS(mod_bus.memory_port)
+      .MEM_NORMAL_BUS(sim_helper_bram.memory_bus.normal_port),
+      .MEM_MOD_BUS(sim_helper_bram.memory_bus.mod_port),
+      .MOD_BUS(mod_bus.in_port),
+      .NORMAL_BUS(normal_bus.in_port)
   );
 
   logic [14:0] addr;
   logic [7:0] value;
   logic page;
 
-  assign mod_bus.sampler_port.ADDR = addr;
-  assign mod_bus.sampler_port.PAGE = page;
-  assign value = mod_bus.sampler_port.VALUE;
+  assign mod_bus.out_port.ADDR = addr;
+  assign mod_bus.out_port.PAGE = page;
+  assign value = mod_bus.out_port.VALUE;
 
   logic [7:0] mod_buf_0[SIZE];
   logic [7:0] mod_buf_1[SIZE];

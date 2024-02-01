@@ -33,12 +33,12 @@ interface memory_bus_if ();
   // );
   //////////////////////////// Controller ////////////////////////////
 
-  // ////////////////////////// Normal Operator //////////////////////////
-  // logic NORMAL_EN;
-  // assign NORMAL_EN = (BRAM_SELECT == BRAM_SELECT_NORMAL) & EN;
+  ////////////////////////// Normal Operator //////////////////////////
+  logic NORMAL_EN;
+  assign NORMAL_EN = (BRAM_SELECT == BRAM_SELECT_NORMAL) & EN;
 
-  // modport normal_port(input BUS_CLK, input NORMAL_EN, input WE, input BRAM_ADDR, input DATA_IN);
-  // ////////////////////////// Normal Operator //////////////////////////
+  modport normal_port(input BUS_CLK, input NORMAL_EN, input WE, input BRAM_ADDR, input DATA_IN);
+  ////////////////////////// Normal Operator //////////////////////////
 
   // ///////////////////////// STM Operator /////////////////////////
   // logic STM_EN;
