@@ -41,44 +41,61 @@ module sim_helper_bram #(
     CPU_WE0_N <= 1;
   endtask
 
-  // task automatic write_stm_gain_intensity_phase(int idx, input logic [7:0] intensity[DEPTH],
-  //                                               input logic [7:0] phase[DEPTH]);
-  //   logic [15:0] offset;
-  //   logic [15:0] i;
-  //   offset = idx[21:6];
-  //   i = idx[5:0] << 8;
-  //   bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MEM_PAGE, offset);
-  //   for (int j = 0; j < DEPTH; j++) begin
-  //     bram_write(BRAM_SELECT_STM, i + j, {intensity[j][7:0], phase[j][7:0]});
-  //   end
-  // endtask
-
-  // task automatic write_stm_focus(int idx, input logic [17:0] x, input logic [17:0] y,
-  //                                input logic [17:0] z, input logic [7:0] intensity_shift);
-  //   logic [15:0] offset = idx[15:11];
-  //   logic [15:0] i = idx[10:0] << 3;
-  //   bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MEM_PAGE, offset);
-  //   bram_write(BRAM_SELECT_STM, i, x[15:0]);
-  //   bram_write(BRAM_SELECT_STM, i + 1, {y[13:0], x[17:16]});
-  //   bram_write(BRAM_SELECT_STM, i + 2, {z[11:0], y[17:14]});
-  //   bram_write(BRAM_SELECT_STM, i + 3, {2'd0, intensity_shift, z[17:12]});
-  // endtask
-
-  task automatic write_mod(input logic page, input logic [7:0] mod_data[], int cnt);
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_MEM_WR_PAGE, {15'h000, page});
+  task automatic write_mod(input logic segment, input logic [7:0] mod_data[], int cnt);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_MEM_WR_SEGMENT, {15'h000, segment});
     for (int i = 0; i < cnt >> 1; i++) begin
       bram_write(BRAM_SELECT_MOD, i, {mod_data[2*i+1], mod_data[2*i]});
     end
-
   endtask
 
-  task automatic write_intensity_phase(input logic page, logic [7:0] intensity[],
-                                       logic [7:0] phase[], int cnt);
-    for (int i = 0; i < cnt; i++) begin
-      bram_write(BRAM_SELECT_NORMAL, {7'h00, page, i[7:0]}, {intensity[i], phase[i]});
+  task automatic write_intensity_phase(input logic segment, logic [7:0] intensity[DEPTH],
+                                       logic [7:0] phase[DEPTH]);
+    for (int i = 0; i < DEPTH; i++) begin
+      bram_write(BRAM_SELECT_NORMAL, {7'h00, segment, i[7:0]}, {intensity[i], phase[i]});
     end
-
   endtask
+
+  task automatic write_stm_gain_intensity_phase(input logic segment,
+                                                input logic [7:0] intensity[][DEPTH],
+                                                input logic [7:0] phase[][DEPTH], int cnt);
+    logic [5:0] offset = 0;
+    logic [3:0] page = 0;
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MEM_WR_SEGMENT, {15'h000, segment});
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MEM_WR_PAGE, {12'h000, page});
+    for (int j = 0; j < cnt; j++) begin
+      for (int i = 0; i < DEPTH; i++) begin
+        bram_write(BRAM_SELECT_STM, {2'b00, offset, i[7:0]}, {intensity[j][i], phase[j][i]});
+      end
+      if (offset == 63) begin
+        page = page + 1;
+        bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MEM_WR_PAGE, {12'h000, page});
+        offset = 0;
+      end else begin
+        offset = offset + 1;
+      end
+    end
+  endtask
+
+  task automatic write_stm_focus(input logic segment, input logic [17:0] x[],
+                                 input logic [17:0] y[], input logic [17:0] z[],
+                                 input logic [7:0] intensity[], int cnt);
+    logic [ 3:0] page = 0;
+    logic [13:0] addr = 0;
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MEM_WR_SEGMENT, {15'h000, segment});
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MEM_WR_PAGE, {12'h000, page});
+    for (int i = 0; i < cnt; i++) begin
+      addr = i << 3;
+      bram_write(BRAM_SELECT_STM, addr, x[i][15:0]);
+      bram_write(BRAM_SELECT_STM, addr + 1, {y[i][13:0], x[i][17:16]});
+      bram_write(BRAM_SELECT_STM, addr + 2, {z[i][11:0], y[i][17:14]});
+      bram_write(BRAM_SELECT_STM, addr + 3, {2'd0, intensity[i], z[i][17:12]});
+      if (i % 2048 == 2047) begin
+        page = page + 1;
+        bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MEM_WR_PAGE, {12'h000, page});
+      end
+    end
+  endtask
+
 
   // task automatic set_ctl_reg(logic force_fan, logic sync);
   //   automatic

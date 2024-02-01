@@ -1,11 +1,11 @@
 `timescale 1ns / 1ps
 interface modulation_bus_if ();
 
-  logic [14:0] ADDR;
+  logic [14:0] IDX;
   logic [7:0] VALUE;
-  logic PAGE;
+  logic SEGMENT;
 
-  modport in_port(input ADDR, output VALUE, input PAGE);
-  modport out_port(output ADDR, input VALUE, output PAGE);
+  modport in_port(input IDX, output VALUE, input SEGMENT);
+  modport out_port(output IDX, input VALUE, output SEGMENT);
 
 endinterface

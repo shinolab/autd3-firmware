@@ -40,42 +40,45 @@ interface memory_bus_if ();
   modport normal_port(input BUS_CLK, input NORMAL_EN, input WE, input BRAM_ADDR, input DATA_IN);
   ////////////////////////// Normal Operator //////////////////////////
 
-  // ///////////////////////// STM Operator /////////////////////////
-  // logic STM_EN;
-  // assign STM_EN = (BRAM_SELECT == BRAM_SELECT_STM) & EN;
-  // logic [4:0] STM_MEM_PAGE;
-
-  // modport stm_port(
-  //     input BUS_CLK,
-  //     input STM_EN,
-  //     input WE,
-  //     input BRAM_ADDR,
-  //     input STM_MEM_PAGE,
-  //     input DATA_IN
-  // );
-  // ///////////////////////// STM Operator /////////////////////////
-
   ///////////////////////////// Modulator /////////////////////////////
   logic MOD_EN;
   assign MOD_EN = (BRAM_SELECT == BRAM_SELECT_MOD) & EN;
-  logic MOD_MEM_WR_PAGE;
+  logic MOD_MEM_WR_SEGMENT;
 
   modport mod_port(
       input BUS_CLK,
       input MOD_EN,
       input WE,
       input BRAM_ADDR,
-      input MOD_MEM_WR_PAGE,
+      input MOD_MEM_WR_SEGMENT,
       input DATA_IN
   );
   ///////////////////////////// Modulator /////////////////////////////
+
+  ///////////////////////// STM Operator /////////////////////////
+  logic STM_EN;
+  assign STM_EN = (BRAM_SELECT == BRAM_SELECT_STM) & EN;
+  logic STM_MEM_WR_SEGMENT;
+  logic [3:0] STM_MEM_WR_PAGE;
+
+  modport stm_port(
+      input BUS_CLK,
+      input STM_EN,
+      input WE,
+      input BRAM_ADDR,
+      input STM_MEM_WR_SEGMENT,
+      input STM_MEM_WR_PAGE,
+      input DATA_IN
+  );
+  ///////////////////////// STM Operator /////////////////////////
 
   always_ff @(posedge BUS_CLK) begin
     ctl_we_edge <= {ctl_we_edge[1:0], (WE & CTL_EN)};
     if (ctl_we_edge == 3'b011) begin
       case (BRAM_ADDR)
-        ADDR_MOD_MEM_WR_PAGE: MOD_MEM_WR_PAGE <= DATA_IN[0];
-        // ADDR_STM_MEM_PAGE: STM_MEM_PAGE <= DATA_IN[4:0];
+        ADDR_MOD_MEM_WR_SEGMENT: MOD_MEM_WR_SEGMENT <= DATA_IN[0];
+        ADDR_STM_MEM_WR_SEGMENT: STM_MEM_WR_SEGMENT <= DATA_IN[0];
+        ADDR_STM_MEM_WR_PAGE: STM_MEM_WR_PAGE <= DATA_IN[3:0];
         default: begin
         end
       endcase
