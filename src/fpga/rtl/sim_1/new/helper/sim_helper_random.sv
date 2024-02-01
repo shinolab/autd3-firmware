@@ -1,6 +1,5 @@
 `timescale 1ns / 1ps
 module sim_helper_random;
-
   int seed = 0;
 
   task init();
