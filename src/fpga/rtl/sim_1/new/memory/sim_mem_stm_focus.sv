@@ -15,16 +15,22 @@ module sim_mem_stm_focus ();
   sim_helper_random sim_helper_random ();
   sim_helper_bram #(.DEPTH(DEPTH)) sim_helper_bram ();
 
+  cnt_bus_if cnt_bus ();
+  modulation_delay_bus_if mod_delay_bus ();
   modulation_bus_if mod_bus ();
   normal_bus_if normal_bus ();
   stm_bus_if stm_bus ();
+  duty_table_bus_if duty_table_bus ();
 
   memory memory (
       .CLK(CLK),
       .MEM_BUS(sim_helper_bram.memory_bus.bram_port),
+      .CNT_BUS_IF(cnt_bus.in_port),
+      .MOD_DELAY_BUS(mod_delay_bus.in_port),
       .MOD_BUS(mod_bus.in_port),
       .NORMAL_BUS(normal_bus.in_port),
-      .STM_BUS(stm_bus.in_port)
+      .STM_BUS(stm_bus.in_port),
+      .DUTY_TABLE_BUS(duty_table_bus.in_port)
   );
 
   logic [15:0] idx;

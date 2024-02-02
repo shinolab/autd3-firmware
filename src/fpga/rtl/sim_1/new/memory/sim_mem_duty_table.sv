@@ -1,8 +1,8 @@
 `timescale 1ns / 1ps
-module sim_mem_mod ();
+module sim_mem_duty_table ();
 
   localparam int DEPTH = 249;
-  localparam int SIZE = 32768;
+  localparam int SIZE = 65536;
 
   logic CLK;
   logic locked;
@@ -33,16 +33,13 @@ module sim_mem_mod ();
       .DUTY_TABLE_BUS(duty_table_bus.in_port)
   );
 
-  logic [14:0] idx;
-  logic [7:0] value;
-  logic segment;
+  logic [ 7:0] buffer[SIZE];
 
-  assign mod_bus.out_port.IDX = idx;
-  assign mod_bus.out_port.SEGMENT = segment;
-  assign value = mod_bus.out_port.VALUE;
+  logic [15:0] idx;
+  logic [ 7:0] value;
 
-  logic [7:0] mod_buf_0[SIZE];
-  logic [7:0] mod_buf_1[SIZE];
+  assign duty_table_bus.out_port.IDX = idx;
+  assign value = duty_table_bus.out_port.VALUE;
 
   task automatic progress();
     for (int i = 0; i < SIZE + 3; i++) begin
@@ -51,19 +48,35 @@ module sim_mem_mod ();
     end
   endtask
 
-  task automatic check(logic segment);
-    logic [14:0] cur_idx;
+  task automatic check_initial_asin();
+    logic [15:0] cur_idx;
     logic [ 7:0] expect_value;
     repeat (3) @(posedge CLK);
     for (int i = 0; i < SIZE; i++) begin
       @(posedge CLK);
       cur_idx = (idx + SIZE - 2) % SIZE;
-      expect_value = segment === 1'b0 ? mod_buf_0[cur_idx] : mod_buf_1[cur_idx];
+      expect_value = int'($asin(cur_idx / 255.0 / 255.0) / $acos(-1) * 512.0);
       if (expect_value !== value) begin
         $error("%d != %d @ %d", expect_value, value, cur_idx);
         $finish();
       end
-      if (i % 1024 == 1023) $display("segment %d: %d/%d...done", segment, i + 1, SIZE);
+      if (i % 1024 == 1023) $display("%d/%d...done", i + 1, SIZE);
+    end
+  endtask
+
+  task automatic check();
+    logic [15:0] cur_idx;
+    logic [ 7:0] expect_value;
+    repeat (3) @(posedge CLK);
+    for (int i = 0; i < SIZE; i++) begin
+      @(posedge CLK);
+      cur_idx = (idx + SIZE - 2) % SIZE;
+      expect_value = buffer[cur_idx];
+      if (expect_value !== value) begin
+        $error("%d != %d @ %d", expect_value, value, cur_idx);
+        $finish();
+      end
+      if (i % 1024 == 1023) $display("%d/%d...done", i + 1, SIZE);
     end
   endtask
 
@@ -71,31 +84,26 @@ module sim_mem_mod ();
     sim_helper_random.init();
 
     idx = 0;
-    segment = 0;
 
     @(posedge locked);
+    
+    fork
+      progress();
+      check_initial_asin();
+    join
 
+    idx = 0;
     for (int i = 0; i < SIZE; i++) begin
-      mod_buf_0[i] = sim_helper_random.range(8'hFF, 0);
-      mod_buf_1[i] = sim_helper_random.range(8'hFF, 0);
+      buffer[i] = sim_helper_random.range(8'hFF, 0);
     end
-    sim_helper_bram.write_mod(0, mod_buf_0, SIZE);
-    sim_helper_bram.write_mod(1, mod_buf_1, SIZE);
+    sim_helper_bram.write_duty_table(buffer);
     $display("memory initialized");
-
-    segment = 0;
     fork
       progress();
-      check(segment);
+      check();
     join
 
-    segment = 1;
-    fork
-      progress();
-      check(segment);
-    join
-
-    $display("OK! sim_mem_mod");
+    $display("OK! sim_mem_duty_table");
     $finish();
   end
 

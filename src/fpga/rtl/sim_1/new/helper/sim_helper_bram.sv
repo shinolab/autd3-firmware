@@ -41,6 +41,18 @@ module sim_helper_bram #(
     CPU_WE0_N <= 1;
   endtask
 
+  task automatic write_duty_table(input logic [7:0] value[65536]);
+    logic [1:0] page = 0;
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_DUTY_TABLE_WR_PAGE, {14'h0000, page});
+    for (int i = 0; i < 32768; i++) begin
+      bram_write(BRAM_SELECT_CONTROLLER, {2'b00, 1'b1, i[12:0]}, {value[2*i+1], value[2*i]});
+      if (i % 8192 == 8191) begin
+        page = page + 1;
+        bram_write(BRAM_SELECT_CONTROLLER, ADDR_DUTY_TABLE_WR_PAGE, {14'h0000, page});
+      end
+    end
+  endtask
+
   task automatic write_mod(input logic segment, input logic [7:0] mod_data[], int cnt);
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_MEM_WR_SEGMENT, {15'h000, segment});
     for (int i = 0; i < cnt >> 1; i++) begin
