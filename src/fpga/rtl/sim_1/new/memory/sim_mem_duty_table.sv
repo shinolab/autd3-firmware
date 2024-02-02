@@ -86,7 +86,7 @@ module sim_mem_duty_table ();
     idx = 0;
 
     @(posedge locked);
-    
+
     fork
       progress();
       check_initial_asin();
@@ -105,6 +105,19 @@ module sim_mem_duty_table ();
 
     $display("OK! sim_mem_duty_table");
     $finish();
+  end
+
+  always @(posedge CLK) begin
+    if (locked) begin
+      if ($countones(
+              sim_helper_bram.memory_bus.bram_port.ENABLES
+          ) !== 0 && $countones(
+              sim_helper_bram.memory_bus.bram_port.ENABLES
+          ) !== 1) begin
+        $error("multiple enabled bram: %b", sim_helper_bram.memory_bus.bram_port.ENABLES);
+        $finish();
+      end
+    end
   end
 
 endmodule

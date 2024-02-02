@@ -41,6 +41,16 @@ module sim_helper_bram #(
     CPU_WE0_N <= 1;
   endtask
 
+  task automatic write_cnt(logic [4:0] sel, logic [7:0] addr, logic [15:0] data);
+    bram_write(BRAM_SELECT_CONTROLLER, {2'b00, 1'b0, sel, addr}, data);
+  endtask
+
+  task automatic write_mod_delay(logic [15:0] delay[DEPTH]);
+    for (int i = 0; i < DEPTH; i++) begin
+      write_cnt(BRAM_SELECT_CNT_MOD_DELAY, i, delay[i]);
+    end
+  endtask
+
   task automatic write_duty_table(input logic [7:0] value[65536]);
     logic [1:0] page = 0;
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_DUTY_TABLE_WR_PAGE, {14'h0000, page});
@@ -170,11 +180,6 @@ module sim_helper_bram #(
   //   bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_FINISH_IDX, stm_finish_idx);
   // endtask
 
-  // task automatic write_delay(logic [15:0] delay[DEPTH]);
-  //   for (int i = 0; i < DEPTH; i++) begin
-  //     bram_write(BRAM_SELECT_CONTROLLER, ADDR_DELAY_BASE + i, delay[i]);
-  //   end
-  // endtask
 
   initial begin
     CPU_WE0_N = 1;
