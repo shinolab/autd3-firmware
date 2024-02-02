@@ -21,9 +21,7 @@ module sim_mem_stm_gain ();
 
   memory memory (
       .CLK(CLK),
-      .MEM_NORMAL_BUS(sim_helper_bram.memory_bus.normal_port),
-      .MEM_MOD_BUS(sim_helper_bram.memory_bus.mod_port),
-      .MEM_STM_BUS(sim_helper_bram.memory_bus.stm_port),
+      .MEM_BUS(sim_helper_bram.memory_bus.bram_port),
       .MOD_BUS(mod_bus.in_port),
       .NORMAL_BUS(normal_bus.in_port),
       .STM_BUS(stm_bus.in_port)
@@ -31,7 +29,7 @@ module sim_mem_stm_gain ();
 
   logic [9:0] idx;
   logic [7:0] addr;
-  logic [127:0] value;
+  logic [63:0] value;
   logic segment;
 
   assign stm_bus.GAIN_STM_MODE = 1'b1;
@@ -65,7 +63,7 @@ module sim_mem_stm_gain ();
       cur_idx = (addr + DEPTH - 2) % DEPTH;
       expect_phase = segment === 1'b0 ? phase_buf_0[index][cur_idx] : phase_buf_1[index][cur_idx];
       expect_intensity = segment === 1'b0 ? intensity_buf_0[index][cur_idx] : intensity_buf_1[index][cur_idx];
-      offset = (16 * cur_idx) % 128;
+      offset = (16 * cur_idx) % 64;
       tmp = value >> offset;
       if (expect_phase !== tmp[7:0]) begin
         $error("Phase: %d != %d @ %d", expect_phase, tmp[7:0], cur_idx);

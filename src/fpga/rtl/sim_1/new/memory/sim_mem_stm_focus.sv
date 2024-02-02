@@ -2,7 +2,7 @@
 module sim_mem_stm_focus ();
 
   localparam int DEPTH = 249;
-  localparam int SIZE = 32768;
+  localparam int SIZE = 65536;
 
   logic CLK;
   logic locked;
@@ -21,16 +21,14 @@ module sim_mem_stm_focus ();
 
   memory memory (
       .CLK(CLK),
-      .MEM_NORMAL_BUS(sim_helper_bram.memory_bus.normal_port),
-      .MEM_MOD_BUS(sim_helper_bram.memory_bus.mod_port),
-      .MEM_STM_BUS(sim_helper_bram.memory_bus.stm_port),
+      .MEM_BUS(sim_helper_bram.memory_bus.bram_port),
       .MOD_BUS(mod_bus.in_port),
       .NORMAL_BUS(normal_bus.in_port),
       .STM_BUS(stm_bus.in_port)
   );
 
-  logic [14:0] idx;
-  logic [127:0] value;
+  logic [15:0] idx;
+  logic [63:0] value;
   logic segment;
 
   assign stm_bus.GAIN_STM_MODE = 1'b0;
@@ -64,7 +62,7 @@ module sim_mem_stm_focus ();
   endtask
 
   task automatic check(logic segment);
-    logic [14:0] cur_idx;
+    logic [15:0] cur_idx;
     logic [17:0] expect_x;
     logic [17:0] expect_y;
     logic [17:0] expect_z;

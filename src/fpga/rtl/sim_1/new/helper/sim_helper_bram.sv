@@ -84,18 +84,17 @@ module sim_helper_bram #(
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MEM_WR_SEGMENT, {15'h000, segment});
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MEM_WR_PAGE, {12'h000, page});
     for (int i = 0; i < cnt; i++) begin
-      addr = i << 3;
+      addr = i << 2;
       bram_write(BRAM_SELECT_STM, addr, x[i][15:0]);
       bram_write(BRAM_SELECT_STM, addr + 1, {y[i][13:0], x[i][17:16]});
       bram_write(BRAM_SELECT_STM, addr + 2, {z[i][11:0], y[i][17:14]});
       bram_write(BRAM_SELECT_STM, addr + 3, {2'd0, intensity[i], z[i][17:12]});
-      if (i % 2048 == 2047) begin
+      if (i % 4096 == 4095) begin
         page = page + 1;
         bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MEM_WR_PAGE, {12'h000, page});
       end
     end
   endtask
-
 
   // task automatic set_ctl_reg(logic force_fan, logic sync);
   //   automatic
