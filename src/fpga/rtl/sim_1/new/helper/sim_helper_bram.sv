@@ -23,7 +23,7 @@ module sim_helper_bram #(
   assign memory_bus.WE = ~CPU_WE0_N;
   assign memory_bus.BRAM_SELECT = CPU_ADDR[16:15];
   assign memory_bus.BRAM_ADDR = CPU_ADDR[14:1];
-  assign memory_bus.CPU_DATA = CPU_DATA;
+  assign memory_bus.DATA_IN = CPU_DATA;
 
   task automatic bram_write(input logic [1:0] select, input logic [13:0] addr,
                             input logic [15:0] data_in);
@@ -182,7 +182,6 @@ module sim_helper_bram #(
 
 
   initial begin
-    CPU_CS1_N = 1'b1;
     CPU_WE0_N = 1'b1;
     bram_addr = 1'b0;
     CPU_CKIO  = 1'b0;

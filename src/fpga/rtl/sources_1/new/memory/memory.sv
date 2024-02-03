@@ -252,7 +252,8 @@ module memory (
   end
 
 `ifndef ASSERTION_OFF
-  logic [8:0] enables = {
+  logic [8:0] enables;
+  assign enables = {
     ctl_main_en,
     dly_en,
     duty_table_en,
