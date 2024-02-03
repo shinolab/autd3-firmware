@@ -251,7 +251,8 @@ module memory (
     end
   end
 
-  assign MEM_BUS.ENABLES = {
+`ifndef ASSERTION_OFF
+  logic [8:0] enables = {
     ctl_main_en,
     dly_en,
     duty_table_en,
@@ -262,5 +263,15 @@ module memory (
     stm_en_0,
     stm_en_1
   };
+
+  always_ff @(posedge CLK) begin
+    enable_bit :
+    assume ($countones(enables) === 0 | $countones(enables) === 1)
+    else begin
+      $error("multiple enabled bram: %b", enables);
+      $finish();
+    end
+  end
+`endif
 
 endmodule

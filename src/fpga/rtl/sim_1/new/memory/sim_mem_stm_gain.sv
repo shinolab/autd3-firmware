@@ -125,17 +125,4 @@ module sim_mem_stm_gain ();
     $finish();
   end
 
-  always @(posedge CLK) begin
-    if (locked) begin
-      if ($countones(
-              sim_helper_bram.memory_bus.bram_port.ENABLES
-          ) !== 0 && $countones(
-              sim_helper_bram.memory_bus.bram_port.ENABLES
-          ) !== 1) begin
-        $error("multiple enabled bram: %b", sim_helper_bram.memory_bus.bram_port.ENABLES);
-        $finish();
-      end
-    end
-  end
-
 endmodule
