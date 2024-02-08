@@ -16,7 +16,7 @@ module sim_mod_timer ();
   sim_helper_random sim_helper_random ();
   sim_helper_bram #(.DEPTH(DEPTH)) sim_helper_bram ();
 
-  autd3::mod_settings mod_settings;
+  settings::mod_settings_t mod_settings;
   mod_cnt_if mod_cnt ();
   logic [14:0] idx_0, idx_1;
 

@@ -19,7 +19,7 @@ module sim_mod_swapchain ();
   sim_helper_bram #(.DEPTH(DEPTH)) sim_helper_bram ();
 
   logic update_settings;
-  autd3::mod_settings mod_settings;
+  settings::mod_settings_t mod_settings;
   mod_cnt_if mod_cnt ();
 
   modulation_swapchain modulation_swapchain (

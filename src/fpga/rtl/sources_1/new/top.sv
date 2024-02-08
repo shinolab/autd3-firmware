@@ -16,9 +16,6 @@ module top (
     output var GPIO_OUT[2]
 );
 
-  `include "cvt_uid.vh"
-  `include "params.vh"
-
   logic clk;
   logic reset;
 
@@ -58,5 +55,15 @@ module top (
       .PWM_OUT(PWM_OUT),
       .GPIO_OUT(GPIO_OUT)
   );
+
+  function automatic [7:0] cvt_uid(input logic [7:0] idx);
+    if (idx < 8'd19) begin
+      cvt_uid = idx;
+    end else if (idx < 8'd32) begin
+      cvt_uid = idx + 2;
+    end else begin
+      cvt_uid = idx + 3;
+    end
+  endfunction
 
 endmodule

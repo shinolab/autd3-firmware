@@ -87,7 +87,7 @@ proc add_header_file {fileset_name library_name file_name} {
     set_property "file_type" "Verilog Header" $file_obj
     set_property "library" $library_name $file_obj
 }
-set file_list [glob -nocomplain rtl/sources_1/new/headers/*.vh]
+set file_list [glob -nocomplain rtl/sources_1/new/headers/*.svh]
 foreach header_file_path $file_list {
   add_header_file sources_1 xil_defaultlib $header_file_path
 }
@@ -124,3 +124,8 @@ set_property top sim_main [get_filesets sim_1]
 set_property top_lib xil_defaultlib [get_filesets sim_1]
 
 set_property -name {xsim.compile.tcl.pre} -value [file join $project_directory "rtl/sim_1/new/rand.tcl"] -objects [get_filesets sim_1]
+set header_list [glob -nocomplain rtl/sources_1/new/headers/*.svh]
+foreach header_file $header_list {
+  set_property is_global_include true [get_files $header_file]
+  set_property file_type SystemVerilog [get_files $header_file]
+}

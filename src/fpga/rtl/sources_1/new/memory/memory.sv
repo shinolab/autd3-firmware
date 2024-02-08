@@ -8,8 +8,6 @@ module memory (
     duty_table_bus_if.in_port DUTY_TABLE_BUS
 );
 
-  `include "params.vh"
-
   logic bus_clk;
   logic en;
   logic we;
@@ -31,14 +29,14 @@ module memory (
   logic duty_table_sel;
   logic [4:0] cnt_sel;
 
-  assign ctl_en = en & (select == BRAM_SELECT_CONTROLLER);
+  assign ctl_en = en & (select == params::BRAM_SELECT_CONTROLLER);
   assign duty_table_sel = addr[13];
   assign cnt_sel = addr[12:8];
 
   /////////////////////   Main   ///////////////////////
   logic ctl_main_en;
 
-  assign ctl_main_en = ctl_en & (duty_table_sel == 1'b0) & (cnt_sel == BRAM_SELECT_CNT_CNT);
+  assign ctl_main_en = ctl_en & (duty_table_sel == 1'b0) & (cnt_sel == params::BRAM_SELECT_CNT_CNT);
 
   BRAM_CONTROLLER ctl_bram (
       .clka (bus_clk),
@@ -90,8 +88,8 @@ module memory (
   logic [7:0] normal_idx;
   logic [15:0] normal_value_0, normal_value_1;
 
-  assign normal_en_0 = (select == BRAM_SELECT_NORMAL) & en & (normal_page == 1'b0);
-  assign normal_en_1 = (select == BRAM_SELECT_NORMAL) & en & (normal_page == 1'b1);
+  assign normal_en_0 = (select == params::BRAM_SELECT_NORMAL) & en & (normal_page == 1'b0);
+  assign normal_en_1 = (select == params::BRAM_SELECT_NORMAL) & en & (normal_page == 1'b1);
   assign normal_page = addr[8];
   assign normal_idx = NORMAL_BUS.ADDR;
   assign NORMAL_BUS.VALUE = (NORMAL_BUS.SEGMENT == 1'b0) ? normal_value_0 : normal_value_1;
@@ -133,8 +131,8 @@ module memory (
 
   logic mod_mem_wr_segment;
 
-  assign mod_en_0 = (select == BRAM_SELECT_MOD) & en & (mod_mem_wr_segment == 1'b0);
-  assign mod_en_1 = (select == BRAM_SELECT_MOD) & en & (mod_mem_wr_segment == 1'b1);
+  assign mod_en_0 = (select == params::BRAM_SELECT_MOD) & en & (mod_mem_wr_segment == 1'b0);
+  assign mod_en_1 = (select == params::BRAM_SELECT_MOD) & en & (mod_mem_wr_segment == 1'b1);
   assign mod_idx = MOD_BUS.IDX;
   assign MOD_BUS.VALUE = (MOD_BUS.SEGMENT == 1'b0) ? mod_value_0 : mod_value_1;
 
@@ -176,8 +174,8 @@ module memory (
   logic stm_mem_wr_segment;
   logic [3:0] stm_mem_wr_page;
 
-  assign stm_en_0 = (select == BRAM_SELECT_STM) & en & (stm_mem_wr_segment == 1'b0);
-  assign stm_en_1 = (select == BRAM_SELECT_STM) & en & (stm_mem_wr_segment == 1'b1);
+  assign stm_en_0 = (select == params::BRAM_SELECT_STM) & en & (stm_mem_wr_segment == 1'b0);
+  assign stm_en_1 = (select == params::BRAM_SELECT_STM) & en & (stm_mem_wr_segment == 1'b1);
   assign stm_idx = STM_BUS.ADDR;
   assign STM_BUS.VALUE = (STM_BUS.SEGMENT == 1'b0) ? stm_value_0 : stm_value_1;
 
@@ -215,10 +213,10 @@ module memory (
     ctl_we_edge <= {ctl_we_edge[1:0], we & ctl_main_en};
     if (ctl_we_edge == 3'b011) begin
       case (addr)
-        ADDR_MOD_MEM_WR_SEGMENT: mod_mem_wr_segment <= data_in[0];
-        ADDR_STM_MEM_WR_SEGMENT: stm_mem_wr_segment <= data_in[0];
-        ADDR_STM_MEM_WR_PAGE: stm_mem_wr_page <= data_in[3:0];
-        ADDR_DUTY_TABLE_WR_PAGE: duty_table_wr_page <= data_in[1:0];
+        params::ADDR_MOD_MEM_WR_SEGMENT: mod_mem_wr_segment <= data_in[0];
+        params::ADDR_STM_MEM_WR_SEGMENT: stm_mem_wr_segment <= data_in[0];
+        params::ADDR_STM_MEM_WR_PAGE: stm_mem_wr_page <= data_in[3:0];
+        params::ADDR_DUTY_TABLE_WR_PAGE: duty_table_wr_page <= data_in[1:0];
         default: begin
         end
       endcase
@@ -226,17 +224,9 @@ module memory (
   end
 
 `ifndef ASSERTION_OFF
-  logic [8:0] enables;
+  logic [7:0] enables;
   assign enables = {
-    ctl_main_en,
-    dly_en,
-    duty_table_en,
-    normal_en_0,
-    normal_en_1,
-    mod_en_0,
-    mod_en_1,
-    stm_en_0,
-    stm_en_1
+    ctl_main_en, duty_table_en, normal_en_0, normal_en_1, mod_en_0, mod_en_1, stm_en_0, stm_en_1
   };
 
   always_ff @(posedge CLK) begin

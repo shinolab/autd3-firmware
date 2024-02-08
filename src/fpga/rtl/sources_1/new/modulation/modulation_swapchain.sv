@@ -4,7 +4,9 @@ module modulation_swapchain (
     input var UPDATE_SETTINGS,
     input var REQ_RD_SEGMENT,
     input var [31:0] REP,
-    mod_cnt_if.swapchain_port MOD_CNT
+    mod_cnt_if.swapchain_port MOD_CNT,
+    output var DEBUG_SEGMENT,
+    output var DEBUG_STOP
 );
 
   logic segment = 0;
@@ -22,6 +24,9 @@ module modulation_swapchain (
   assign idx_1 = MOD_CNT.IDX_1;
   assign MOD_CNT.SEGMENT = segment;
   assign MOD_CNT.STOP = stop;
+
+  assign DEBUG_SEGMENT = segment;
+  assign DEBUG_STOP = stop;
 
   typedef enum logic [1:0] {
     WAIT_START,

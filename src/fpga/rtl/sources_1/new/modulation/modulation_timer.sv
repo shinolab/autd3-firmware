@@ -6,7 +6,7 @@ module modulation_timer (
     input var [31:0] FREQ_DIV_0,
     input var [14:0] CYCLE_1,
     input var [31:0] FREQ_DIV_1,
-    mod_cnt_if.sampler_port MOD_CNT
+    mod_cnt_if.timer_port MOD_CNT
 );
 
   logic [63:0] divined;
