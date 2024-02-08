@@ -12,3 +12,4 @@
 !*.coe
 !/.github/
 !/.github/**/*
+!build.sh
