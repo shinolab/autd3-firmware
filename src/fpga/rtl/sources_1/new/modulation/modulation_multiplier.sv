@@ -11,7 +11,9 @@ module modulation_multipiler #(
     output var DOUT_VALID,
     modulation_bus_if.out_port MOD_BUS,
     mod_cnt_if.multiplier_port MOD_CNT,
-    output var [14:0] DEBUG_IDX
+    output var [14:0] DEBUG_IDX,
+    output var DEBUG_SEGMENT,
+    output var DEBUG_STOP
 );
 
   localparam int Latency = 1;
@@ -40,6 +42,8 @@ module modulation_multipiler #(
   assign INTENSITY_OUT = p[15:0];
 
   assign DEBUG_IDX = idx;
+  assign DEBUG_SEGMENT = segment_buf;
+  assign DEBUG_STOP = stop_buf;
 
   delay_fifo #(
       .WIDTH(8),

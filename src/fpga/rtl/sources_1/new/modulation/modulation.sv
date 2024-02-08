@@ -35,9 +35,7 @@ module modulation #(
       .UPDATE_SETTINGS(UPDATE_SETTINGS),
       .REQ_RD_SEGMENT(MOD_SETTINGS.REQ_RD_SEGMENT),
       .REP(MOD_SETTINGS.REP),
-      .MOD_CNT(mod_cnt.swapchain_port),
-      .DEBUG_SEGMENT(DEBUG_SEGMENT),
-      .DEBUG_STOP(DEBUG_STOP)
+      .MOD_CNT(mod_cnt.swapchain_port)
   );
 
   modulation_multipiler #(
@@ -52,7 +50,9 @@ module modulation #(
       .DOUT_VALID(DOUT_VALID),
       .MOD_BUS(MOD_BUS),
       .MOD_CNT(mod_cnt.multiplier_port),
-      .DEBUG_IDX(DEBUG_IDX)
+      .DEBUG_IDX(DEBUG_IDX),
+      .DEBUG_SEGMENT(DEBUG_SEGMENT),
+      .DEBUG_STOP(DEBUG_STOP)
   );
 
 endmodule
