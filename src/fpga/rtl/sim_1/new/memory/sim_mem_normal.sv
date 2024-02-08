@@ -15,7 +15,6 @@ module sim_mem_normal ();
   sim_helper_bram #(.DEPTH(DEPTH)) sim_helper_bram ();
 
   cnt_bus_if cnt_bus ();
-  modulation_delay_bus_if mod_delay_bus ();
   modulation_bus_if mod_bus ();
   normal_bus_if normal_bus ();
   stm_bus_if stm_bus ();
@@ -25,7 +24,6 @@ module sim_mem_normal ();
       .CLK(CLK),
       .MEM_BUS(sim_helper_bram.memory_bus.bram_port),
       .CNT_BUS_IF(cnt_bus.in_port),
-      .MOD_DELAY_BUS(mod_delay_bus.in_port),
       .MOD_BUS(mod_bus.in_port),
       .NORMAL_BUS(normal_bus.in_port),
       .STM_BUS(stm_bus.in_port),

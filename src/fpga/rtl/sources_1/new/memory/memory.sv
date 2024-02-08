@@ -2,7 +2,6 @@ module memory (
     input var CLK,
     memory_bus_if.bram_port MEM_BUS,
     cnt_bus_if.in_port CNT_BUS_IF,
-    modulation_delay_bus_if.in_port MOD_DELAY_BUS,
     modulation_bus_if.in_port MOD_BUS,
     normal_bus_if.in_port NORMAL_BUS,
     stm_bus_if.in_port STM_BUS,
@@ -55,31 +54,6 @@ module memory (
       .doutb(CNT_BUS_IF.DOUT)
   );
   /////////////////////   Main   ///////////////////////
-
-  ///////////////////// Mod delay ///////////////////////
-  logic dly_en;
-
-  logic [7:0] dly_idx;
-  logic [15:0] dly_dout;
-
-  assign dly_en = ctl_en & (duty_table_sel == 1'b0) & (cnt_sel == BRAM_SELECT_CNT_MOD_DELAY);
-  assign dly_idx = MOD_DELAY_BUS.IDX;
-  assign MOD_DELAY_BUS.VALUE = dly_dout;
-
-  BRAM_DELAY dly_bram (
-      .clka (bus_clk),
-      .ena  (dly_en),
-      .wea  (we),
-      .addra(addr[7:0]),
-      .dina (data_in),
-      .douta(),
-      .clkb (CLK),
-      .web  (1'b0),
-      .addrb(dly_idx),
-      .dinb (),
-      .doutb(dly_dout)
-  );
-  ///////////////////// Mod delay ///////////////////////
 
   //////////////////// Duty table ///////////////////////
   logic duty_table_en;

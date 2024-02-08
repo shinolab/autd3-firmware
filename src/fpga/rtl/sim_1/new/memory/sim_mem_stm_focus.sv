@@ -26,7 +26,6 @@ module sim_mem_stm_focus ();
       .CLK(CLK),
       .MEM_BUS(sim_helper_bram.memory_bus.bram_port),
       .CNT_BUS_IF(cnt_bus.in_port),
-      .MOD_DELAY_BUS(mod_delay_bus.in_port),
       .MOD_BUS(mod_bus.in_port),
       .NORMAL_BUS(normal_bus.in_port),
       .STM_BUS(stm_bus.in_port),
