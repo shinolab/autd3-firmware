@@ -8,6 +8,6 @@ interface mod_cnt_if ();
 
   modport timer_port(output IDX_0, output IDX_1);
   modport swapchain_port(input IDX_0, input IDX_1, output SEGMENT, output STOP);
-  modport sampler_port(input IDX_0, input IDX_1, input SEGMENT, input STOP);
+  modport multiplier_port(input IDX_0, input IDX_1, input SEGMENT, input STOP);
 
 endinterface
