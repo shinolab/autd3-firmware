@@ -17,7 +17,6 @@ module sim_mem_mod ();
 
   cnt_bus_if cnt_bus ();
   modulation_bus_if mod_bus ();
-  normal_bus_if normal_bus ();
   stm_bus_if stm_bus ();
   duty_table_bus_if duty_table_bus ();
 
@@ -26,7 +25,6 @@ module sim_mem_mod ();
       .MEM_BUS(sim_helper_bram.memory_bus.bram_port),
       .CNT_BUS_IF(cnt_bus.in_port),
       .MOD_BUS(mod_bus.in_port),
-      .NORMAL_BUS(normal_bus.in_port),
       .STM_BUS(stm_bus.in_port),
       .DUTY_TABLE_BUS(duty_table_bus.in_port)
   );

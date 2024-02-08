@@ -44,14 +44,13 @@ module sim_helper_bram #(
   endtask
 
   task automatic write_duty_table(input logic [7:0] value[65536]);
-    logic [1:0] page = 0;
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_DUTY_TABLE_WR_PAGE, {14'h0000, page});
+    logic page = 0;
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_DUTY_TABLE_WR_PAGE, {15'h0000, page});
     for (int i = 0; i < 32768; i++) begin
-      bram_write(params::BRAM_SELECT_CONTROLLER, {2'b00, 1'b1, i[12:0]}, {value[2*i+1], value[2*i]
-                 });
-      if (i % 8192 == 8191) begin
+      bram_write(params::BRAM_SELECT_DUTY_TABLE, i[13:0], {value[2*i+1], value[2*i]});
+      if (i[13:0] === (1 << 14) - 1) begin
         page = page + 1;
-        bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_DUTY_TABLE_WR_PAGE, {14'h0000, page
+        bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_DUTY_TABLE_WR_PAGE, {15'h0000, page
                    });
       end
     end
@@ -61,13 +60,6 @@ module sim_helper_bram #(
     bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_MEM_WR_SEGMENT, {15'h000, segment});
     for (int i = 0; i < (cnt + 1) / 2; i++) begin
       bram_write(params::BRAM_SELECT_MOD, i, {mod_data[2*i+1], mod_data[2*i]});
-    end
-  endtask
-
-  task automatic write_intensity_phase(input logic segment, logic [7:0] intensity[DEPTH],
-                                       logic [7:0] phase[DEPTH]);
-    for (int i = 0; i < DEPTH; i++) begin
-      bram_write(params::BRAM_SELECT_NORMAL, {7'h00, segment, i[7:0]}, {intensity[i], phase[i]});
     end
   endtask
 
