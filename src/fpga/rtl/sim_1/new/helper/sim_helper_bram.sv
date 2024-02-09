@@ -85,8 +85,8 @@ module sim_helper_bram #(
     end
   endtask
 
-  task automatic write_stm_focus(input logic segment, input logic [17:0] x[],
-                                 input logic [17:0] y[], input logic [17:0] z[],
+  task automatic write_stm_focus(input logic segment, input logic signed [17:0] x[],
+                                 input logic signed [17:0] y[], input logic signed [17:0] z[],
                                  input logic [7:0] intensity[], int cnt);
     logic [ 3:0] page = 0;
     logic [13:0] addr = 0;
