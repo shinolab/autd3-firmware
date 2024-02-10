@@ -25,6 +25,7 @@ module stm #(
   assign STM_BUS.MODE = mode;
   assign STM_BUS.SEGMENT = segment;
 
+  logic update_settings;
   logic [7:0] intensity_gain;
   logic [7:0] phase_gain;
   logic [7:0] intensity_focus;
@@ -41,13 +42,15 @@ module stm #(
   logic [15:0] timer_idx_0, timer_idx_1;
   stm_timer stm_timer (
       .CLK(CLK),
+      .UPDATE_SETTINGS_IN(UPDATE_SETTINGS),
       .SYS_TIME(SYS_TIME),
       .CYCLE_0(STM_SETTINGS.CYCLE_0),
       .FREQ_DIV_0(STM_SETTINGS.FREQ_DIV_0),
       .CYCLE_1(STM_SETTINGS.CYCLE_1),
       .FREQ_DIV_1(STM_SETTINGS.FREQ_DIV_1),
       .IDX_0(timer_idx_0),
-      .IDX_1(timer_idx_1)
+      .IDX_1(timer_idx_1),
+      .UPDATE_SETTINGS_OUT(update_settings)
   );
 
   logic swapchain_mode;
@@ -56,7 +59,7 @@ module stm #(
   logic swapchain_stop;
   stm_swapchain stm_swapchain (
       .CLK(CLK),
-      .UPDATE_SETTINGS(UPDATE_SETTINGS),
+      .UPDATE_SETTINGS(update_settings),
       .REQ_MODE(STM_SETTINGS.MODE),
       .REQ_RD_SEGMENT(STM_SETTINGS.REQ_RD_SEGMENT),
       .REP(STM_SETTINGS.REP),

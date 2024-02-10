@@ -19,7 +19,7 @@ module stm_gain #(
 
   logic [7:0] addr;
   logic [1:0] set_cnt;
-  logic [$clog2(DEPTH):0] cnt;
+  logic [$clog2(DEPTH)-1:0] cnt;
 
   typedef enum logic [1:0] {
     WAITING,

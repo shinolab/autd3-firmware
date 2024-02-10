@@ -12,7 +12,7 @@ module sim_stm_focus ();
   );
 
   localparam int DEPTH = 249;
-  localparam int SIZE = 128;
+  localparam int SIZE = 16;
 
   sim_helper_bram sim_helper_bram ();
   sim_helper_random sim_helper_random ();
@@ -20,10 +20,12 @@ module sim_stm_focus ();
   settings::stm_settings_t stm_settings;
   logic update_settings;
 
-  logic signed [17:0] focus_x_0[SIZE], focus_x_1[SIZE/4];
-  logic signed [17:0] focus_y_0[SIZE], focus_y_1[SIZE/4];
-  logic signed [17:0] focus_z_0[SIZE], focus_z_1[SIZE/4];
-  logic [7:0] intensity_buf_0[SIZE], intensity_buf_1[SIZE/4];
+  logic [15:0] cycle_buf[2];
+  logic [31:0] freq_div_buf[2];
+  logic signed [17:0] focus_x[2][SIZE];
+  logic signed [17:0] focus_y[2][SIZE];
+  logic signed [17:0] focus_z[2][SIZE];
+  logic [7:0] intensity_buf[2][SIZE];
 
   logic [15:0] debug_idx;
   logic debug_segment;
@@ -77,8 +79,16 @@ module sim_stm_focus ();
   task automatic update(input logic req_segment, input logic [31:0] rep);
     @(posedge CLK);
     update_settings <= 1'b1;
-    stm_settings.REQ_RD_SEGMENT = req_segment;
-    stm_settings.REP = rep;
+    stm_settings.REQ_RD_SEGMENT <= req_segment;
+    stm_settings.REP <= rep;
+    if (req_segment === 1'b0) begin
+      stm_settings.CYCLE_0 = cycle_buf[req_segment] - 1;
+      stm_settings.FREQ_DIV_0 = 512 * freq_div_buf[req_segment];
+    end else begin
+      stm_settings.CYCLE_1 = cycle_buf[req_segment] - 1;
+      stm_settings.FREQ_DIV_1 = 512 * freq_div_buf[req_segment];
+    end
+
     @(posedge CLK);
     update_settings <= 1'b0;
   endtask
@@ -104,9 +114,7 @@ module sim_stm_focus ();
         break;
       end
     end
-    for (
-        int j = 0; j < (segment === 1'b1 ? stm_settings.CYCLE_1 + 1 : stm_settings.CYCLE_0 + 1); j++
-    ) begin
+    for (int j = 0; j < cycle_buf[segment] * freq_div_buf[segment]; j++) begin
       while (1) begin
         @(posedge CLK);
         if (dout_valid) begin
@@ -122,17 +130,15 @@ module sim_stm_focus ();
           continue;
         end
         idx++;
-        x = (segment === 1'b1 ? focus_x_1[debug_idx] : focus_x_0[debug_idx]) -
-            $rtoi(10.16 * ix / 0.025);  // [0.025mm]
-        y = (segment === 1'b1 ? focus_y_1[debug_idx] : focus_y_0[debug_idx]) -
-            $rtoi(10.16 * iy / 0.025);  // [0.025mm]
-        z = segment === 1'b1 ? focus_z_1[debug_idx] : focus_z_0[debug_idx];  // [0.025mm]
+        x = focus_x[segment][debug_idx] - $rtoi(10.16 * ix / 0.025);  // [0.025mm]
+        y = focus_y[segment][debug_idx] - $rtoi(10.16 * iy / 0.025);  // [0.025mm]
+        z = focus_z[segment][debug_idx];  // [0.025mm]
         r = $rtoi($sqrt($itor(x * x + y * y + z * z)));  // [0.025mm]
         lambda = (r << 18) / stm_settings.SOUND_SPEED;
         p = lambda % 256;
-        if (intensity !== (segment === 1'b1 ? intensity_buf_1[debug_idx] : intensity_buf_0[debug_idx])) begin
-          $error("Failed at d_out=%d, d_in=%d @%d", intensity,
-                 (segment === 1'b1 ? intensity_buf_1[debug_idx] : intensity_buf_0[debug_idx]), id);
+        if (intensity !== intensity_buf[segment][debug_idx]) begin
+          $error("Failed at d_out=%d, d_in=%d @%d", intensity, intensity_buf[segment][debug_idx],
+                 id);
           $finish();
         end
         if (phase !== p) begin
@@ -149,34 +155,38 @@ module sim_stm_focus ();
   initial begin
     sim_helper_random.init();
 
+    cycle_buf[0] = SIZE;
+    cycle_buf[1] = SIZE / 4;
+    freq_div_buf[0] = 1;
+    freq_div_buf[1] = 3;
+
     stm_settings.MODE = params::STM_MODE_FOCUS;
     stm_settings.SOUND_SPEED = 340 * 1024;
-    stm_settings.CYCLE_0 = SIZE - 1;
-    stm_settings.FREQ_DIV_0 = 512;
-    stm_settings.CYCLE_1 = SIZE / 4 - 1;
-    stm_settings.FREQ_DIV_1 = 512 * 3;
-
-    update(0, 32'hFFFFFFFF);
+    stm_settings.CYCLE_0 = '0;
+    stm_settings.FREQ_DIV_0 = '1;
+    stm_settings.CYCLE_1 = '0;
+    stm_settings.FREQ_DIV_1 = '1;
 
     @(posedge locked);
 
-    for (int i = 0; i < SIZE; i++) begin
-      focus_x_0[i] = sim_helper_random.range(131071, -131072 + 6908);
-      focus_y_0[i] = sim_helper_random.range(131071, -131072 + 5283);
-      focus_z_0[i] = sim_helper_random.range(131071, -131072);
-      intensity_buf_0[i] = sim_helper_random.range(8'hFF, 0);
+    for (int segment = 0; segment < 2; segment++) begin
+      for (int i = 0; i < SIZE; i++) begin
+        focus_x[segment][i] = sim_helper_random.range(131071, -131072 + 6908);
+        focus_y[segment][i] = sim_helper_random.range(131071, -131072 + 5283);
+        focus_z[segment][i] = sim_helper_random.range(131071, -131072);
+        intensity_buf[segment][i] = sim_helper_random.range(8'hFF, 0);
+      end
+      sim_helper_bram.write_stm_focus(segment, focus_x[segment], focus_y[segment], focus_z[segment],
+                                      intensity_buf[segment], cycle_buf[segment]);
     end
-    for (int i = 0; i < SIZE / 4; i++) begin
-      focus_x_1[i] = sim_helper_random.range(131071, -131072 + 6908);
-      focus_y_1[i] = sim_helper_random.range(131071, -131072 + 5283);
-      focus_z_1[i] = sim_helper_random.range(131071, -131072);
-      intensity_buf_1[i] = sim_helper_random.range(8'hFF, 0);
-    end
-    sim_helper_bram.write_stm_focus(0, focus_x_0, focus_y_0, focus_z_0, intensity_buf_0, SIZE);
-    sim_helper_bram.write_stm_focus(1, focus_x_1, focus_y_1, focus_z_1, intensity_buf_1, SIZE / 4);
     $display("memory initialized");
 
+    fork
+      update(0, 32'hFFFFFFFF);
+      wait_segment(0);
+    join
     check(0);
+
     fork
       update(1, 32'd0);
       wait_segment(1);

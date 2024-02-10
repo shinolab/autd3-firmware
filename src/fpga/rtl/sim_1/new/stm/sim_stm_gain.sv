@@ -10,7 +10,7 @@ module sim_stm_gain ();
   );
 
   localparam int DEPTH = 249;
-  localparam int SIZE = 128;
+  localparam int SIZE = 16;
 
   sim_helper_bram sim_helper_bram ();
   sim_helper_random sim_helper_random ();
@@ -25,6 +25,7 @@ module sim_stm_gain ();
   logic dout_valid;
 
   logic [15:0] cycle_buf[2];
+  logic [31:0] freq_div_buf[2];
   logic [7:0] intensity_buf[2][SIZE][DEPTH];
   logic [7:0] phase_buf[2][SIZE][DEPTH];
 
@@ -74,8 +75,15 @@ module sim_stm_gain ();
   task automatic update(input logic req_segment, input logic [31:0] rep);
     @(posedge CLK);
     update_settings <= 1'b1;
-    stm_settings.REQ_RD_SEGMENT = req_segment;
-    stm_settings.REP = rep;
+    stm_settings.REQ_RD_SEGMENT <= req_segment;
+    stm_settings.REP <= rep;
+    if (req_segment === 1'b0) begin
+      stm_settings.CYCLE_0 <= cycle_buf[req_segment] - 1;
+      stm_settings.FREQ_DIV_0 <= 512 * freq_div_buf[req_segment];
+    end else begin
+      stm_settings.CYCLE_1 <= cycle_buf[req_segment] - 1;
+      stm_settings.FREQ_DIV_1 <= 512 * freq_div_buf[req_segment];
+    end
     @(posedge CLK);
     update_settings <= 1'b0;
   endtask
@@ -97,7 +105,7 @@ module sim_stm_gain ();
       end
     end
 
-    for (int j = 0; j < cycle_buf[segment]; j++) begin
+    for (int j = 0; j < cycle_buf[segment] * freq_div_buf[segment]; j++) begin
       while (1) begin
         @(posedge CLK);
         if (dout_valid) begin
@@ -107,7 +115,8 @@ module sim_stm_gain ();
       $display("check %d/%d", j + 1, cycle_buf[segment]);
       for (int i = 0; i < DEPTH; i++) begin
         if (intensity_buf[segment][debug_idx][i] !== intensity) begin
-          $display("%d: Intensity[%d], %d!=%d", segment, i, intensity_buf[segment][debug_idx][i], intensity);
+          $display("%d: Intensity[%d], %d!=%d", segment, i, intensity_buf[segment][debug_idx][i],
+                   intensity);
           $finish();
         end
         if (phase_buf[segment][debug_idx][i] !== phase) begin
@@ -124,12 +133,14 @@ module sim_stm_gain ();
 
     cycle_buf[0] = SIZE;
     cycle_buf[1] = SIZE / 4;
+    freq_div_buf[0] = 1;
+    freq_div_buf[1] = 3;
 
     stm_settings.MODE = params::STM_MODE_GAIN;
-    stm_settings.CYCLE_0 = cycle_buf[0] - 1;
-    stm_settings.FREQ_DIV_0 = 512;
-    stm_settings.CYCLE_1 = cycle_buf[1] - 1;
-    stm_settings.FREQ_DIV_1 = 512 * 3;
+    stm_settings.CYCLE_0 = '0;
+    stm_settings.FREQ_DIV_0 = '1;
+    stm_settings.CYCLE_1 = '0;
+    stm_settings.FREQ_DIV_1 = '1;
 
     @(posedge locked);
 
@@ -141,7 +152,7 @@ module sim_stm_gain ();
         end
       end
       sim_helper_bram.write_stm_gain_intensity_phase(segment, intensity_buf[segment],
-                                                     phase_buf[segment], SIZE);
+                                                     phase_buf[segment], cycle_buf[segment]);
     end
 
     $display("memory initialized");
@@ -150,8 +161,8 @@ module sim_stm_gain ();
       update(0, 32'hFFFFFFFF);
       wait_segment(0);
     join
-
     check(0);
+
     fork
       update(1, 32'd0);
       wait_segment(1);
