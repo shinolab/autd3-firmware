@@ -48,39 +48,39 @@ module stm_gain #(
         end
       end
       BRAM_WAIT_0: begin
+        addr  <= addr + 1;
         state <= BRAM_WAIT_1;
       end
       BRAM_WAIT_1: begin
         cnt <= '0;
+        addr <= addr + 1;
         set_cnt <= '0;
         state <= RUN;
       end
       RUN: begin
+        addr <= addr + 1;
         dout_valid <= 1;
         case (set_cnt)
           0: begin
             phase <= data_out[7:0];
             intensity <= data_out[15:8];
-            set_cnt <= set_cnt + 1;
           end
           1: begin
             phase <= data_out[23:16];
             intensity <= data_out[31:24];
-            set_cnt <= set_cnt + 1;
           end
           2: begin
             phase <= data_out[39:32];
             intensity <= data_out[47:40];
-            set_cnt <= set_cnt + 1;
           end
           3: begin
             phase <= data_out[55:48];
             intensity <= data_out[63:56];
-            set_cnt <= 0;
           end
           default: begin
           end
         endcase
+        set_cnt <= set_cnt + 1;
         cnt <= cnt + 1;
         if (cnt == DEPTH - 1) begin
           state <= WAITING;
