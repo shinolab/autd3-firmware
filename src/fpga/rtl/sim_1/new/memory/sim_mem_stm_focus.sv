@@ -64,7 +64,7 @@ module sim_mem_stm_focus ();
     end
   endtask
 
-  task automatic check(logic segment);
+  task automatic check(input logic segment);
     logic [15:0] cur_idx;
     logic [17:0] expect_x;
     logic [17:0] expect_y;

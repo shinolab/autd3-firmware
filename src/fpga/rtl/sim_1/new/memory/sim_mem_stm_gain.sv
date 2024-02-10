@@ -46,7 +46,7 @@ module sim_mem_stm_gain ();
   logic [7:0] phase_buf_1[SIZE][DEPTH];
   logic [7:0] intensity_buf_1[SIZE][DEPTH];
 
-  task automatic progress(logic [9:0] index);
+  task automatic progress(input logic [9:0] index);
     idx = index;
     for (int i = 0; i < DEPTH + 3; i++) begin
       @(posedge CLK);
@@ -54,7 +54,7 @@ module sim_mem_stm_gain ();
     end
   endtask
 
-  task automatic check(logic segment, logic [9:0] index);
+  task automatic check(input logic segment, input logic [9:0] index);
     logic [7:0] cur_idx;
     logic [7:0] expect_phase;
     logic [7:0] expect_intensity;

@@ -47,7 +47,7 @@ module sim_mem_mod ();
     end
   endtask
 
-  task automatic check(logic segment);
+  task automatic check(input logic segment);
     logic [14:0] cur_idx;
     logic [ 7:0] expect_value;
     repeat (3) @(posedge CLK);
