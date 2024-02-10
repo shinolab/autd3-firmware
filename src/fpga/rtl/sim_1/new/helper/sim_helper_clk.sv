@@ -1,5 +1,7 @@
 `timescale 1ns / 1ps
-module sim_helper_clk (
+module sim_helper_clk #(
+    parameter real SPEED_UP = 1.0
+) (
     output var CLK_20P48M,
     output var LOCKED,
     output var [63:0] SYS_TIME
@@ -33,10 +35,10 @@ module sim_helper_clk (
 
   // main clock 25.6MHz
   always begin
-    #19.531 MRCC_25P6M = !MRCC_25P6M;
-    #19.531 MRCC_25P6M = !MRCC_25P6M;
-    #19.531 MRCC_25P6M = !MRCC_25P6M;
-    #19.532 MRCC_25P6M = !MRCC_25P6M;
+    #(19.531 / SPEED_UP) MRCC_25P6M = !MRCC_25P6M;
+    #(19.531 / SPEED_UP) MRCC_25P6M = !MRCC_25P6M;
+    #(19.531 / SPEED_UP) MRCC_25P6M = !MRCC_25P6M;
+    #(19.532 / SPEED_UP) MRCC_25P6M = !MRCC_25P6M;
   end
 
   always @(posedge clk_20P48M) begin

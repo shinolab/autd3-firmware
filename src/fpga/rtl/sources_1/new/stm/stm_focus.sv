@@ -13,31 +13,31 @@ module stm_focus #(
 );
 
   localparam int DivLatency = 2 + 2 + 2 + 2 + 10 + 66 + 1;
-  localparam int Latency = DivLatency + 249;
+  localparam int Latency = DivLatency + DEPTH;
 
-  logic [7:0] intensity;
-  logic [7:0] phase;
+  logic [7:0] intensity = '0;
+  logic [7:0] phase = '0;
 
-  logic [15:0] addr;
+  logic [15:0] addr = '0;
   logic [63:0] data_out;
-  logic dout_valid;
+  logic dout_valid = 1'b0;
 
-  logic [7:0] intensity_buf;
-  logic signed [17:0] focus_x, focus_y, focus_z;
-  logic signed [15:0] trans_x, trans_y;
-  logic signed [17:0] dx, dy;
+  logic [7:0] intensity_buf = '0;
+  logic signed [17:0] focus_x = '0, focus_y = '0, focus_z = '0;
+  logic signed [15:0] trans_x = '0, trans_y = '0;
+  logic signed [17:0] dx = '0, dy = '0;
   logic [35:0] dx2, dy2, dz2;
   logic [36:0] dxy2;
-  logic [37:0] d2;
+  logic [37:0] d2 = '0;
   logic [23:0] sqrt_dout;
 
   logic [63:0] quo;
   logic [31:0] _unused_rem;
 
-  logic [$clog2(Latency)-1:0] cnt;
-  logic [$clog2(DEPTH)-1:0] set_cnt;
+  logic [$clog2(Latency)-1:0] cnt = '0;
+  logic [$clog2(DEPTH)-1:0] set_cnt = '0;
 
-  logic [$clog2(DEPTH)-1:0] tr_idx;
+  logic [7:0] tr_idx = '0;
 
   typedef enum logic [2:0] {
     WAITING,

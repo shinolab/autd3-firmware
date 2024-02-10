@@ -3,7 +3,9 @@ module sim_stm_focus ();
   logic CLK;
   logic locked;
   logic [63:0] SYS_TIME;
-  sim_helper_clk sim_helper_clk (
+  sim_helper_clk #(
+      .SPEED_UP(1.0)
+  ) sim_helper_clk (
       .CLK_20P48M(CLK),
       .LOCKED(locked),
       .SYS_TIME(SYS_TIME)
@@ -72,9 +74,6 @@ module sim_stm_focus ();
       .DEBUG_SEGMENT(debug_segment)
   );
 
-  logic [15:0] idx_buf;
-  always @(posedge CLK) if (UPDATE) idx_buf = debug_idx;
-
   task automatic update(input logic req_segment, input logic [31:0] rep);
     @(posedge CLK);
     update_settings <= 1'b1;
@@ -84,8 +83,17 @@ module sim_stm_focus ();
     update_settings <= 1'b0;
   endtask
 
+  task automatic wait_segment(input logic segment);
+    while (1) begin
+      @(posedge CLK);
+      if (debug_segment === segment) begin
+        break;
+      end
+    end
+  endtask
+
   task automatic check(input logic segment);
-    automatic int id = 0;
+    automatic int idx, ix, iy;
     automatic logic signed [63:0] x, y, z;
     automatic logic [63:0] r, lambda;
     automatic int p;
@@ -96,42 +104,44 @@ module sim_stm_focus ();
         break;
       end
     end
-    for (int j = 0; j < SIZE; j++) begin
+    for (
+        int j = 0; j < (segment === 1'b1 ? stm_settings.CYCLE_1 + 1 : stm_settings.CYCLE_0 + 1); j++
+    ) begin
       while (1) begin
         @(posedge CLK);
         if (dout_valid) begin
           break;
         end
       end
-      $display("check %d @%d", idx_buf, SYS_TIME);
-      id = 0;
-      for (int iy = 0; iy < 14; iy++) begin
-        y = (segment ? focus_y_1[idx_buf] : focus_y_0[idx_buf]) -
-            $rtoi(10.16 * iy / 0.025);  // [0.025mm]
-        for (int ix = 0; ix < 18; ix++) begin
-          if ((iy === 1) && (ix === 1 || ix === 2 || ix === 16)) begin
-            continue;
-          end
-          x = (segment ? focus_x_1[idx_buf] : focus_x_0[idx_buf]) -
-              $rtoi(10.16 * ix / 0.025);  // [0.025mm]
-          z = segment ? focus_z_1[idx_buf] : focus_z_0[idx_buf];  // [0.025mm]
-          r = $rtoi($sqrt($itor(x * x + y * y + z * z)));  // [0.025mm]
-          lambda = (r << 18) / stm_settings.SOUND_SPEED;
-          p = lambda % 256;
-          if (intensity !== (segment ? intensity_buf_1[idx_buf] : intensity_buf_0[idx_buf])) begin
-            $error("Failed at d_out=%d, d_in=%d @%d", intensity,
-                   (segment ? intensity_buf_1[idx_buf] : intensity_buf_0[idx_buf]), id);
-            $finish();
-          end
-          if (phase !== p) begin
-            $error("Failed at p_out=%d, p_in=%d (r2=%d, r=%d, lambda=%d) @%d", phase, p,
-                   x * x + y * y + z * z, r, lambda, id);
-            $error("x=%d, y=%d, z=%d", x, y, z);
-            $finish();
-          end
-          @(posedge CLK);
-          id = id + 1;
+      $display("check %d @%d", debug_idx, SYS_TIME);
+      idx = 0;
+      for (int id = 0; idx < DEPTH; id++) begin
+        ix = id % 18;
+        iy = id / 18;
+        if ((iy === 1) && (ix === 1 || ix === 2 || ix === 16)) begin
+          continue;
         end
+        idx++;
+        x = (segment === 1'b1 ? focus_x_1[debug_idx] : focus_x_0[debug_idx]) -
+            $rtoi(10.16 * ix / 0.025);  // [0.025mm]
+        y = (segment === 1'b1 ? focus_y_1[debug_idx] : focus_y_0[debug_idx]) -
+            $rtoi(10.16 * iy / 0.025);  // [0.025mm]
+        z = segment === 1'b1 ? focus_z_1[debug_idx] : focus_z_0[debug_idx];  // [0.025mm]
+        r = $rtoi($sqrt($itor(x * x + y * y + z * z)));  // [0.025mm]
+        lambda = (r << 18) / stm_settings.SOUND_SPEED;
+        p = lambda % 256;
+        if (intensity !== (segment === 1'b1 ? intensity_buf_1[debug_idx] : intensity_buf_0[debug_idx])) begin
+          $error("Failed at d_out=%d, d_in=%d @%d", intensity,
+                 (segment === 1'b1 ? intensity_buf_1[debug_idx] : intensity_buf_0[debug_idx]), id);
+          $finish();
+        end
+        if (phase !== p) begin
+          $error("Failed at p_out=%d, p_in=%d (r2=%d, r=%d, lambda=%d) @%d", phase, p,
+                 x * x + y * y + z * z, r, lambda, id);
+          $error("x=%d, y=%d, z=%d", x, y, z);
+          $finish();
+        end
+        @(posedge CLK);
       end
     end
   endtask
@@ -151,14 +161,12 @@ module sim_stm_focus ();
     @(posedge locked);
 
     for (int i = 0; i < SIZE; i++) begin
-      $display("write %d/%d", i + 1, SIZE);
       focus_x_0[i] = sim_helper_random.range(131071, -131072 + 6908);
       focus_y_0[i] = sim_helper_random.range(131071, -131072 + 5283);
       focus_z_0[i] = sim_helper_random.range(131071, -131072);
       intensity_buf_0[i] = sim_helper_random.range(8'hFF, 0);
     end
     for (int i = 0; i < SIZE / 4; i++) begin
-      $display("write %d/%d", i + 1, SIZE / 4);
       focus_x_1[i] = sim_helper_random.range(131071, -131072 + 6908);
       focus_y_1[i] = sim_helper_random.range(131071, -131072 + 5283);
       focus_z_1[i] = sim_helper_random.range(131071, -131072);
@@ -166,9 +174,13 @@ module sim_stm_focus ();
     end
     sim_helper_bram.write_stm_focus(0, focus_x_0, focus_y_0, focus_z_0, intensity_buf_0, SIZE);
     sim_helper_bram.write_stm_focus(1, focus_x_1, focus_y_1, focus_z_1, intensity_buf_1, SIZE / 4);
+    $display("memory initialized");
 
     check(0);
-    update(1, 32'hFFFFFFFF);
+    fork
+      update(1, 32'd0);
+      wait_segment(1);
+    join
     check(1);
 
     $display("OK! sim_stm_focus");
