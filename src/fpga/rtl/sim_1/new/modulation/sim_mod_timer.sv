@@ -17,30 +17,30 @@ module sim_mod_timer ();
   sim_helper_bram #(.DEPTH(DEPTH)) sim_helper_bram ();
 
   settings::mod_settings_t mod_settings;
-  mod_cnt_if mod_cnt ();
+  logic update_settings;
   logic [14:0] idx_0, idx_1;
-
-  assign idx_0 = mod_cnt.IDX_0;
-  assign idx_1 = mod_cnt.IDX_1;
 
   modulation_timer modulation_timer (
       .CLK(CLK),
+      .UPDATE_SETTINGS_IN(update_settings),
       .SYS_TIME(sys_time),
       .CYCLE_0(mod_settings.CYCLE_0),
       .FREQ_DIV_0(mod_settings.FREQ_DIV_0),
       .CYCLE_1(mod_settings.CYCLE_1),
       .FREQ_DIV_1(mod_settings.FREQ_DIV_1),
-      .MOD_CNT(mod_cnt.sampler_port)
+      .IDX_0(idx_0),
+      .IDX_1(idx_1),
+      .UPDATE_SETTINGS_OUT()
   );
 
   logic [14:0] expect_idx_0, expect_idx_1;
-  assign expect_idx_0 = ((sys_time - DivLatency * 2 - 1) / mod_settings.FREQ_DIV_0) % (mod_settings.CYCLE_0 + 1);
-  assign expect_idx_1 = ((sys_time - DivLatency * 2 - 1) / mod_settings.FREQ_DIV_1) % (mod_settings.CYCLE_1 + 1);
+  assign expect_idx_0 = ((sys_time - DivLatency * 2) / mod_settings.FREQ_DIV_0) % (mod_settings.CYCLE_0 + 1);
+  assign expect_idx_1 = ((sys_time - DivLatency * 2) / mod_settings.FREQ_DIV_1) % (mod_settings.CYCLE_1 + 1);
 
   task automatic check_0();
-    logic [14:0] idx_old;
+    automatic logic [14:0] idx_old;
     idx_old = idx_0;
-    for (int i = 0; i < mod_settings.CYCLE_0 + 10; i++) begin
+    for (int i = 0; i < mod_settings.CYCLE_0 + 1; i++) begin
       while (1) begin
         @(posedge CLK);
         if (idx_old !== idx_0) begin
@@ -57,9 +57,9 @@ module sim_mod_timer ();
   endtask
 
   task automatic check_1();
-    logic [14:0] idx_old;
+    automatic logic [14:0] idx_old;
     idx_old = idx_1;
-    for (int i = 0; i < mod_settings.CYCLE_0 + 1; i++) begin
+    for (int i = 0; i < (mod_settings.CYCLE_0 + 1) / 3; i++) begin
       while (1) begin
         @(posedge CLK);
         if (idx_old !== idx_1) begin
@@ -79,6 +79,7 @@ module sim_mod_timer ();
   initial begin
     sim_helper_random.init();
 
+    update_settings = 1'b0;
     mod_settings.REQ_RD_SEGMENT = 1'b0;
     mod_settings.CYCLE_0 = 32768 - 1;
     mod_settings.FREQ_DIV_0 = 8;
@@ -87,6 +88,11 @@ module sim_mod_timer ();
     mod_settings.REP = 32'hFFFFFFFF;
 
     @(posedge locked);
+
+    @(posedge CLK);
+    update_settings <= 1'b1;
+    @(posedge CLK);
+    update_settings <= 1'b0;
 
     #15000;
 

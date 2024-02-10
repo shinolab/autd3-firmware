@@ -1,10 +1,15 @@
 `timescale 1ns / 1ps
 module modulation_swapchain (
-    input var CLK,
-    input var UPDATE_SETTINGS,
-    input var REQ_RD_SEGMENT,
-    input var [31:0] REP,
-    mod_cnt_if.swapchain_port MOD_CNT
+    input wire CLK,
+    input wire UPDATE_SETTINGS,
+    input wire REQ_RD_SEGMENT,
+    input wire [31:0] REP,
+    input wire [14:0] IDX_0_IN,
+    input wire [14:0] IDX_1_IN,
+    output wire SEGMENT,
+    output wire STOP,
+    output wire [14:0] IDX_0_OUT,
+    output wire [14:0] IDX_1_OUT
 );
 
   logic segment = 0;
@@ -18,10 +23,12 @@ module modulation_swapchain (
   logic idx_0_changed, idx_1_changed;
   logic [14:0] idx_0_buf, idx_1_buf;
 
-  assign idx_0 = MOD_CNT.IDX_0;
-  assign idx_1 = MOD_CNT.IDX_1;
-  assign MOD_CNT.SEGMENT = segment;
-  assign MOD_CNT.STOP = stop;
+  assign idx_0 = IDX_0_IN;
+  assign idx_1 = IDX_1_IN;
+  assign SEGMENT = segment;
+  assign STOP = stop;
+  assign IDX_0_OUT = idx_0_buf;
+  assign IDX_1_OUT = idx_1_buf;
 
   typedef enum logic [1:0] {
     WAIT_START,

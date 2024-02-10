@@ -2,9 +2,9 @@
 module sim_helper_clk #(
     parameter real SPEED_UP = 1.0
 ) (
-    output var CLK_20P48M,
-    output var LOCKED,
-    output var [63:0] SYS_TIME
+    output wire CLK_20P48M,
+    output wire LOCKED,
+    output wire [63:0] SYS_TIME
 );
 
   logic MRCC_25P6M;

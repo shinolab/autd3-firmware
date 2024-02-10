@@ -3,9 +3,9 @@ module delay_fifo #(
     parameter int WIDTH = 8,
     parameter int DEPTH = 16
 ) (
-    input var CLK,
-    input var [WIDTH-1:0] DIN,
-    output var [WIDTH-1:0] DOUT
+    input wire CLK,
+    input wire [WIDTH-1:0] DIN,
+    output wire [WIDTH-1:0] DOUT
 );
 
   logic [WIDTH-1:0] buffer[DEPTH];

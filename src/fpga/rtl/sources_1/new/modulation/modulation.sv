@@ -2,40 +2,48 @@
 module modulation #(
     parameter int DEPTH = 249
 ) (
-    input var CLK,
-    input var [63:0] SYS_TIME,
-    input var UPDATE_SETTINGS,
+    input wire CLK,
+    input wire [63:0] SYS_TIME,
+    input wire UPDATE_SETTINGS,
     input settings::mod_settings_t MOD_SETTINGS,
-    input var DIN_VALID,
-    input var [7:0] INTENSITY_IN,
-    output var [15:0] INTENSITY_OUT,
-    input var [7:0] PHASE_IN,
-    output var [7:0] PHASE_OUT,
-    output var DOUT_VALID,
+    input wire DIN_VALID,
+    input wire [7:0] INTENSITY_IN,
+    output wire [15:0] INTENSITY_OUT,
+    input wire [7:0] PHASE_IN,
+    output wire [7:0] PHASE_OUT,
+    output wire DOUT_VALID,
     modulation_bus_if.out_port MOD_BUS,
-    output var [14:0] DEBUG_IDX,
-    output var DEBUG_SEGMENT,
-    output var DEBUG_STOP
+    output wire [14:0] DEBUG_IDX,
+    output wire DEBUG_SEGMENT,
+    output wire DEBUG_STOP
 );
 
-  mod_cnt_if mod_cnt ();
-
+  logic [14:0] idx_0_timer, idx_1_timer;
   modulation_timer modulation_timer (
       .CLK(CLK),
+      .UPDATE_SETTINGS_IN(UPDATE_SETTINGS),
       .SYS_TIME(SYS_TIME),
       .CYCLE_0(MOD_SETTINGS.CYCLE_0),
       .FREQ_DIV_0(MOD_SETTINGS.FREQ_DIV_0),
       .CYCLE_1(MOD_SETTINGS.CYCLE_1),
       .FREQ_DIV_1(MOD_SETTINGS.FREQ_DIV_1),
-      .MOD_CNT(mod_cnt.timer_port)
+      .IDX_0(idx_0_timer),
+      .IDX_1(idx_1_timer),
+      .UPDATE_SETTINGS_OUT(update_settings)
   );
 
+  logic [14:0] idx_0, idx_1;
   modulation_swapchain modulation_swapchain (
       .CLK(CLK),
-      .UPDATE_SETTINGS(UPDATE_SETTINGS),
+      .UPDATE_SETTINGS(update_settings),
       .REQ_RD_SEGMENT(MOD_SETTINGS.REQ_RD_SEGMENT),
       .REP(MOD_SETTINGS.REP),
-      .MOD_CNT(mod_cnt.swapchain_port)
+      .IDX_0_IN(idx_0_timer),
+      .IDX_1_IN(idx_1_timer),
+      .SEGMENT(segment),
+      .STOP(stop),
+      .IDX_0_OUT(idx_0),
+      .IDX_1_OUT(idx_1)
   );
 
   modulation_multipiler #(
@@ -49,7 +57,10 @@ module modulation #(
       .PHASE_OUT(PHASE_OUT),
       .DOUT_VALID(DOUT_VALID),
       .MOD_BUS(MOD_BUS),
-      .MOD_CNT(mod_cnt.multiplier_port),
+      .IDX_0(idx_0),
+      .IDX_1(idx_1),
+      .SEGMENT(segment),
+      .STOP(stop),
       .DEBUG_IDX(DEBUG_IDX),
       .DEBUG_SEGMENT(DEBUG_SEGMENT),
       .DEBUG_STOP(DEBUG_STOP)

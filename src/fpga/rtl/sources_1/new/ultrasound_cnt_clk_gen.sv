@@ -1,8 +1,8 @@
 module ultrasound_cnt_clk_gen (
-    input var  clk_in1,
-    input var  reset,
-    output var clk_out,
-    output var locked
+    input  wire clk_in1,
+    input  wire reset,
+    output wire clk_out,
+    output wire locked
 );
 
   logic CLKOUT;

@@ -2,37 +2,39 @@
 module modulation_multipiler #(
     parameter int DEPTH = 249
 ) (
-    input var CLK,
-    input var DIN_VALID,
-    input var [7:0] INTENSITY_IN,
-    output var [15:0] INTENSITY_OUT,
-    input var [7:0] PHASE_IN,
-    output var [7:0] PHASE_OUT,
-    output var DOUT_VALID,
+    input wire CLK,
+    input wire DIN_VALID,
+    input wire [7:0] INTENSITY_IN,
+    output wire [15:0] INTENSITY_OUT,
+    input wire [7:0] PHASE_IN,
+    output wire [7:0] PHASE_OUT,
+    output wire DOUT_VALID,
     modulation_bus_if.out_port MOD_BUS,
-    mod_cnt_if.multiplier_port MOD_CNT,
-    output var [14:0] DEBUG_IDX,
-    output var DEBUG_SEGMENT,
-    output var DEBUG_STOP
+    input wire [14:0] IDX_0,
+    input wire [14:0] IDX_1,
+    input wire SEGMENT,
+    input wire STOP,
+    output wire [14:0] DEBUG_IDX,
+    output wire DEBUG_SEGMENT,
+    output wire DEBUG_STOP
 );
 
   localparam int Latency = 1;
 
-  logic [14:0] idx_0, idx_1;
   logic segment;
   logic stop;
 
   logic dout_valid = 1'b0;
 
   logic [7:0] mod;
-  logic [14:0] idx;
-  logic stop_buf, segment_buf;
+  logic [14:0] idx = '0;
+  logic stop_buf = 1'b0, segment_buf = 1'b0;
   logic [$clog2(DEPTH+(Latency+1))-1:0] cnt, set_cnt;
   logic [7:0] intensity_buf;
   logic signed [17:0] p;
 
-  assign segment = MOD_CNT.SEGMENT;
-  assign stop = MOD_CNT.STOP;
+  assign segment = SEGMENT;
+  assign stop = STOP;
 
   assign MOD_BUS.IDX = idx;
   assign mod = MOD_BUS.VALUE;
@@ -91,8 +93,8 @@ module modulation_multipiler #(
           cnt <= 0;
           set_cnt <= 0;
           stop_buf <= stop;
-          if (stop == 1'b0) begin
-            idx <= segment == 1'b0 ? idx_0 : idx_1;
+          if (stop === 1'b0) begin
+            idx <= segment == 1'b0 ? IDX_0 : IDX_1;
             segment_buf <= segment;
           end
           state <= WAIT_MOD_LOAD_0;
@@ -109,7 +111,7 @@ module modulation_multipiler #(
         if (cnt > Latency) begin
           dout_valid <= 1'b1;
           set_cnt <= set_cnt + 1;
-          if (set_cnt == DEPTH - 1) begin
+          if (set_cnt === DEPTH - 1) begin
             state <= WAITING;
           end
         end
@@ -117,12 +119,6 @@ module modulation_multipiler #(
       default: begin
       end
     endcase
-  end
-
-  // In order to align idx_0 and idx_1 with segment and stop, we need to buffer them
-  always_ff @(posedge CLK) begin
-    idx_0 <= MOD_CNT.IDX_0;
-    idx_1 <= MOD_CNT.IDX_1;
   end
 
 endmodule

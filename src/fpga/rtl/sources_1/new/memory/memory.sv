@@ -1,5 +1,5 @@
 module memory (
-    input var CLK,
+    input wire CLK,
     memory_bus_if.bram_port MEM_BUS,
     cnt_bus_if.in_port CNT_BUS_IF,
     modulation_bus_if.in_port MOD_BUS,
