@@ -9,7 +9,7 @@ module stm_timer (
     input wire [31:0] FREQ_DIV_1,
     output wire [15:0] IDX_0,
     output wire [15:0] IDX_1,
-    output var UPDATE_SETTINGS_OUT
+    output wire UPDATE_SETTINGS_OUT
 );
 
   localparam int DIV_LATENCY = 66;

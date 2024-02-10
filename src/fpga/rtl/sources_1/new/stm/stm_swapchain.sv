@@ -7,11 +7,11 @@ module stm_swapchain (
     input wire [31:0] REP,
     input wire [15:0] IDX_0_IN,
     input wire [15:0] IDX_1_IN,
-    output var MODE,
-    output var STOP,
-    output var SEGMENT,
-    output var [15:0] IDX_0_OUT,
-    output var [15:0] IDX_1_OUT
+    output wire MODE,
+    output wire STOP,
+    output wire SEGMENT,
+    output wire [15:0] IDX_0_OUT,
+    output wire [15:0] IDX_1_OUT
 );
 
   logic mode = params::STM_MODE_GAIN;

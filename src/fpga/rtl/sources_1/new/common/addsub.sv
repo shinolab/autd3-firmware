@@ -2,11 +2,11 @@
 module addsub #(
     parameter int WIDTH = 16
 ) (
-    input var CLK,
-    input var [WIDTH-1:0] A,
-    input var [WIDTH-1:0] B,
-    input var ADD,
-    output var [WIDTH-1:0] S
+    input wire CLK,
+    input wire [WIDTH-1:0] A,
+    input wire [WIDTH-1:0] B,
+    input wire ADD,
+    output wire [WIDTH-1:0] S
 );
 
   ADDSUB_MACRO #(

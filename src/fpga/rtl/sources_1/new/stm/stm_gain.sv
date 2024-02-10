@@ -6,9 +6,9 @@ module stm_gain #(
     input wire START,
     input wire [15:0] IDX,
     stm_bus_if.out_gain_port STM_BUS,
-    output var [7:0] INTENSITY,
-    output var [7:0] PHASE,
-    output var DOUT_VALID
+    output wire [7:0] INTENSITY,
+    output wire [7:0] PHASE,
+    output wire DOUT_VALID
 );
 
   logic [7:0] intensity;

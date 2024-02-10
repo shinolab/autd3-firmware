@@ -7,9 +7,9 @@ module stm_focus #(
     input wire [15:0] IDX,
     stm_bus_if.out_focus_port STM_BUS,
     input wire [31:0] SOUND_SPEED,
-    output var [7:0] INTENSITY,
-    output var [7:0] PHASE,
-    output var DOUT_VALID
+    output wire [7:0] INTENSITY,
+    output wire [7:0] PHASE,
+    output wire DOUT_VALID
 );
 
   localparam int DivLatency = 2 + 2 + 2 + 2 + 10 + 66 + 1;

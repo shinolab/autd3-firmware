@@ -10,11 +10,11 @@ module stm #(
     stm_bus_if.stm_port STM_BUS,
     stm_bus_if.out_focus_port STM_BUS_FOCUS,
     stm_bus_if.out_gain_port STM_BUS_GAIN,
-    output var [7:0] INTENSITY,
-    output var [7:0] PHASE,
-    output var DOUT_VALID,
-    output var [15:0] DEBUG_IDX,
-    output var DEBUG_SEGMENT
+    output wire [7:0] INTENSITY,
+    output wire [7:0] PHASE,
+    output wire DOUT_VALID,
+    output wire [15:0] DEBUG_IDX,
+    output wire DEBUG_SEGMENT
 );
 
   logic mode = params::STM_MODE_GAIN;

@@ -1,13 +1,13 @@
 `timescale 1ns / 1ps
 module bram_stm (
-    input var clka,
-    input var ena,
-    input var wea,
-    input var [17:0] addra,
-    input var [15:0] dina,
-    input var clkb,
-    input var [15:0] addrb,
-    output var [63:0] doutb
+    input wire clka,
+    input wire ena,
+    input wire wea,
+    input wire [17:0] addra,
+    input wire [15:0] dina,
+    input wire clkb,
+    input wire [15:0] addrb,
+    output wire [63:0] doutb
 );
 
   blk_mem_gen_v8_4_7 #(

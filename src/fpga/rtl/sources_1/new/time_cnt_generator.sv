@@ -5,8 +5,8 @@ module time_cnt_generator #(
     input wire CLK,
     input wire [63:0] SYS_TIME,
     input wire SKIP_ONE_ASSERT,
-    output var [8:0] TIME_CNT,
-    output var UPDATE
+    output wire [8:0] TIME_CNT,
+    output wire UPDATE
 );
   logic [8:0] t_buf0, t_buf1, t;
   logic update;
