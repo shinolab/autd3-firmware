@@ -13,3 +13,4 @@
 !/.github/
 !/.github/**/*
 !build.sh
+!*.py
