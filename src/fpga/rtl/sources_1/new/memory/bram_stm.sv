@@ -99,7 +99,7 @@ module bram_stm (
       .rstb('0),
       .enb('0),
       .regceb('0),
-      .web(web),
+      .web('0),
       .addrb(addrb),
       .dinb('0),
       .doutb(doutb),
