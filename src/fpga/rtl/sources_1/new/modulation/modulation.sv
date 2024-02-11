@@ -46,9 +46,9 @@ module modulation #(
       .IDX_1_OUT(idx_1)
   );
 
-  modulation_multipiler #(
+  modulation_multiplier #(
       .DEPTH(DEPTH)
-  ) modulation_multipiler (
+  ) modulation_multiplier (
       .CLK(CLK),
       .DIN_VALID(DIN_VALID),
       .INTENSITY_IN(INTENSITY_IN),

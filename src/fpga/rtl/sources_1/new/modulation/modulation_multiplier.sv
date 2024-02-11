@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-module modulation_multipiler #(
+module modulation_multiplier #(
     parameter int DEPTH = 249
 ) (
     input wire CLK,
