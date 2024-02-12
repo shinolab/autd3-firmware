@@ -1,29 +1,29 @@
 `timescale 1ns / 1ps
 module top (
-    input var [16:1] CPU_ADDR,
+    input wire [16:1] CPU_ADDR,
     inout tri [15:0] CPU_DATA,
-    input var CPU_CKIO,
-    input var CPU_CS1_N,
-    input var RESET_N,
-    input var CPU_WE0_N,
-    input var CPU_RD_N,
-    input var CPU_RDWR,
-    input var MRCC_25P6M,
-    input var CAT_SYNC0,
-    output var FORCE_FAN,
-    input var THERMO,
-    output var [252:1] XDCR_OUT,
-    output var GPIO_OUT[2]
+    input wire CPU_CKIO,
+    input wire CPU_CS1_N,
+    input wire RESET_N,
+    input wire CPU_WE0_N,
+    input wire CPU_RD_N,
+    input wire CPU_RDWR,
+    input wire MRCC_25P6M,
+    input wire CAT_SYNC0,
+    output wire FORCE_FAN,
+    input wire THERMO,
+    output wire [252:1] XDCR_OUT,
+    output wire GPIO_OUT[2]
 );
 
   logic clk;
   logic reset;
 
-  logic PWM_OUT[NUM_TRANSDUCERS];
+  logic PWM_OUT[params::NUM_TRANSDUCERS];
 
   assign reset = ~RESET_N;
 
-  for (genvar i = 0; i < NUM_TRANSDUCERS; i++) begin : gen_output
+  for (genvar i = 0; i < params::NUM_TRANSDUCERS; i++) begin : gen_output
     assign XDCR_OUT[cvt_uid(i)+1] = PWM_OUT[i];
   end
 
@@ -45,7 +45,7 @@ module top (
   );
 
   main #(
-      .DEPTH(NUM_TRANSDUCERS)
+      .DEPTH(params::NUM_TRANSDUCERS)
   ) main (
       .CLK(clk),
       .CAT_SYNC0(CAT_SYNC0),
