@@ -57,7 +57,8 @@ package params;
   localparam bit [7:0] ADDR_STM_REP_1 = 8'h5B;
   localparam bit [7:0] ADDR_STM_SOUND_SPEED_0 = 8'h5C;
   localparam bit [7:0] ADDR_STM_SOUND_SPEED_1 = 8'h5D;
-  localparam bit [7:0] ADDR_DUTY_TABLE_WR_PAGE = 8'h60;
+  localparam bit [7:0] ADDR_PULSE_WIDTH_ENCODER_TABLE_WR_PAGE = 8'h60;
+  localparam bit [7:0] ADDR_PULSE_WIDTH_ENCODER_FULL_WIDTH_START = 8'h61;
   localparam bit [7:0] ADDR_DEBUG_OUT_IDX = 8'hF0;
 
   localparam int CTL_FLAG_FORCE_FAN_BIT = 13;

@@ -35,6 +35,12 @@ params = [
         "SILENCER_SETTINGS.COMPLETION_STEPS_INTENSITY",
     ),
     ("SILENCER_COMPLETION_STEPS_PHASE", 16, "SILENCER_SETTINGS.COMPLETION_STEPS_PHASE"),
+    # PULSE WIDTH ENCODER
+    (
+        "PULSE_WIDTH_ENCODER_FULL_WIDTH_START",
+        16,
+        "PULSE_WIDTH_ENCODER_SETTINGS.FULL_WIDTH_START",
+    ),
     # DEBUG
     ("DEBUG_OUT_IDX", 8, "DEBUG_SETTINGS.OUTPUT_IDX"),
 ]
@@ -56,23 +62,26 @@ path = (
     / "controller.sv"
 )
 
-enum_state_bits = int(math.ceil(5 + 3 + len(params) + 1 + 3 + len(sync_params) + 1))
+enum_state_bits = int(
+    math.ceil(math.log2(5 + 3 + len(params) + 1 + 3 + len(sync_params) + 1))
+)
 
 with open(path, "w") as f:
     f.writelines(
-        """`timescale 1ns / 1ps
+        f"""`timescale 1ns / 1ps
 module controller #(
     parameter int DEPTH = 249
 ) (
-    input var CLK,
-    input var THERMO,
+    input wire CLK,
+    input wire THERMO,
     cnt_bus_if.out_port cnt_bus,
     output var UPDATE_SETTINGS,
-    output settings::mod_settings_t MOD_SETTINGS,
-    output settings::stm_settings_t STM_SETTINGS,
-    output settings::silencer_settings_t SILENCER_SETTINGS,
-    output settings::sync_settings_t SYNC_SETTINGS,
-    output settings::debug_settings_t DEBUG_SETTINGS,
+    output var settings::mod_settings_t MOD_SETTINGS,
+    output var settings::stm_settings_t STM_SETTINGS,
+    output var settings::silencer_settings_t SILENCER_SETTINGS,
+    output var settings::sync_settings_t SYNC_SETTINGS,
+    output var settings::pulse_width_encoder_settings_t PULSE_WIDTH_ENCODER_SETTINGS,
+    output var settings::debug_settings_t DEBUG_SETTINGS,
     output var FORCE_FAN
 );
 
@@ -90,7 +99,7 @@ module controller #(
 
   assign FORCE_FAN = ctl_flags[params::CTL_FLAG_FORCE_FAN_BIT];
 
-  typedef enum logic [4:0] {
+  typedef enum logic [{enum_state_bits-1}:0] {{
     REQ_WR_VER_MINOR,
     REQ_WR_VER,
     WAIT_WR_VER_0_REQ_RD_CTL_FLAG,
@@ -410,7 +419,41 @@ module controller #(
       end
     endcase
   end
+"""
+    )
 
+    f.writelines(
+        """
+  initial begin
+    MOD_SETTINGS.REQ_RD_SEGMENT = 1'b0;
+    MOD_SETTINGS.CYCLE_0 = 15'd1;
+    MOD_SETTINGS.FREQ_DIV_0 = 32'd5120;
+    MOD_SETTINGS.CYCLE_1 = 15'd1;
+    MOD_SETTINGS.FREQ_DIV_1 = 32'd5120;
+    MOD_SETTINGS.REP = 32'hFFFFFFFF;
+
+    STM_SETTINGS.MODE = params::STM_MODE_GAIN;
+    STM_SETTINGS.REQ_RD_SEGMENT = 1'b0;
+    STM_SETTINGS.CYCLE_0 = '0;
+    STM_SETTINGS.FREQ_DIV_0 = 32'hFFFFFFFF;
+    STM_SETTINGS.CYCLE_1 = '0;
+    STM_SETTINGS.FREQ_DIV_1 = 32'hFFFFFFFF;
+    STM_SETTINGS.REP = 32'hFFFFFFFF;
+    STM_SETTINGS.SOUND_SPEED = '0;
+
+    SILENCER_SETTINGS.MODE                       = params::SILNCER_MODE_FIXED_COMPLETION_STEPS;
+    SILENCER_SETTINGS.UPDATE_RATE_INTENSITY      = 16'd256;
+    SILENCER_SETTINGS.UPDATE_RATE_PHASE          = 16'd256;
+    SILENCER_SETTINGS.COMPLETION_STEPS_INTENSITY = 16'd10;
+    SILENCER_SETTINGS.COMPLETION_STEPS_PHASE     = 16'd40;
+
+    SYNC_SETTINGS.SET = 1'b0;
+    SYNC_SETTINGS.ECAT_SYNC_TIME = '0;
+
+    PULSE_WIDTH_ENCODER_SETTINGS.FULL_WIDTH_START = 16'd65025;
+
+    DEBUG_SETTINGS.OUTPUT_IDX = 8'hFF;
+  end
 """
     )
 

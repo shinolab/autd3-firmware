@@ -33,6 +33,8 @@ package settings;
     logic [63:0] ECAT_SYNC_TIME;
   } sync_settings_t;
 
+  typedef struct {logic [15:0] FULL_WIDTH_START;} pulse_width_encoder_settings_t;
+
   typedef struct {logic [7:0] OUTPUT_IDX;} debug_settings_t;
 
 endpackage

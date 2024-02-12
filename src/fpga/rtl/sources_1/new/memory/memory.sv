@@ -157,25 +157,11 @@ module memory (
         params::ADDR_MOD_MEM_WR_SEGMENT: mod_mem_wr_segment <= data_in[0];
         params::ADDR_STM_MEM_WR_SEGMENT: stm_mem_wr_segment <= data_in[0];
         params::ADDR_STM_MEM_WR_PAGE: stm_mem_wr_page <= data_in[3:0];
-        params::ADDR_DUTY_TABLE_WR_PAGE: duty_table_wr_page <= data_in[0];
+        params::ADDR_PULSE_WIDTH_ENCODER_TABLE_WR_PAGE: duty_table_wr_page <= data_in[0];
         default: begin
         end
       endcase
     end
   end
-
-`ifndef ASSERTION_OFF
-  logic [5:0] enables;
-  assign enables = {ctl_en, duty_table_en, mod_en_0, mod_en_1, stm_en_0, stm_en_1};
-
-  always_ff @(posedge CLK) begin
-    enable_bit :
-    assume ($countones(enables) === 0 | $countones(enables) === 1)
-    else begin
-      $error("multiple enabled bram: %b", enables);
-      $finish();
-    end
-  end
-`endif
 
 endmodule

@@ -2,15 +2,16 @@
 module controller #(
     parameter int DEPTH = 249
 ) (
-    input var CLK,
-    input var THERMO,
+    input wire CLK,
+    input wire THERMO,
     cnt_bus_if.out_port cnt_bus,
     output var UPDATE_SETTINGS,
-    output settings::mod_settings_t MOD_SETTINGS,
-    output settings::stm_settings_t STM_SETTINGS,
-    output settings::silencer_settings_t SILENCER_SETTINGS,
-    output settings::sync_settings_t SYNC_SETTINGS,
-    output settings::debug_settings_t DEBUG_SETTINGS,
+    output var settings::mod_settings_t MOD_SETTINGS,
+    output var settings::stm_settings_t STM_SETTINGS,
+    output var settings::silencer_settings_t SILENCER_SETTINGS,
+    output var settings::sync_settings_t SYNC_SETTINGS,
+    output var settings::pulse_width_encoder_settings_t PULSE_WIDTH_ENCODER_SETTINGS,
+    output var settings::debug_settings_t DEBUG_SETTINGS,
     output var FORCE_FAN
 );
 
@@ -28,7 +29,7 @@ module controller #(
 
   assign FORCE_FAN = ctl_flags[params::CTL_FLAG_FORCE_FAN_BIT];
 
-  typedef enum logic [4:0] {
+  typedef enum logic [5:0] {
     REQ_WR_VER_MINOR,
     REQ_WR_VER,
     WAIT_WR_VER_0_REQ_RD_CTL_FLAG,
@@ -64,9 +65,10 @@ module controller #(
     REQ_SILENCER_UPDATE_RATE_PHASE_RD_STM_REP_1,
     REQ_SILENCER_COMPLETION_STEPS_INTENSITY_RD_SILENCER_MODE,
     REQ_SILENCER_COMPLETION_STEPS_PHASE_RD_SILENCER_UPDATE_RATE_INTENSITY,
-    REQ_DEBUG_OUT_IDX_RD_SILENCER_UPDATE_RATE_PHASE,
-    RD_SILENCER_COMPLETION_STEPS_INTENSITY,
+    REQ_PULSE_WIDTH_ENCODER_FULL_WIDTH_START_RD_SILENCER_UPDATE_RATE_PHASE,
+    REQ_DEBUG_OUT_IDX_RD_SILENCER_COMPLETION_STEPS_INTENSITY,
     RD_SILENCER_COMPLETION_STEPS_PHASE,
+    RD_PULSE_WIDTH_ENCODER_FULL_WIDTH_START,
     RD_DEBUG_OUT_IDX,
     CLR_UPDATE_SETTINGS_BIT,
 
@@ -316,24 +318,31 @@ module controller #(
 
         SILENCER_SETTINGS.UPDATE_RATE_INTENSITY <= dout;
 
-        state <= REQ_DEBUG_OUT_IDX_RD_SILENCER_UPDATE_RATE_PHASE;
+        state <= REQ_PULSE_WIDTH_ENCODER_FULL_WIDTH_START_RD_SILENCER_UPDATE_RATE_PHASE;
       end
-      REQ_DEBUG_OUT_IDX_RD_SILENCER_UPDATE_RATE_PHASE: begin
-        addr <= params::ADDR_DEBUG_OUT_IDX;
+      REQ_PULSE_WIDTH_ENCODER_FULL_WIDTH_START_RD_SILENCER_UPDATE_RATE_PHASE: begin
+        addr <= params::ADDR_PULSE_WIDTH_ENCODER_FULL_WIDTH_START;
 
         SILENCER_SETTINGS.UPDATE_RATE_PHASE <= dout;
 
-        state <= RD_SILENCER_COMPLETION_STEPS_INTENSITY;
+        state <= REQ_DEBUG_OUT_IDX_RD_SILENCER_COMPLETION_STEPS_INTENSITY;
       end
-      RD_SILENCER_COMPLETION_STEPS_INTENSITY: begin
-        SILENCER_SETTINGS.COMPLETION_STEPS_INTENSITY <= dout;
+      REQ_DEBUG_OUT_IDX_RD_SILENCER_COMPLETION_STEPS_INTENSITY: begin
+        addr <= params::ADDR_DEBUG_OUT_IDX;
 
-        addr <= params::ADDR_CTL_FLAG;
+        SILENCER_SETTINGS.COMPLETION_STEPS_INTENSITY <= dout;
 
         state <= RD_SILENCER_COMPLETION_STEPS_PHASE;
       end
       RD_SILENCER_COMPLETION_STEPS_PHASE: begin
         SILENCER_SETTINGS.COMPLETION_STEPS_PHASE <= dout;
+
+        addr <= params::ADDR_CTL_FLAG;
+
+        state <= RD_PULSE_WIDTH_ENCODER_FULL_WIDTH_START;
+      end
+      RD_PULSE_WIDTH_ENCODER_FULL_WIDTH_START: begin
+        PULSE_WIDTH_ENCODER_SETTINGS.FULL_WIDTH_START <= dout;
 
         we <= 1'b1;
         addr <= params::ADDR_FPGA_STATE;
@@ -429,5 +438,35 @@ module controller #(
     endcase
   end
 
+  initial begin
+    MOD_SETTINGS.REQ_RD_SEGMENT = 1'b0;
+    MOD_SETTINGS.CYCLE_0 = 15'd1;
+    MOD_SETTINGS.FREQ_DIV_0 = 32'd5120;
+    MOD_SETTINGS.CYCLE_1 = 15'd1;
+    MOD_SETTINGS.FREQ_DIV_1 = 32'd5120;
+    MOD_SETTINGS.REP = 32'hFFFFFFFF;
+
+    STM_SETTINGS.MODE = params::STM_MODE_GAIN;
+    STM_SETTINGS.REQ_RD_SEGMENT = 1'b0;
+    STM_SETTINGS.CYCLE_0 = '0;
+    STM_SETTINGS.FREQ_DIV_0 = 32'hFFFFFFFF;
+    STM_SETTINGS.CYCLE_1 = '0;
+    STM_SETTINGS.FREQ_DIV_1 = 32'hFFFFFFFF;
+    STM_SETTINGS.REP = 32'hFFFFFFFF;
+    STM_SETTINGS.SOUND_SPEED = '0;
+
+    SILENCER_SETTINGS.MODE                       = params::SILNCER_MODE_FIXED_COMPLETION_STEPS;
+    SILENCER_SETTINGS.UPDATE_RATE_INTENSITY      = 16'd256;
+    SILENCER_SETTINGS.UPDATE_RATE_PHASE          = 16'd256;
+    SILENCER_SETTINGS.COMPLETION_STEPS_INTENSITY = 16'd10;
+    SILENCER_SETTINGS.COMPLETION_STEPS_PHASE     = 16'd40;
+
+    SYNC_SETTINGS.SET = 1'b0;
+    SYNC_SETTINGS.ECAT_SYNC_TIME = '0;
+
+    PULSE_WIDTH_ENCODER_SETTINGS.FULL_WIDTH_START = 16'd65025;
+
+    DEBUG_SETTINGS.OUTPUT_IDX = 8'hFF;
+  end
 
 endmodule
