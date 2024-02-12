@@ -93,7 +93,7 @@ module modulation_multiplier #(
           cnt <= 0;
           set_cnt <= 0;
           stop_buf <= stop;
-          if (stop === 1'b0) begin
+          if (stop == 1'b0) begin
             idx <= segment == 1'b0 ? IDX_0 : IDX_1;
             segment_buf <= segment;
           end
@@ -111,7 +111,7 @@ module modulation_multiplier #(
         if (cnt > Latency) begin
           dout_valid <= 1'b1;
           set_cnt <= set_cnt + 1;
-          if (set_cnt === DEPTH - 1) begin
+          if (set_cnt == DEPTH - 1) begin
             state <= WAITING;
           end
         end

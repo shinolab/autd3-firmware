@@ -5,7 +5,7 @@ module modulation #(
     input wire CLK,
     input wire [63:0] SYS_TIME,
     input wire UPDATE_SETTINGS,
-    input settings::mod_settings_t MOD_SETTINGS,
+    input wire settings::mod_settings_t MOD_SETTINGS,
     input wire DIN_VALID,
     input wire [7:0] INTENSITY_IN,
     output wire [15:0] INTENSITY_OUT,

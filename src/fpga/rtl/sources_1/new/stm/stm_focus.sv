@@ -24,11 +24,11 @@ module stm_focus #(
 
   logic [7:0] intensity_buf = '0;
   logic signed [17:0] focus_x = '0, focus_y = '0, focus_z = '0;
-  logic signed [15:0] trans_x = '0, trans_y = '0;
-  logic signed [17:0] dx = '0, dy = '0;
+  logic signed [15:0] trans_x, trans_y;
+  logic signed [17:0] dx, dy;
   logic [35:0] dx2, dy2, dz2;
   logic [36:0] dxy2;
-  logic [37:0] d2 = '0;
+  logic [37:0] d2;
   logic [23:0] sqrt_dout;
 
   logic [63:0] quo;

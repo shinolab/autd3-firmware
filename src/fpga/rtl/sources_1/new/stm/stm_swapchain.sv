@@ -46,11 +46,11 @@ module stm_swapchain (
   always_ff @(posedge CLK) begin
     if (UPDATE_SETTINGS) begin
       mode <= REQ_MODE;
-      if (REQ_RD_SEGMENT === segment) begin
+      if (REQ_RD_SEGMENT == segment) begin
         stop  <= 1'b0;
         state <= INFINITE_LOOP;
       end else begin
-        if (REP === 32'hFFFFFFFF) begin
+        if (REP == 32'hFFFFFFFF) begin
           stop <= 1'b0;
           segment <= REQ_RD_SEGMENT;
           state <= INFINITE_LOOP;
@@ -63,8 +63,8 @@ module stm_swapchain (
     end else begin
       case (state)
         WAIT_START: begin
-          if (req_segment === 1'b0) begin
-            if (idx_0 === '0) begin
+          if (req_segment == 1'b0) begin
+            if (idx_0 == '0) begin
               stop <= 1'b0;
               loop_cnt <= '0;
               segment <= 1'b0;
@@ -73,7 +73,7 @@ module stm_swapchain (
               state <= WAIT_START;
             end
           end else begin
-            if (idx_1 === '0) begin
+            if (idx_1 == '0) begin
               stop <= 1'b0;
               loop_cnt <= '0;
               segment <= 1'b1;
@@ -87,17 +87,17 @@ module stm_swapchain (
           state <= INFINITE_LOOP;
         end
         FINITE_LOOP: begin
-          if (segment === 1'b0) begin
-            if (idx_0_changed & (idx_0 === '0)) begin
-              if (loop_cnt === rep) begin
+          if (segment == 1'b0) begin
+            if (idx_0_changed & (idx_0 == '0)) begin
+              if (loop_cnt == rep) begin
                 stop <= 1'b1;
               end else begin
                 loop_cnt <= loop_cnt + 1;
               end
             end
           end else begin
-            if (idx_1_changed & (idx_1 === '0)) begin
-              if (loop_cnt === rep) begin
+            if (idx_1_changed & (idx_1 == '0)) begin
+              if (loop_cnt == rep) begin
                 stop <= 1'b1;
               end else begin
                 loop_cnt <= loop_cnt + 1;
@@ -117,7 +117,7 @@ module stm_swapchain (
     idx_1_buf <= idx_1;
   end
 
-  assign idx_0_changed = idx_0_buf !== idx_0;
-  assign idx_1_changed = idx_1_buf !== idx_1;
+  assign idx_0_changed = idx_0_buf != idx_0;
+  assign idx_1_changed = idx_1_buf != idx_1;
 
 endmodule

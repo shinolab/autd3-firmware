@@ -130,7 +130,26 @@ module bram_stm (
       .s_axi_arvalid('0),
       .s_axi_rready('0),
       .s_axi_injectsbiterr('0),
-      .s_axi_injectdbiterr('0)
+      .s_axi_injectdbiterr('0),
+      .s_axi_awready(),
+      .s_axi_wready(),
+      .s_axi_bid(),
+      .s_axi_bresp(),
+      .s_axi_bvalid(),
+      .s_axi_arready(),
+      .s_axi_rid(),
+      .s_axi_rdata(),
+      .s_axi_rresp(),
+      .s_axi_rlast(),
+      .s_axi_rvalid(),
+      .s_axi_sbiterr(),
+      .s_axi_dbiterr(),
+      .s_axi_rdaddrecc(),
+      .sbiterr(),
+      .dbiterr(),
+      .rdaddrecc(),
+      .rsta_busy(),
+      .rstb_busy()
   );
 
 endmodule

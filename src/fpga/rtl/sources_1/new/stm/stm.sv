@@ -32,9 +32,9 @@ module stm #(
   logic [7:0] phase_focus;
   logic dout_valid_gain, dout_valid_focus;
 
-  assign INTENSITY = mode === params::STM_MODE_GAIN ? intensity_gain : intensity_focus;
-  assign PHASE = mode === params::STM_MODE_GAIN ? phase_gain : phase_focus;
-  assign DOUT_VALID = mode === params::STM_MODE_GAIN ? dout_valid_gain : dout_valid_focus;
+  assign INTENSITY = mode == params::STM_MODE_GAIN ? intensity_gain : intensity_focus;
+  assign PHASE = mode == params::STM_MODE_GAIN ? phase_gain : phase_focus;
+  assign DOUT_VALID = mode == params::STM_MODE_GAIN ? dout_valid_gain : dout_valid_focus;
 
   assign DEBUG_IDX = idx;
   assign DEBUG_SEGMENT = segment;
@@ -99,10 +99,10 @@ module stm #(
 
   always_ff @(posedge CLK) begin
     if (UPDATE) begin
-      if (swapchain_stop === 1'b0) begin
+      if (swapchain_stop == 1'b0) begin
         mode <= swapchain_mode;
         segment <= swapchain_segment;
-        idx <= swapchain_segment === 1'b0 ? swapchain_idx_0 : swapchain_idx_1;
+        idx <= swapchain_segment == 1'b0 ? swapchain_idx_0 : swapchain_idx_1;
       end
       start <= 1'b1;
     end else begin
