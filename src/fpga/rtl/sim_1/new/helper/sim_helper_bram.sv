@@ -106,68 +106,77 @@ module sim_helper_bram #(
     end
   endtask
 
-  // task automatic set_ctl_reg(logic force_fan, logic sync);
-  //   automatic
-  //   logic [15:0]
-  //   ctl_reg = (sync << CTL_FLAG_SYNC_BIT) | (force_fan << CTL_FLAG_FORCE_FAN_BIT);
-  //   bram_write(BRAM_SELECT_CONTROLLER, ADDR_CTL_FLAG, ctl_reg);
-  // endtask
+  task automatic write_mod_settings(input settings::mod_settings_t settings);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_REQ_RD_SEGMENT,
+               settings.REQ_RD_SEGMENT);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_CYCLE_0, settings.CYCLE_0);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_FREQ_DIV_0_0,
+               settings.FREQ_DIV_0[15:0]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_FREQ_DIV_0_1,
+               settings.FREQ_DIV_0[31:16]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_CYCLE_1, settings.CYCLE_1);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_FREQ_DIV_1_0,
+               settings.FREQ_DIV_1[15:0]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_FREQ_DIV_1_1,
+               settings.FREQ_DIV_1[31:16]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_REP_0, settings.REP[15:0]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_REP_1, settings.REP[31:16]);
+  endtask
 
-  // task automatic write_ecat_sync_time(logic [63:0] ecat_sync_time);
-  //   bram_write(BRAM_SELECT_CONTROLLER, ADDR_EC_SYNC_TIME_0, ecat_sync_time[15:0]);
-  //   bram_write(BRAM_SELECT_CONTROLLER, ADDR_EC_SYNC_TIME_1, ecat_sync_time[31:16]);
-  //   bram_write(BRAM_SELECT_CONTROLLER, ADDR_EC_SYNC_TIME_2, ecat_sync_time[47:32]);
-  //   bram_write(BRAM_SELECT_CONTROLLER, ADDR_EC_SYNC_TIME_3, ecat_sync_time[63:48]);
-  // endtask
+  task automatic write_stm_settings(input settings::stm_settings_t settings);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_MODE, settings.MODE);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_REQ_RD_SEGMENT,
+               settings.REQ_RD_SEGMENT);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_CYCLE_0, settings.CYCLE_0);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_FREQ_DIV_0_0,
+               settings.FREQ_DIV_0[15:0]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_FREQ_DIV_0_1,
+               settings.FREQ_DIV_0[31:16]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_CYCLE_1, settings.CYCLE_1);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_FREQ_DIV_1_0,
+               settings.FREQ_DIV_1[15:0]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_FREQ_DIV_1_1,
+               settings.FREQ_DIV_1[31:16]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_REP_0, settings.REP[15:0]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_REP_1, settings.REP[31:16]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_SOUND_SPEED_0,
+               settings.SOUND_SPEED[15:0]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_SOUND_SPEED_1,
+               settings.SOUND_SPEED[31:16]);
+  endtask
 
-  // task automatic write_mod_cycle(logic [15:0] mod_cycle);
-  //   bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_CYCLE, mod_cycle);
-  // endtask
+  task automatic write_silencer_settings(input settings::silencer_settings_t settings);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_SILENCER_MODE, settings.MODE);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_SILENCER_UPDATE_RATE_INTENSITY,
+               settings.UPDATE_RATE_INTENSITY);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_SILENCER_UPDATE_RATE_PHASE,
+               settings.UPDATE_RATE_PHASE);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_SILENCER_COMPLETION_STEPS_INTENSITY,
+               settings.COMPLETION_STEPS_INTENSITY);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_SILENCER_COMPLETION_STEPS_PHASE,
+               settings.COMPLETION_STEPS_PHASE);
+  endtask
 
-  // task automatic write_mod_freq_div(logic [31:0] mod_freq_div);
-  //   bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_FREQ_DIV_0, mod_freq_div[15:0]);
-  //   bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_FREQ_DIV_1, mod_freq_div[31:16]);
-  // endtask
+  task automatic write_sync_settings(input settings::sync_settings_t settings);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_ECAT_SYNC_TIME_0,
+               settings.ECAT_SYNC_TIME[15:0]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_ECAT_SYNC_TIME_1,
+               settings.ECAT_SYNC_TIME[31:16]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_ECAT_SYNC_TIME_2,
+               settings.ECAT_SYNC_TIME[47:32]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_ECAT_SYNC_TIME_3,
+               settings.ECAT_SYNC_TIME[63:48]);
+  endtask
 
-  // task automatic write_silencer_update_rate(logic [15:0] intensity, logic [15:0] phase);
-  //   bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_UPDATE_RATE_INTENSITY, intensity);
-  //   bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_UPDATE_RATE_PHASE, phase);
-  // endtask
+  task automatic write_pulse_width_encoder_settings(
+      input settings::pulse_width_encoder_settings_t settings);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_PULSE_WIDTH_ENCODER_FULL_WIDTH_START,
+               settings.FULL_WIDTH_START);
+  endtask
 
-  // task automatic write_silencer_completion_steps(logic [15:0] intensity, logic [15:0] phase);
-  //   bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_COMPLETION_STEPS_INTENSITY, intensity);
-  //   bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_COMPLETION_STEPS_PHASE, phase);
-  // endtask
-
-  // task automatic set_silencer_ctl_flag(logic fixed_completion_step);
-  //   automatic
-  //   logic [15:0]
-  //   ctl_reg = fixed_completion_step << SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS;
-  //   bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_CTL_FLAG, ctl_reg);
-  // endtask
-
-  // task automatic write_stm_cycle(logic [15:0] stm_cycle);
-  //   bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_CYCLE, stm_cycle);
-  // endtask
-
-  // task automatic write_stm_freq_div(logic [31:0] stm_freq_div);
-  //   bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_FREQ_DIV_0, stm_freq_div[15:0]);
-  //   bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_FREQ_DIV_1, stm_freq_div[31:16]);
-  // endtask
-
-  // task automatic write_sound_speed(logic [31:0] sound_speed);
-  //   bram_write(BRAM_SELECT_CONTROLLER, ADDR_SOUND_SPEED_0, sound_speed[15:0]);
-  //   bram_write(BRAM_SELECT_CONTROLLER, ADDR_SOUND_SPEED_1, sound_speed[31:16]);
-  // endtask
-
-  // task automatic write_stm_start_idx(logic [15:0] stm_start_idx);
-  //   bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_START_IDX, stm_start_idx);
-  // endtask
-
-  // task automatic write_stm_finish_idx(logic [15:0] stm_finish_idx);
-  //   bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_FINISH_IDX, stm_finish_idx);
-  // endtask
-
+  task automatic write_debug_settings(input settings::debug_settings_t settings);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_DEBUG_OUT_IDX, settings.OUTPUT_IDX);
+  endtask
 
   initial begin
     CPU_WE0_N = 1'b1;

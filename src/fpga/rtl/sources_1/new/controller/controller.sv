@@ -1,7 +1,5 @@
 `timescale 1ns / 1ps
-module controller #(
-    parameter int DEPTH = 249
-) (
+module controller (
     input wire CLK,
     input wire THERMO,
     cnt_bus_if.out_port cnt_bus,
