@@ -32,7 +32,7 @@ TEST(Op, Info) {
     const auto ack = _sTx.ack >> 8;
     ASSERT_EQ(ack, header->msg_id);
 
-    ASSERT_EQ(_sTx.ack & 0xFF, 0x8E);
+    ASSERT_EQ(_sTx.ack & 0xFF, 0x8F);
   }
 
   {
@@ -52,7 +52,7 @@ TEST(Op, Info) {
     const auto ack = _sTx.ack >> 8;
     ASSERT_EQ(ack, header->msg_id);
 
-    ASSERT_EQ(_sTx.ack & 0xFF, 0x01);
+    ASSERT_EQ(_sTx.ack & 0xFF, 0x00);
   }
   {
     Header* header = reinterpret_cast<Header*>(data.data);
@@ -71,7 +71,7 @@ TEST(Op, Info) {
     const auto ack = _sTx.ack >> 8;
     ASSERT_EQ(ack, header->msg_id);
 
-    ASSERT_EQ(_sTx.ack & 0xFF, 0x8E);
+    ASSERT_EQ(_sTx.ack & 0xFF, 0x8F);
   }
 
   {
@@ -91,7 +91,7 @@ TEST(Op, Info) {
     const auto ack = _sTx.ack >> 8;
     ASSERT_EQ(ack, header->msg_id);
 
-    ASSERT_EQ(_sTx.ack & 0xFF, 0x01);
+    ASSERT_EQ(_sTx.ack & 0xFF, 0x00);
   }
 
   {

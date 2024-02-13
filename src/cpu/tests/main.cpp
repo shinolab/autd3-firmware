@@ -21,23 +21,45 @@ uint8_t get_msg_id(void) {
   return id;
 }
 
-uint16_t* controller_bram = new uint16_t[1280];
-uint16_t* modulator_bram = new uint16_t[32768];
-uint16_t* normal_op_bram = new uint16_t[512];
-uint16_t* stm_op_bram = new uint16_t[524288];
+uint16_t* controller_bram = new uint16_t[256];
+uint16_t* modulation_bram_0 = new uint16_t[32768 / sizeof(uint16_t)];
+uint16_t* modulation_bram_1 = new uint16_t[32768 / sizeof(uint16_t)];
+uint16_t* duty_table_bram = new uint16_t[65536 / sizeof(uint16_t)];
+uint16_t* stm_op_bram_0 = new uint16_t[1024 * 256];
+uint16_t* stm_op_bram_1 = new uint16_t[1024 * 256];
 
-uint16_t bram_read_raw(uint8_t bram_select, uint32_t bram_addr) {
-  switch (bram_select) {
-    case BRAM_SELECT_CONTROLLER:
-      return controller_bram[bram_addr];
-    case BRAM_SELECT_MOD:
-      return modulator_bram[bram_addr];
-    case BRAM_SELECT_NORMAL:
-      return normal_op_bram[bram_addr];
-    case BRAM_SELECT_STM:
-      return stm_op_bram[bram_addr];
+uint32_t mod_wr_segment = 0;
+uint32_t stm_wr_segment = 0;
+uint32_t stm_wr_page = 0;
+uint32_t pulse_width_encoder_table_wr_page = 0;
+
+uint16_t bram_read_controller(uint32_t bram_addr) {
+  return controller_bram[bram_addr];
+}
+
+uint16_t bram_read_mod(uint32_t segment, uint32_t bram_addr) {
+  switch (segment) {
+    case 0:
+      return modulation_bram_0[bram_addr];
+    case 1:
+      return modulation_bram_1[bram_addr];
     default:
-      return 0x0000;
+      exit(1);
+  }
+}
+
+uint16_t bram_read_duty_table(uint32_t bram_addr) {
+  return duty_table_bram[bram_addr];
+}
+
+uint16_t bram_read_stm(uint32_t segment, uint32_t bram_addr) {
+  switch (segment) {
+    case 0:
+      return stm_op_bram_0[bram_addr];
+    case 1:
+      return stm_op_bram_1[bram_addr];
+    default:
+      exit(1);
   }
 }
 
@@ -48,7 +70,7 @@ uint16_t fpga_read(uint16_t bram_addr) {
     case BRAM_SELECT_CONTROLLER:
       return controller_bram[addr];
     default:
-      return 0x0000;
+      exit(1);
   }
 }
 
@@ -57,33 +79,61 @@ void fpga_write(uint16_t bram_addr, uint16_t value) {
   auto addr = bram_addr & 0x3FFF;
   switch (select) {
     case BRAM_SELECT_CONTROLLER:
-      controller_bram[addr] = value;
+      if (addr == BRAM_ADDR_MOD_MEM_WR_SEGMENT) {
+        mod_wr_segment = value;
+      } else if (addr == BRAM_ADDR_STM_MEM_WR_SEGMENT) {
+        stm_wr_segment = value;
+      } else if (addr == BRAM_ADDR_STM_MEM_WR_PAGE) {
+        stm_wr_page = value;
+      } else if (addr == BRAM_ADDR_PULSE_WIDTH_ENCODER_TABLE_WR_PAGE) {
+        pulse_width_encoder_table_wr_page = value;
+      } else {
+        controller_bram[addr] = value;
+      }
       break;
     case BRAM_SELECT_MOD:
-      addr = controller_bram[BRAM_ADDR_MOD_MEM_PAGE] << 14 | addr;
-      modulator_bram[addr] = value;
+      switch (mod_wr_segment) {
+        case 0:
+          modulation_bram_0[addr] = value;
+          break;
+        case 1:
+          modulation_bram_1[addr] = value;
+          break;
+        default:
+          exit(1);
+      }
       break;
-    case BRAM_SELECT_NORMAL:
-      normal_op_bram[addr] = value;
+    case BRAM_SELECT_DUTY_TABLE:
+      duty_table_bram[(pulse_width_encoder_table_wr_page << 14) | addr] = value;
       break;
     case BRAM_SELECT_STM:
-      addr = controller_bram[BRAM_ADDR_STM_MEM_PAGE] << 14 | addr;
-      stm_op_bram[addr] = value;
+      switch (stm_wr_segment) {
+        case 0:
+          stm_op_bram_0[(stm_wr_page << 14) | addr] = value;
+          break;
+        case 1:
+          stm_op_bram_1[(stm_wr_page << 14) | addr] = value;
+          break;
+        default:
+          exit(1);
+      }
       break;
     default:
-      break;
+      exit(1);
   }
 }
 }
 
 int main(int argc, char** argv) {
-  std::memset(controller_bram, 0, sizeof(uint16_t) * 1280);
-  std::memset(modulator_bram, 0, sizeof(uint16_t) * 32768);
-  std::memset(normal_op_bram, 0, sizeof(uint16_t) * 512);
-  std::memset(stm_op_bram, 0, sizeof(uint16_t) * 524288);
+  std::memset(controller_bram, 0, sizeof(uint16_t) * 256);
+  std::memset(modulation_bram_0, 0, sizeof(uint8_t) * 32768);
+  std::memset(modulation_bram_1, 0, sizeof(uint8_t) * 32768);
+  std::memset(duty_table_bram, 0, sizeof(uint8_t) * 65536);
+  std::memset(stm_op_bram_0, 0, sizeof(uint64_t) * 1024 * 64);
+  std::memset(stm_op_bram_1, 0, sizeof(uint64_t) * 1024 * 64);
 
-  controller_bram[BRAM_ADDR_VERSION_NUM] = 0x008E;
-  controller_bram[BRAM_ADDR_VERSION_NUM_MINOR] = 0x0001;
+  controller_bram[BRAM_ADDR_VERSION_NUM_MAJOR] = 0x008F;
+  controller_bram[BRAM_ADDR_VERSION_NUM_MINOR] = 0x0000;
 
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

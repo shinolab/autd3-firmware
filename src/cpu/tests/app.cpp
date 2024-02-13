@@ -86,10 +86,9 @@ TEST(Op, Slot2) {
   const auto ack = _sTx.ack >> 8;
   ASSERT_EQ(ack, header->msg_id);
 
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_DEBUG_OUT_IDX),
-            idx);
-  ASSERT_TRUE((bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) &
-               CTL_FLAG_FORCE_FAN_EX) == CTL_FLAG_FORCE_FAN_EX);
+  ASSERT_EQ(bram_read_controller(BRAM_ADDR_DEBUG_OUT_IDX), idx);
+  ASSERT_TRUE((bram_read_controller(BRAM_ADDR_CTL_FLAG) & CTL_FLAG_FORCE_FAN) ==
+              CTL_FLAG_FORCE_FAN);
 }
 
 TEST(Op, WDT) {

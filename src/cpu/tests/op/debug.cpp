@@ -33,6 +33,5 @@ TEST(Op, ConfigureDebugOutIdx) {
   const auto ack = _sTx.ack >> 8;
   ASSERT_EQ(ack, header->msg_id);
 
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_DEBUG_OUT_IDX),
-            idx);
+  ASSERT_EQ(bram_read_controller(BRAM_ADDR_DEBUG_OUT_IDX), idx);
 }

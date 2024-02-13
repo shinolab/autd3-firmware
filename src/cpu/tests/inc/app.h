@@ -39,7 +39,10 @@ uint8_t get_msg_id(void);
 
 uint16_t fpga_read(uint16_t bram_addr);
 void fpga_write(uint16_t bram_addr, uint16_t value);
-uint16_t bram_read_raw(uint8_t bram_select, uint32_t bram_addr);
+uint16_t bram_read_controller(uint32_t bram_addr);
+uint16_t bram_read_mod(uint32_t segment, uint32_t bram_addr);
+uint16_t bram_read_duty_table(uint32_t bram_addr);
+uint16_t bram_read_stm(uint32_t segment, uint32_t bram_addr);
 
 inline static uint16_t get_addr(uint8_t bram_select, uint16_t bram_addr) {
   return (((uint16_t)bram_select & 0x0003) << 14) | (bram_addr & 0x3FFF);
@@ -79,7 +82,6 @@ inline static void bram_cpy_focus_stm(uint16_t base_bram_addr,
     fpga_write(base_addr++, *values++);
     fpga_write(base_addr++, *values++);
     fpga_write(base_addr++, *values++);
-    base_addr += 4;
   }
 }
 

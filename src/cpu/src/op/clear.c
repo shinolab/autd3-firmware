@@ -8,6 +8,7 @@ extern "C" {
 #include "app.h"
 #include "mod.h"
 #include "params.h"
+#include "stm.h"
 
 extern volatile bool_t _read_fpga_state;
 extern volatile uint16_t _fpga_flags_internal;
@@ -37,13 +38,12 @@ uint8_t clear(void) {
   _read_fpga_state = false;
 
   _fpga_flags_internal = 0;
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG, _fpga_flags_internal);
 
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_UPDATE_RATE_INTENSITY,
              256);
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_UPDATE_RATE_PHASE, 256);
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_CTL_FLAG,
-             SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_MODE,
+             SILNCER_MODE_FIXED_COMPLETION_STEPS);
   bram_write(BRAM_SELECT_CONTROLLER,
              BRAM_ADDR_SILENCER_COMPLETION_STEPS_INTENSITY, 10);
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_COMPLETION_STEPS_PHASE,
@@ -55,19 +55,35 @@ uint8_t clear(void) {
   _stm_cycle = 0;
 
   _mod_cycle = 2;
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_CYCLE, _mod_cycle - 1);
-  bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_FREQ_DIV_0,
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_REQ_RD_SEGMENT, 0);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_CYCLE_0, _mod_cycle - 1);
+  bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_FREQ_DIV_0_0,
            (uint16_t*)&_mod_freq_div, sizeof(uint32_t) >> 1);
-  change_mod_page(0);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_CYCLE_1, _mod_cycle - 1);
+  bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_FREQ_DIV_1_0,
+           (uint16_t*)&_mod_freq_div, sizeof(uint32_t) >> 1);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_REP_0, 0xFFFF);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_REP_1, 0xFFFF);
+  change_mod_segment(0);
   bram_write(BRAM_SELECT_MOD, 0, 0xFFFF);
 
-  bram_set(BRAM_SELECT_NORMAL, 0, 0x0000, TRANS_NUM << 1);
-
-  bram_set(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_DELAY_BASE, 0x0000, TRANS_NUM);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_MODE, STM_MODE_GAIN);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_REQ_RD_SEGMENT, 0);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE_0, 0);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0_0, 0xFFFF);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0_1, 0xFFFF);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE_1, 0);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_1_0, 0xFFFF);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_1_1, 0xFFFF);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_REP_0, 0xFFFF);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_REP_1, 0xFFFF);
+  change_stm_segment(0);
+  change_stm_page(0);
+  bram_set(BRAM_SELECT_STM, 0, 0x0000, TRANS_NUM << 1);
 
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_DEBUG_OUT_IDX, 0xFF);
 
-  return ERR_NONE;
+  return NO_ERR | REQ_UPDATE_SETTINGS;
 }
 
 #ifdef __cplusplus

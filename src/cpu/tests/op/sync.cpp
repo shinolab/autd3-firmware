@@ -13,7 +13,7 @@ extern int is_sync;
 
 uint8_t synchronize(void) {
   is_sync = 1;
-  return ERR_NONE;
+  return NO_ERR;
 }
 }
 

@@ -75,7 +75,6 @@ inline static void bram_cpy_focus_stm(uint16_t base_bram_addr,
     *dst++ = *values++;
     *dst++ = *values++;
     *dst++ = *values++;
-    dst += 4;
   }
 }
 

@@ -27,7 +27,7 @@ uint8_t configure_reads_fpga_state(const volatile uint8_t* p_data) {
 
   const ConfigureReadsFPGAState* p = (const ConfigureReadsFPGAState*)p_data;
   _read_fpga_state = p->value != 0;
-  return ERR_NONE;
+  return NO_ERR;
 }
 
 void read_fpga_state(void) {

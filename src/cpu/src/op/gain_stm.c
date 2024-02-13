@@ -14,11 +14,10 @@ extern "C" {
 #define GAIN_STM_BUF_PAGE_SIZE (1 << GAIN_STM_BUF_PAGE_SIZE_WIDTH)
 #define GAIN_STM_BUF_PAGE_SIZE_MASK (GAIN_STM_BUF_PAGE_SIZE - 1)
 
-extern volatile uint16_t _fpga_flags_internal;
-
+volatile uint8_t _stm_segment;
 volatile uint32_t _stm_cycle;
 volatile uint32_t _stm_freq_div;
-volatile uint16_t _gain_stm_mode;
+volatile uint8_t _gain_stm_mode;
 
 extern volatile bool_t _silencer_strict_mode;
 extern volatile uint32_t _min_freq_div_intensity;
@@ -27,10 +26,10 @@ extern volatile uint32_t _min_freq_div_phase;
 typedef ALIGN2 struct {
   uint8_t tag;
   uint8_t flag;
-  uint16_t mode;
+  uint8_t mode;
+  uint8_t segment;
   uint32_t freq_div;
-  uint16_t start_idx;
-  uint16_t finish_idx;
+  uint32_t rep;
 } GainSTMHead;
 
 typedef ALIGN2 struct {
@@ -48,10 +47,9 @@ uint8_t write_gain_stm(const volatile uint8_t* p_data) {
   static_assert(offsetof(GainSTMHead, tag) == 0, "GainSTM is not valid.");
   static_assert(offsetof(GainSTMHead, flag) == 1, "GainSTM is not valid.");
   static_assert(offsetof(GainSTMHead, mode) == 2, "GainSTM is not valid.");
+  static_assert(offsetof(GainSTMHead, segment) == 3, "GainSTM is not valid.");
   static_assert(offsetof(GainSTMHead, freq_div) == 4, "GainSTM is not valid.");
-  static_assert(offsetof(GainSTMHead, start_idx) == 8, "GainSTM is not valid.");
-  static_assert(offsetof(GainSTMHead, finish_idx) == 10,
-                "GainSTM is not valid.");
+  static_assert(offsetof(GainSTMHead, rep) == 8, "GainSTM is not valid.");
   static_assert(sizeof(GainSTMSubseq) == 2, "GainSTM is not valid.");
   static_assert(offsetof(GainSTMSubseq, tag) == 0, "GainSTM is not valid.");
   static_assert(offsetof(GainSTMSubseq, flag) == 1, "GainSTM is not valid.");
@@ -64,14 +62,16 @@ uint8_t write_gain_stm(const volatile uint8_t* p_data) {
 
   const volatile uint16_t *src, *src_base;
   uint32_t freq_div;
-  uint16_t start_idx;
-  uint16_t finish_idx;
+  uint32_t rep;
+  uint8_t segment;
+  uint8_t ret = NO_ERR;
 
   if ((p->subseq.flag & GAIN_STM_FLAG_BEGIN) == GAIN_STM_FLAG_BEGIN) {
     _stm_cycle = 0;
-    change_stm_page(0);
 
     _gain_stm_mode = p->head.mode;
+    rep = p->head.rep;
+    segment = p->head.segment;
 
     freq_div = p->head.freq_div;
     if (_silencer_strict_mode) {
@@ -80,26 +80,26 @@ uint8_t write_gain_stm(const volatile uint8_t* p_data) {
         return ERR_FREQ_DIV_TOO_SMALL;
     }
     _stm_freq_div = freq_div;
-    bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0,
-             (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
 
-    start_idx = p->head.start_idx;
-    finish_idx = p->head.finish_idx;
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_START_IDX, start_idx);
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FINISH_IDX, finish_idx);
+    switch (segment) {
+      case 0:
+        bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0_0,
+                 (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
+        break;
+      case 1:
+        bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_1_0,
+                 (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
+        break;
+      default:
+        return ERR_INVALID_SEGMENT;
+    }
+    _stm_segment = segment;
 
-    if ((p->head.flag & GAIN_STM_FLAG_USE_START_IDX) ==
-        GAIN_STM_FLAG_USE_START_IDX) {
-      _fpga_flags_internal |= CTL_FLAG_USE_STM_START_IDX;
-    } else {
-      _fpga_flags_internal &= ~CTL_FLAG_USE_STM_START_IDX;
-    }
-    if ((p->head.flag & GAIN_STM_FLAG_USE_FINISH_IDX) ==
-        GAIN_STM_FLAG_USE_FINISH_IDX) {
-      _fpga_flags_internal |= CTL_FLAG_USE_STM_FINISH_IDX;
-    } else {
-      _fpga_flags_internal &= ~CTL_FLAG_USE_STM_FINISH_IDX;
-    }
+    bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_REP_0, (uint16_t*)&rep,
+             sizeof(uint32_t) >> 1);
+
+    change_stm_segment(segment);
+    change_stm_page(0);
 
     src_base = (const uint16_t*)(&p_data[sizeof(GainSTMHead)]);
   } else {
@@ -163,13 +163,26 @@ uint8_t write_gain_stm(const volatile uint8_t* p_data) {
                     GAIN_STM_BUF_PAGE_SIZE_WIDTH);
 
   if ((p->subseq.flag & GAIN_STM_FLAG_END) == GAIN_STM_FLAG_END) {
-    _fpga_flags_internal |= CTL_FLAG_OP_MODE;
-    _fpga_flags_internal |= CTL_FLAG_STM_GAIN_MODE;
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE,
-               max(1, _stm_cycle) - 1);
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_MODE, STM_MODE_GAIN);
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_REQ_RD_SEGMENT,
+               _stm_segment);
+    switch (_stm_segment) {
+      case 0:
+        bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE_0,
+                   max(1, _stm_cycle) - 1);
+        break;
+      case 1:
+        bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE_1,
+                   max(1, _stm_cycle) - 1);
+        break;
+      default:
+        break;
+    }
+
+    ret |= REQ_UPDATE_SETTINGS;
   }
 
-  return ERR_NONE;
+  return ret;
 }
 
 #ifdef __cplusplus

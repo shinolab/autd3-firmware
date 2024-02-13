@@ -39,7 +39,6 @@ set_source_files_properties(
   ${PROJECT_SOURCE_DIR}/../src/op/gain_stm.c
   ${PROJECT_SOURCE_DIR}/../src/op/gain.c
   ${PROJECT_SOURCE_DIR}/../src/op/info.c
-  ${PROJECT_SOURCE_DIR}/../src/op/mod_delay.c
   ${PROJECT_SOURCE_DIR}/../src/op/mod.c
   ${PROJECT_SOURCE_DIR}/../src/op/reads_fpga_state.c
   ${PROJECT_SOURCE_DIR}/../src/op/silencer.c
