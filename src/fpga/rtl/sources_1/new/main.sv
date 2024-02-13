@@ -55,9 +55,7 @@ module main #(
       .DUTY_TABLE_BUS(duty_table_bus.in_port)
   );
 
-  controller #(
-      .DEPTH(DEPTH)
-  ) controller (
+  controller controller (
       .CLK(CLK),
       .THERMO(THERMO),
       .cnt_bus(cnt_bus.out_port),
