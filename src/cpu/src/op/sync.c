@@ -19,7 +19,7 @@ uint8_t synchronize(void) {
   volatile uint16_t flag;
 
   next_sync0 = get_next_sync0();
-  bram_cpy_volatile(BRAM_SELECT_CONTROLLER, BRAM_ADDR_EC_SYNC_TIME_0,
+  bram_cpy_volatile(BRAM_SELECT_CONTROLLER, BRAM_ADDR_ECAT_SYNC_TIME_0,
                     (volatile uint16_t*)&next_sync0, sizeof(uint64_t) >> 1);
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG,
              _fpga_flags_internal | CTL_FLAG_SYNC);
@@ -29,5 +29,5 @@ uint8_t synchronize(void) {
     if ((flag & CTL_FLAG_SYNC) == 0) break;
   }
 
-  return ERR_NONE;
+  return NO_ERR;
 }
