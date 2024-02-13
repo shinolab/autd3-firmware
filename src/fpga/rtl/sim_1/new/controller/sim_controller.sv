@@ -1,205 +1,135 @@
-/*
- * File: sim_controller.sv
- * Project: controller
- * Created Date: 22/04/2022
- * Author: Shun Suzuki
- * -----
- * Last Modified: 24/12/2023
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
- *
- */
-
+`timescale 1ns / 1ps
 module sim_controller ();
 
-  logic CLK_20P48M;
+  localparam int DEPTH = 249;
+
+  logic CLK;
   logic locked;
   sim_helper_clk sim_helper_clk (
-      .CLK_20P48M(CLK_20P48M),
+      .CLK_20P48M(CLK),
       .LOCKED(locked),
       .SYS_TIME()
   );
 
-  localparam int DEPTH = 249;
-
-  sim_helper_bram sim_helper_bram ();
   sim_helper_random sim_helper_random ();
+  sim_helper_bram #(.DEPTH(DEPTH)) sim_helper_bram ();
 
-  logic thermo;
-  logic force_fan;
-  logic [63:0] ecat_sync_time;
-  logic sync_set;
-  logic op_mode;
-  logic stm_gain_mode;
-  logic [15:0] cycle_m;
-  logic [31:0] freq_div_m;
-  logic [15:0] delay_m[DEPTH];
-  logic [15:0] update_rate_intensity_s, update_rate_phase_s;
-  logic [15:0] completion_steps_intensity, completion_steps_phase;
-  logic fixed_completion_steps;
-  logic [15:0] cycle_stm;
-  logic [31:0] freq_div_stm;
-  logic [31:0] sound_speed;
-  logic [15:0] stm_start_idx;
-  logic use_stm_start_idx;
-  logic [15:0] stm_finish_idx;
-  logic use_stm_finish_idx;
+  cnt_bus_if cnt_bus ();
+  modulation_bus_if mod_bus ();
+  stm_bus_if stm_bus ();
+  duty_table_bus_if duty_table_bus ();
 
-  controller #(
-      .DEPTH(DEPTH)
-  ) controller (
-      .CLK(CLK_20P48M),
-      .THERMO(thermo),
-      .FORCE_FAN(force_fan),
-      .CPU_BUS(sim_helper_bram.cpu_bus.ctl_port),
-      .ECAT_SYNC_TIME(ecat_sync_time),
-      .SYNC_SET(sync_set),
-      .OP_MODE(op_mode),
-      .STM_GAIN_MODE(stm_gain_mode),
-      .CYCLE_M(cycle_m),
-      .FREQ_DIV_M(freq_div_m),
-      .DELAY_M(delay_m),
-      .UPDATE_RATE_INTENSITY_S(update_rate_intensity_s),
-      .UPDATE_RATE_PHASE_S(update_rate_phase_s),
-      .COMPLETION_STEPS_INTENSITY(completion_steps_intensity),
-      .COMPLETION_STEPS_PHASE(completion_steps_phase),
-      .FIXED_COMPLETION_STEPS(fixed_completion_steps),
-      .CYCLE_STM(cycle_stm),
-      .FREQ_DIV_STM(freq_div_stm),
-      .SOUND_SPEED(sound_speed),
-      .STM_START_IDX(stm_start_idx),
-      .USE_STM_START_IDX(use_stm_start_idx),
-      .STM_FINISH_IDX(stm_finish_idx),
-      .USE_STM_FINISH_IDX(use_stm_finish_idx)
+  memory memory (
+      .CLK(CLK),
+      .MEM_BUS(sim_helper_bram.memory_bus.bram_port),
+      .CNT_BUS_IF(cnt_bus.in_port),
+      .MOD_BUS(mod_bus.in_port),
+      .STM_BUS(stm_bus.in_port),
+      .DUTY_TABLE_BUS(duty_table_bus.in_port)
   );
 
-  initial begin
-    logic [15:0] ctrl_reg;
-    logic [63:0] ecat_sync_time_buf;
-    logic [15:0] cycle_m_buf;
-    logic [31:0] freq_div_m_buf;
-    logic [15:0] delay_buf[DEPTH];
-    logic [15:0] update_rate_intensity_s_buf, update_rate_phase_s_buf;
-    logic [15:0] completion_steps_intensity_buf, completion_steps_phase_buf;
-    logic [15:0] cycle_stm_buf;
-    logic [31:0] freq_div_stm_buf;
-    logic [31:0] sound_speed_buf;
-    logic [15:0] stm_start_idx_buf;
-    logic [15:0] stm_finish_idx_buf;
-    @(posedge locked);
+  logic thermo;
+  logic update_settings;
+  settings::mod_settings_t mod_settings;
+  settings::stm_settings_t stm_settings;
+  settings::silencer_settings_t silencer_settings;
+  settings::sync_settings_t sync_settings;
+  settings::pulse_width_encoder_settings_t pulse_width_encoder_settings;
+  settings::debug_settings_t debug_settings;
+  logic FORCE_FAN;
 
+  controller controller (
+      .CLK(CLK),
+      .THERMO(thermo),
+      .cnt_bus(cnt_bus.out_port),
+      .UPDATE_SETTINGS(update_settings),
+      .MOD_SETTINGS(mod_settings),
+      .STM_SETTINGS(stm_settings),
+      .SILENCER_SETTINGS(silencer_settings),
+      .SYNC_SETTINGS(sync_settings),
+      .PULSE_WIDTH_ENCODER_SETTINGS(pulse_width_encoder_settings),
+      .DEBUG_SETTINGS(debug_settings),
+      .FORCE_FAN(FORCE_FAN)
+  );
+
+  settings::mod_settings_t mod_settings_in;
+  settings::stm_settings_t stm_settings_in;
+  settings::silencer_settings_t silencer_settings_in;
+  settings::sync_settings_t sync_settings_in;
+  settings::pulse_width_encoder_settings_t pulse_width_encoder_settings_in;
+  settings::debug_settings_t debug_settings_in;
+
+  initial begin
     sim_helper_random.init();
 
-    ecat_sync_time_buf[31:0]  = sim_helper_random.range(32'hFFFFFFFF, 0);
-    ecat_sync_time_buf[63:32] = sim_helper_random.range(32'hFFFFFFFF, 0);
-    sim_helper_bram.write_ecat_sync_time(ecat_sync_time_buf);
+    mod_settings_in.REQ_RD_SEGMENT = sim_helper_random.range(1'b1, 0);
+    mod_settings_in.CYCLE_0 = sim_helper_random.range(15'h7FFF, 0);
+    mod_settings_in.FREQ_DIV_0 = sim_helper_random.range(32'hFFFFFFFF, 0);
+    mod_settings_in.CYCLE_1 = sim_helper_random.range(15'h7FFF, 0);
+    mod_settings_in.FREQ_DIV_1 = sim_helper_random.range(32'hFFFFFFFF, 0);
+    mod_settings_in.REP = sim_helper_random.range(32'hFFFFFFFF, 0);
 
-    cycle_m_buf = sim_helper_random.range(16'hFFFF, 0);
-    sim_helper_bram.write_mod_cycle(cycle_m_buf);
+    stm_settings_in.MODE = sim_helper_random.range(1'b1, 0);
+    stm_settings_in.REQ_RD_SEGMENT = sim_helper_random.range(1'b1, 0);
+    stm_settings_in.CYCLE_0 = sim_helper_random.range(16'hFFFF, 0);
+    stm_settings_in.FREQ_DIV_0 = sim_helper_random.range(32'hFFFFFFFF, 0);
+    stm_settings_in.CYCLE_1 = sim_helper_random.range(16'hFFFF, 0);
+    stm_settings_in.FREQ_DIV_1 = sim_helper_random.range(32'hFFFFFFFF, 0);
+    stm_settings_in.REP = sim_helper_random.range(32'hFFFFFFFF, 0);
+    stm_settings_in.SOUND_SPEED = sim_helper_random.range(32'hFFFFFFFF, 0);
 
-    freq_div_m_buf = sim_helper_random.range(32'hFFFFFFFF, 0);
-    sim_helper_bram.write_mod_freq_div(freq_div_m_buf);
+    silencer_settings_in.MODE = sim_helper_random.range(1'b1, 0);
+    silencer_settings_in.UPDATE_RATE_INTENSITY = sim_helper_random.range(16'hFFFF, 0);
+    silencer_settings_in.UPDATE_RATE_PHASE = sim_helper_random.range(16'hFFFF, 0);
+    silencer_settings_in.COMPLETION_STEPS_INTENSITY = sim_helper_random.range(16'hFFFF, 0);
+    silencer_settings_in.COMPLETION_STEPS_PHASE = sim_helper_random.range(16'hFFFF, 0);
 
-    for (int i = 0; i < DEPTH; i++) begin
-      delay_buf[i] = sim_helper_random.range(16'hFFFF, 0);
-    end
-    sim_helper_bram.write_delay(delay_buf);
+    sync_settings_in.ECAT_SYNC_TIME = sim_helper_random.range(64'hFFFFFFFFFFFFFFFF, 0);
 
-    update_rate_intensity_s_buf = sim_helper_random.range(16'hFFFF, 0);
-    update_rate_phase_s_buf = sim_helper_random.range(16'hFFFF, 0);
-    sim_helper_bram.write_silencer_update_rate(update_rate_intensity_s_buf,
-                                               update_rate_phase_s_buf);
+    pulse_width_encoder_settings_in.FULL_WIDTH_START = sim_helper_random.range(16'hFFFF, 0);
 
-    completion_steps_intensity_buf = sim_helper_random.range(16'hFFFF, 0);
-    completion_steps_phase_buf = sim_helper_random.range(16'hFFFF, 0);
-    sim_helper_bram.write_silencer_completion_steps(completion_steps_intensity_buf,
-                                                    completion_steps_phase_buf);
+    debug_settings_in.OUTPUT_IDX = sim_helper_random.range(8'hFF, 0);
 
-    cycle_stm_buf = sim_helper_random.range(16'hFFFF, 0);
-    sim_helper_bram.write_stm_cycle(cycle_stm_buf);
+    @(posedge locked);
 
-    freq_div_stm_buf = sim_helper_random.range(32'hFFFFFFFF, 0);
-    sim_helper_bram.write_stm_freq_div(freq_div_stm_buf);
+    sim_helper_bram.write_mod_settings(mod_settings_in);
+    sim_helper_bram.write_stm_settings(stm_settings_in);
+    sim_helper_bram.write_silencer_settings(silencer_settings_in);
+    sim_helper_bram.write_sync_settings(sync_settings_in);
+    sim_helper_bram.write_pulse_width_encoder_settings(pulse_width_encoder_settings_in);
+    sim_helper_bram.write_debug_settings(debug_settings_in);
+    $display("memory initialized");
 
-    sound_speed_buf = sim_helper_random.range(32'hFFFFFFFF, 0);
-    sim_helper_bram.write_sound_speed(sound_speed_buf);
+    sim_helper_bram.bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_CTL_FLAG,
+                               16'b1 << params::CTL_FLAG_SET_BIT);
 
-    stm_start_idx_buf = sim_helper_random.range(16'hFFFF, 0);
-    sim_helper_bram.write_stm_start_idx(stm_start_idx_buf);
-
-    stm_finish_idx_buf = sim_helper_random.range(16'hFFFF, 0);
-    sim_helper_bram.write_stm_finish_idx(stm_finish_idx_buf);
-
-    for (int i = 0; i < 256; i++) begin
-      @(posedge CLK_20P48M);
-    end
-
-    if (cycle_m_buf !== cycle_m) begin
-      $error("Failed at cycle_m");
+    @(posedge update_settings);
+    if (mod_settings_in !== mod_settings) begin
+      $error("MOD_SETTINGS mismatch");
       $finish();
     end
-    if (freq_div_m_buf !== freq_div_m) begin
-      $error("Failed at freq_div_m");
+    if (stm_settings_in !== stm_settings) begin
+      $error("STM_SETTINGS mismatch");
       $finish();
     end
-    for (int i = 0; i < DEPTH; i++) begin
-      if (delay_buf[i] !== delay_m[i]) begin
-        $error("Failed at delay[%d]", i);
-        $finish();
-      end
-    end
-    if (update_rate_intensity_s_buf !== update_rate_intensity_s) begin
-      $error("Failed at update_rate_intensity_s");
+    if (silencer_settings_in !== silencer_settings) begin
+      $error("SILENCER_SETTINGS mismatch");
       $finish();
     end
-    if (update_rate_phase_s_buf !== update_rate_phase_s) begin
-      $error("Failed at update_rate_phase_s");
+    if (pulse_width_encoder_settings_in !== pulse_width_encoder_settings) begin
+      $error("PULSE_WIDTH_ENCODER_SETTINGS mismatch");
       $finish();
     end
-    if (completion_steps_intensity_buf !== completion_steps_intensity) begin
-      $error("Failed at completion_steps_intensity");
-      $finish();
-    end
-    if (completion_steps_phase_buf !== completion_steps_phase) begin
-      $error("Failed at completion_steps_phase");
-      $finish();
-    end
-    if (fixed_completion_steps) begin
-      $error("Failed at fixed_completion_steps");
-      $finish();
-    end
-    if (cycle_stm_buf !== cycle_stm) begin
-      $error("Failed at cycle_stm");
-      $finish();
-    end
-    if (freq_div_stm_buf !== freq_div_stm) begin
-      $error("Failed at freq_div_stm");
-      $finish();
-    end
-    if (sound_speed_buf !== sound_speed) begin
-      $error("Failed at sound_speed");
-      $finish();
-    end
-    if (stm_start_idx_buf !== stm_start_idx) begin
-      $error("Failed at stm_start_idx");
-      $finish();
-    end
-    if (stm_finish_idx_buf !== stm_finish_idx) begin
-      $error("Failed at stm_finish_idx");
+    if (debug_settings_in !== debug_settings) begin
+      $error("DEBUG_SETTINGS mismatch");
       $finish();
     end
 
-    sim_helper_bram.set_ctl_reg(1, 1);
-    sim_helper_bram.set_silencer_ctl_flag(1);
-    @(posedge sync_set);
-
-    if (ecat_sync_time_buf !== ecat_sync_time) begin
-      $error("Failed at ecat_sync_time");
-      $finish();
-    end
-    if (~fixed_completion_steps) begin
-      $error("Failed at fixed_completion_steps");
+    sim_helper_bram.bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_CTL_FLAG,
+                               16'b1 << params::CTL_FLAG_SYNC_BIT);
+    @(posedge sync_settings.SET);
+    if (sync_settings_in.ECAT_SYNC_TIME !== sync_settings.ECAT_SYNC_TIME) begin
+      $error("SYNC_SETTINGS mismatch");
       $finish();
     end
 

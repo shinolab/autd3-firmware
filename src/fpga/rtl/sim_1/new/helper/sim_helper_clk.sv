@@ -1,22 +1,10 @@
-/*
- * File: sim_helper_clk.sv
- * Project: helper
- * Created Date: 15/03/2022
- * Author: Shun Suzuki
- * -----
- * Last Modified: 17/11/2023
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
- *
- */
-
-
 `timescale 1ns / 1ps
-module sim_helper_clk (
-    output var CLK_20P48M,
-    output var LOCKED,
-    output var [63:0] SYS_TIME
+module sim_helper_clk #(
+    parameter real SPEED_UP = 1.0
+) (
+    output wire CLK_20P48M,
+    output wire LOCKED,
+    output wire [63:0] SYS_TIME
 );
 
   logic MRCC_25P6M;
@@ -47,10 +35,10 @@ module sim_helper_clk (
 
   // main clock 25.6MHz
   always begin
-    #19.531 MRCC_25P6M = !MRCC_25P6M;
-    #19.531 MRCC_25P6M = !MRCC_25P6M;
-    #19.531 MRCC_25P6M = !MRCC_25P6M;
-    #19.532 MRCC_25P6M = !MRCC_25P6M;
+    #(19.531 / SPEED_UP) MRCC_25P6M = !MRCC_25P6M;
+    #(19.531 / SPEED_UP) MRCC_25P6M = !MRCC_25P6M;
+    #(19.531 / SPEED_UP) MRCC_25P6M = !MRCC_25P6M;
+    #(19.532 / SPEED_UP) MRCC_25P6M = !MRCC_25P6M;
   end
 
   always @(posedge clk_20P48M) begin

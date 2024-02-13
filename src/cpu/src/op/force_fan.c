@@ -1,14 +1,3 @@
-// File: force_fan.h
-// Project: op
-// Created Date: 31/12/2023
-// Author: Shun Suzuki
-// -----
-// Last Modified: 01/01/2024
-// Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
-// -----
-// Copyright (c) 2023 Shun Suzuki. All rights reserved.
-//
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -33,10 +22,11 @@ uint8_t configure_force_fan(const volatile uint8_t* p_data) {
 
   const ForceFan* p = (const ForceFan*)p_data;
   if (p->value != 0)
-    _fpga_flags_internal |= CTL_FLAG_FORCE_FAN_EX;
+    _fpga_flags_internal |= CTL_FLAG_FORCE_FAN;
   else
-    _fpga_flags_internal &= ~CTL_FLAG_FORCE_FAN_EX;
-  return ERR_NONE;
+    _fpga_flags_internal &= ~CTL_FLAG_FORCE_FAN;
+
+  return NO_ERR | REQ_UPDATE_SETTINGS;
 }
 
 #ifdef __cplusplus

@@ -1,21 +1,8 @@
-/*
- * File: ultrasound_cnt_clk_gen.sv
- * Project: new
- * Created Date: 12/12/2022
- * Author: Shun Suzuki
- * -----
- * Last Modified: 20/11/2023
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
- *
- */
-
 module ultrasound_cnt_clk_gen (
-    input var  clk_in1,
-    input var  reset,
-    output var clk_out,
-    output var locked
+    input  wire clk_in1,
+    input  wire reset,
+    output wire clk_out,
+    output wire locked
 );
 
   logic CLKOUT;

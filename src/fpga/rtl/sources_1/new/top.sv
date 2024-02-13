@@ -1,57 +1,41 @@
-/*
- * File: top.sv
- * Project: new
- * Created Date: 15/03/2022
- * Author: Shun Suzuki
- * -----
- * Last Modified: 21/11/2023
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
- *
- */
-
 `timescale 1ns / 1ps
 module top (
-    input var [16:1] CPU_ADDR,
+    input wire [16:1] CPU_ADDR,
     inout tri [15:0] CPU_DATA,
-    input var CPU_CKIO,
-    input var CPU_CS1_N,
-    input var RESET_N,
-    input var CPU_WE0_N,
-    input var CPU_RD_N,
-    input var CPU_RDWR,
-    input var MRCC_25P6M,
-    input var CAT_SYNC0,
-    output var FORCE_FAN,
-    input var THERMO,
-    output var [252:1] XDCR_OUT,
-    output var GPIO_OUT[2]
+    input wire CPU_CKIO,
+    input wire CPU_CS1_N,
+    input wire RESET_N,
+    input wire CPU_WE0_N,
+    input wire CPU_RD_N,
+    input wire CPU_RDWR,
+    input wire MRCC_25P6M,
+    input wire CAT_SYNC0,
+    output wire FORCE_FAN,
+    input wire THERMO,
+    output wire [252:1] XDCR_OUT,
+    output wire GPIO_OUT[2]
 );
-
-  `include "cvt_uid.vh"
-  `include "params.vh"
 
   logic clk;
   logic reset;
 
-  logic PWM_OUT[NUM_TRANSDUCERS];
+  logic PWM_OUT[params::NUM_TRANSDUCERS];
 
   assign reset = ~RESET_N;
 
-  for (genvar i = 0; i < NUM_TRANSDUCERS; i++) begin : gen_output
+  for (genvar i = 0; i < params::NUM_TRANSDUCERS; i++) begin : gen_output
     assign XDCR_OUT[cvt_uid(i)+1] = PWM_OUT[i];
   end
 
-  cpu_bus_if cpu_bus ();
-  assign cpu_bus.BUS_CLK = CPU_CKIO;
-  assign cpu_bus.EN = ~CPU_CS1_N;
-  assign cpu_bus.RD = ~CPU_RD_N;
-  assign cpu_bus.RDWR = CPU_RDWR;
-  assign cpu_bus.WE = ~CPU_WE0_N;
-  assign cpu_bus.BRAM_SELECT = CPU_ADDR[16:15];
-  assign cpu_bus.BRAM_ADDR = CPU_ADDR[14:1];
-  assign cpu_bus.CPU_DATA = CPU_DATA;
+  memory_bus_if memory_bus ();
+  assign memory_bus.BUS_CLK = CPU_CKIO;
+  assign memory_bus.EN = ~CPU_CS1_N;
+  assign memory_bus.RD = ~CPU_RD_N;
+  assign memory_bus.RDWR = CPU_RDWR;
+  assign memory_bus.WE = ~CPU_WE0_N;
+  assign memory_bus.BRAM_SELECT = CPU_ADDR[16:15];
+  assign memory_bus.BRAM_ADDR = CPU_ADDR[14:1];
+  assign memory_bus.CPU_DATA = CPU_DATA;
 
   ultrasound_cnt_clk_gen ultrasound_cnt_clk_gen (
       .clk_in1(MRCC_25P6M),
@@ -61,18 +45,25 @@ module top (
   );
 
   main #(
-      .DEPTH(NUM_TRANSDUCERS)
+      .DEPTH(params::NUM_TRANSDUCERS)
   ) main (
       .CLK(clk),
       .CAT_SYNC0(CAT_SYNC0),
-      .CPU_BUS_CTL(cpu_bus.ctl_port),
-      .CPU_BUS_NORMAL(cpu_bus.normal_port),
-      .CPU_BUS_STM(cpu_bus.stm_port),
-      .CPU_BUS_MOD(cpu_bus.mod_port),
+      .MEM_BUS(memory_bus.bram_port),
       .THERMO(THERMO),
       .FORCE_FAN(FORCE_FAN),
       .PWM_OUT(PWM_OUT),
       .GPIO_OUT(GPIO_OUT)
   );
+
+  function automatic [7:0] cvt_uid(input logic [7:0] idx);
+    if (idx < 8'd19) begin
+      cvt_uid = idx;
+    end else if (idx < 8'd32) begin
+      cvt_uid = idx + 2;
+    end else begin
+      cvt_uid = idx + 3;
+    end
+  endfunction
 
 endmodule

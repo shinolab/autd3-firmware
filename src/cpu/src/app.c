@@ -1,22 +1,8 @@
-/*
- * File: app.c
- * Project: src
- * Created Date: 22/04/2022
- * Author: Shun Suzuki
- * -----
- * Last Modified: 17/01/2024
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
- *
- */
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include "app.h"
-
 #include "ecat.h"
 #include "iodefine.h"
 #include "kernel.h"
@@ -27,7 +13,6 @@ extern uint8_t clear(void);
 extern uint8_t synchronize(void);
 extern uint8_t firmware_info(const volatile uint8_t*);
 extern uint8_t write_mod(const volatile uint8_t*);
-extern uint8_t write_mod_delay(const volatile uint8_t*);
 extern uint8_t config_silencer(const volatile uint8_t*);
 extern uint8_t write_gain(const volatile uint8_t*);
 extern uint8_t write_focus_stm(const volatile uint8_t*);
@@ -58,7 +43,12 @@ static volatile uint8_t _ack = 0;
 volatile uint8_t _rx_data = 0;
 volatile uint16_t _fpga_flags_internal = 0;
 
-void init_app(void) { clear(); }
+void init_app(void) {
+  clear();
+  bram_write(BRAM_SELECT_CONTROLLER,
+             BRAM_ADDR_PULSE_WIDTH_ENCODER_FULL_WIDTH_START,
+             65025);  // 255 * 255
+}
 
 uint8_t handle_payload(const volatile uint8_t* p_data) {
   switch (p_data[0]) {
@@ -70,8 +60,6 @@ uint8_t handle_payload(const volatile uint8_t* p_data) {
       return firmware_info(p_data);
     case TAG_MODULATION:
       return write_mod(p_data);
-    case TAG_MODULATION_DELAY:
-      return write_mod_delay(p_data);
     case TAG_SILENCER:
       return config_silencer(p_data);
     case TAG_GAIN:
@@ -98,7 +86,8 @@ void update(void) {
   volatile uint8_t* p_data;
   Header* header;
 
-  if ((ECATC.AL_STATUS_CODE.WORD == AL_STATUS_CODE_SYNC_ERR) || (ECATC.AL_STATUS_CODE.WORD == AL_STATUS_CODE_SYNC_MANAGER_WATCHDOG)) {
+  if ((ECATC.AL_STATUS_CODE.WORD == AL_STATUS_CODE_SYNC_ERR) ||
+      (ECATC.AL_STATUS_CODE.WORD == AL_STATUS_CODE_SYNC_MANAGER_WATCHDOG)) {
     if (_wdt_cnt < 0) return;
     if (_wdt_cnt == 0) clear();
     _wdt_cnt = _wdt_cnt - 1;
@@ -117,14 +106,17 @@ void update(void) {
     }
 
     _ack = handle_payload(&p_data[sizeof(Header)]);
-    if (_ack != ERR_NONE) goto FINISH;
+    if ((_ack & ERR_BIT) != 0) goto FINISH;
     if (header->slot_2_offset != 0) {
-      _ack = handle_payload(&p_data[sizeof(Header) + header->slot_2_offset]);
-      if (_ack != ERR_NONE) goto FINISH;
+      _ack |= handle_payload(&p_data[sizeof(Header) + header->slot_2_offset]);
+      if ((_ack & ERR_BIT) != 0) goto FINISH;
     }
 
+    if ((_ack & REQ_UPDATE_SETTINGS) != 0)
+      bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG,
+                 _fpga_flags_internal | CTL_FLAG_SET);
+
     _ack = header->msg_id;
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG, _fpga_flags_internal);
   } else {
     dly_tsk(1);
   }

@@ -1,23 +1,10 @@
-/*
- * File: sim_pwm_generator.sv
- * Project: pwm
- * Created Date: 15/03/2022
- * Author: Shun Suzuki
- * -----
- * Last Modified: 20/11/2023
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
- *
- */
-
 module sim_pwm_generator ();
 
-  logic CLK_20P48M;
+  logic CLK;
   logic locked;
   logic [63:0] SYS_TIME;
   sim_helper_clk sim_helper_clk (
-      .CLK_20P48M(CLK_20P48M),
+      .CLK_20P48M(CLK),
       .LOCKED(locked),
       .SYS_TIME(SYS_TIME)
   );
@@ -30,7 +17,7 @@ module sim_pwm_generator ();
   logic pwm_out;
 
   pwm_generator pwm_generator (
-      .CLK(CLK_20P48M),
+      .CLK(CLK),
       .TIME_CNT(time_cnt),
       .RISE(rise),
       .FALL(fall),
@@ -38,23 +25,23 @@ module sim_pwm_generator ();
   );
 
   task automatic set(logic [8:0] r, logic [8:0] f);
-    while (time_cnt !== 512 - 1) @(posedge CLK_20P48M);
+    while (time_cnt !== 512 - 1) @(posedge CLK);
     rise = r;
     fall = f;
-    @(posedge CLK_20P48M);
-    $display("check start\t@t=%d", SYS_TIME);
+    @(posedge CLK);
+    $display("Check start\t@t=%d", SYS_TIME);
     while (1) begin
       automatic int t = time_cnt;
-      @(posedge CLK_20P48M);
+      @(posedge CLK);
       if (pwm_out !== (((r <= f) & ((r <= t) & (t < f))) | ((f < r) & ((r <= t) | (t < f))))) begin
-        $error("Failed at v=%u, t=%d, R=%d, F=%d", pwm_out, time_cnt, rise, fall);
+        $error("At v=%u, t=%d, R=%d, F=%d", pwm_out, time_cnt, rise, fall);
         $finish();
       end
       if (time_cnt === 512 - 1) begin
         break;
       end
     end
-    $display("check done\t@t=%d", SYS_TIME);
+    $display("Check done\t@t=%d", SYS_TIME);
   endtask
 
   initial begin

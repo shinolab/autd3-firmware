@@ -28,4 +28,4 @@ Make sure that AUTD3 device is connected via appropriate cables and power on. Th
 
 # Author
 
-Shun Suzuki, 2022-2023
+Shun Suzuki, 2022-2024

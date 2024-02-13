@@ -12,8 +12,8 @@ jobs:
     outputs:
       status: ${{ steps.changed-files.outputs.modified_files }}
     steps:
-      - uses: actions/checkout@v3
-      - uses: tj-actions/changed-files@v40
+      - uses: actions/checkout@v4
+      - uses: tj-actions/changed-files@v42
         id: changed-files
         with:
           files: |
@@ -34,7 +34,7 @@ jobs:
       
       - name: Setup Python
         if: needs.check.outputs.status
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - name: Install packaging

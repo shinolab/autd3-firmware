@@ -1,187 +1,82 @@
-/*
- * File: controller.sv
- * Project: controller
- * Created Date: 01/04/2022
- * Author: Shun Suzuki
- * -----
- * Last Modified: 17/01/2024
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2022-2023 Hapis Lab. All rights reserved.
- *
- */
-
 `timescale 1ns / 1ps
-module controller #(
-    parameter int DEPTH = 249
-) (
-    input var CLK,
-    input var THERMO,
-    output var FORCE_FAN,
-    cpu_bus_if.ctl_port CPU_BUS,
-    output var [63:0] ECAT_SYNC_TIME,
-    output var SYNC_SET,
-    output var OP_MODE,
-    output var STM_GAIN_MODE,
-    output var [15:0] CYCLE_M,
-    output var [31:0] FREQ_DIV_M,
-    output var [15:0] DELAY_M[DEPTH],
-    output var [15:0] UPDATE_RATE_INTENSITY_S,
-    output var [15:0] UPDATE_RATE_PHASE_S,
-    output var FIXED_COMPLETION_STEPS,
-    output var [15:0] COMPLETION_STEPS_INTENSITY,
-    output var [15:0] COMPLETION_STEPS_PHASE,
-    output var [15:0] CYCLE_STM,
-    output var [31:0] FREQ_DIV_STM,
-    output var [31:0] SOUND_SPEED,
-    output var [15:0] STM_START_IDX,
-    output var USE_STM_START_IDX,
-    output var [15:0] STM_FINISH_IDX,
-    output var USE_STM_FINISH_IDX,
-    output var [7:0] DEBUG_OUTPUT_IDX
+module controller (
+    input wire CLK,
+    input wire THERMO,
+    cnt_bus_if.out_port cnt_bus,
+    output var UPDATE_SETTINGS,
+    output var settings::mod_settings_t MOD_SETTINGS,
+    output var settings::stm_settings_t STM_SETTINGS,
+    output var settings::silencer_settings_t SILENCER_SETTINGS,
+    output var settings::sync_settings_t SYNC_SETTINGS,
+    output var settings::pulse_width_encoder_settings_t PULSE_WIDTH_ENCODER_SETTINGS,
+    output var settings::debug_settings_t DEBUG_SETTINGS,
+    output var FORCE_FAN
 );
-
-  `include "params.vh"
-
-  logic bus_clk;
-  logic ctl_ena;
-  logic wea;
-  logic [6:0] ctl_addr;
-  logic [7:0] dly_addr;
-  logic [15:0] cpu_data_in;
-  logic [15:0] cpu_data_out;
-  logic [6:0] addr;
-  logic we;
-  logic [15:0] din;
-  logic [15:0] dout;
-
-  logic dly_ena;
-  logic [7:0] dly_cnt = 0;
-  logic [7:0] dly_set = DEPTH - 2;
-  logic [15:0] dly_dout;
 
   logic [15:0] ctl_flags;
 
-  logic [63:0] ecat_sync_time;
-  logic sync_set;
+  logic we;
+  logic [7:0] addr;
+  logic [15:0] din;
+  logic [15:0] dout;
 
-  logic [15:0] cycle_m;
-  logic [31:0] freq_div_m;
-  logic [15:0] delay_m[DEPTH];
+  assign cnt_bus.WE = we;
+  assign cnt_bus.ADDR = addr;
+  assign cnt_bus.DIN = din;
+  assign dout = cnt_bus.DOUT;
 
-  logic [15:0] update_rate_intensity_s;
-  logic [15:0] update_rate_phase_s;
-  logic [15:0] completion_steps_intensity;
-  logic [15:0] completion_steps_phase;
-  logic [15:0] ctl_flags_s;
+  assign FORCE_FAN = ctl_flags[params::CTL_FLAG_FORCE_FAN_BIT];
 
-  logic [15:0] cycle_stm;
-  logic [31:0] freq_div_stm;
-  logic [31:0] sound_speed;
-  logic [15:0] stm_start_idx;
-  logic [15:0] stm_finish_idx;
-
-  logic [7:0] debug_output_idx;
-
-  logic [2:0] ctl_page;
-
-  assign ctl_page = CPU_BUS.BRAM_ADDR[10:8];
-  assign bus_clk = CPU_BUS.BUS_CLK;
-  assign ctl_ena = CPU_BUS.CTL_EN & (ctl_page == BRAM_SELECT_CONTROLLER_MAIN);
-  assign wea = CPU_BUS.WE;
-  assign ctl_addr = CPU_BUS.BRAM_ADDR[6:0];
-  assign dly_ena = CPU_BUS.CTL_EN & (ctl_page == BRAM_SELECT_CONTROLLER_DELAY);
-  assign dly_addr = CPU_BUS.BRAM_ADDR[7:0];
-  assign cpu_data_in = CPU_BUS.DATA_IN;
-  assign CPU_BUS.DATA_OUT = cpu_data_out;
-
-  assign FORCE_FAN = ctl_flags[CTL_FLAG_FORCE_FAN_BIT] | ctl_flags[CTL_FLAG_FORCE_FAN_EX_BIT];
-  assign OP_MODE = ctl_flags[CTL_FLAG_OP_MODE_BIT];
-  assign STM_GAIN_MODE = ctl_flags[CTL_FLAG_STM_GAIN_MODE_BIT];
-  assign USE_STM_START_IDX = ctl_flags[CTL_FLAG_USE_STM_START_IDX_BIT];
-  assign USE_STM_FINISH_IDX = ctl_flags[CTL_FLAG_USE_STM_FINISH_IDX_BIT];
-
-  assign ECAT_SYNC_TIME = ecat_sync_time;
-  assign SYNC_SET = sync_set;
-  assign CYCLE_M = cycle_m;
-  assign FREQ_DIV_M = freq_div_m;
-  assign UPDATE_RATE_INTENSITY_S = update_rate_intensity_s;
-  assign UPDATE_RATE_PHASE_S = update_rate_phase_s;
-  assign FIXED_COMPLETION_STEPS = ctl_flags_s[SILENCER_CTL_FLAG_FIXED_COMPLETION_STEPS];
-  assign COMPLETION_STEPS_INTENSITY = completion_steps_intensity;
-  assign COMPLETION_STEPS_PHASE = completion_steps_phase;
-  assign CYCLE_STM = cycle_stm;
-  assign FREQ_DIV_STM = freq_div_stm;
-  assign SOUND_SPEED = sound_speed;
-  assign STM_START_IDX = stm_start_idx;
-  assign STM_FINISH_IDX = stm_finish_idx;
-  assign DEBUG_OUTPUT_IDX = debug_output_idx;
-
-  for (genvar i = 0; i < DEPTH; i++) begin : gen_cycle_delay
-    assign DELAY_M[i] = delay_m[i];
-  end
-
-  BRAM_CONTROLLER ctl_bram (
-      .clka (bus_clk),
-      .ena  (ctl_ena),
-      .wea  (wea),
-      .addra(ctl_addr),
-      .dina (cpu_data_in),
-      .douta(cpu_data_out),
-      .clkb (CLK),
-      .web  (we),
-      .addrb(addr),
-      .dinb (din),
-      .doutb(dout)
-  );
-
-  BRAM_DELAY dly_bram (
-      .clka (bus_clk),
-      .ena  (dly_ena),
-      .wea  (wea),
-      .addra(dly_addr),
-      .dina (cpu_data_in),
-      .douta(),
-      .clkb (CLK),
-      .web  (1'b0),
-      .addrb(dly_cnt),
-      .dinb (),
-      .doutb(dly_dout)
-  );
-
-  typedef enum logic [4:0] {
+  typedef enum logic [5:0] {
     REQ_WR_VER_MINOR,
     REQ_WR_VER,
     WAIT_WR_VER_0_REQ_RD_CTL_FLAG,
     WR_VER_MINOR_WAIT_RD_CTL_FLAG_0,
     WR_VER_WAIT_RD_CTL_FLAG_1,
 
-    RD_CTL_FLAG_REQ_RD_MOD_FREQ_DIV_0,
-    WR_FPGA_STATE_REQ_RD_MOD_FREQ_DIV_1,
-    RD_MOD_CYCLE_REQ_RD_DEBUG_OUTPUT,
-    RD_MOD_FREQ_DIV_0_REQ_RD_SILENCER_UPDATE_RATE_INTENSITY,
-    RD_MOD_FREQ_DIV_1_REQ_RD_SILENCER_UPDATE_RATE_PHASE,
-    RD_DEBUG_OUTPUT_REQ_RD_SILENCER_COMPLETION_STEPS_INTENSITY,
-    RD_SILENCER_UPDATE_RATE_INTENSITY_REQ_RD_SILENCER_COMPLETION_STEPS_PHASE,
-    RD_SILENCER_UPDATE_RATE_PHASE_REQ_RD_SILENCER_CTL_FLAG,
-    RD_SILENCER_COMPLETION_STEPS_INTENSITY_REQ_RD_STM_CYCLE,
-    RD_SILENCER_COMPLETION_STEPS_PHASE_REQ_RD_STM_FREQ_DIV_0,
-    RD_SILENCER_CTL_FLAG_REQ_RD_STM_FREQ_DIV_1,
-    RD_STM_CYCLE_REQ_RD_SOUND_SPEED_0,
-    RD_STM_FREQ_DIV_0_REQ_RD_SOUND_SPEED_1,
-    RD_STM_FREQ_DIV_1_REQ_RD_STM_START_IDX,
-    RD_SOUND_SPEED_0_REQ_RD_STM_FINISH_IDX,
-    RD_SOUND_SPEED_1_REQ_RD_CTL_FLAG,
-    RD_STM_START_IDX_REQ_WR_FPGA_STATE,
-    RD_STM_FINISH_IDX_REQ_RD_MOD_CYCLE,
+    WAIT_0,
+    WAIT_1,
 
-    REQ_RD_EC_SYNC_TIME_0,
-    REQ_RD_EC_SYNC_TIME_1,
-    REQ_RD_EC_SYNC_TIME_2,
-    REQ_RD_EC_SYNC_TIME_3_RD_EC_SYNC_TIME_0,
-    RD_EC_SYNC_TIME_1,
-    RD_EC_SYNC_TIME_2,
-    RD_EC_SYNC_TIME_3,
+    REQ_MOD_REQ_RD_SEGMENT,
+    REQ_MOD_CYCLE_0,
+    REQ_MOD_FREQ_DIV_0_0,
+    REQ_MOD_FREQ_DIV_0_1_RD_MOD_REQ_RD_SEGMENT,
+    REQ_MOD_CYCLE_1_RD_MOD_CYCLE_0,
+    REQ_MOD_FREQ_DIV_1_0_RD_MOD_FREQ_DIV_0_0,
+    REQ_MOD_FREQ_DIV_1_1_RD_MOD_FREQ_DIV_0_1,
+    REQ_MOD_REP_0_RD_MOD_CYCLE_1,
+    REQ_MOD_REP_1_RD_MOD_FREQ_DIV_1_0,
+    REQ_STM_MODE_RD_MOD_FREQ_DIV_1_1,
+    REQ_STM_REQ_RD_SEGMENT_RD_MOD_REP_0,
+    REQ_STM_CYCLE_0_RD_MOD_REP_1,
+    REQ_STM_FREQ_DIV_0_0_RD_STM_MODE,
+    REQ_STM_FREQ_DIV_0_1_RD_STM_REQ_RD_SEGMENT,
+    REQ_STM_CYCLE_1_RD_STM_CYCLE_0,
+    REQ_STM_FREQ_DIV_1_0_RD_STM_FREQ_DIV_0_0,
+    REQ_STM_FREQ_DIV_1_1_RD_STM_FREQ_DIV_0_1,
+    REQ_STM_SOUND_SPEED_0_RD_STM_CYCLE_1,
+    REQ_STM_SOUND_SPEED_1_RD_STM_FREQ_DIV_1_0,
+    REQ_STM_REP_0_RD_STM_FREQ_DIV_1_1,
+    REQ_STM_REP_1_RD_STM_SOUND_SPEED_0,
+    REQ_SILENCER_MODE_RD_STM_SOUND_SPEED_1,
+    REQ_SILENCER_UPDATE_RATE_INTENSITY_RD_STM_REP_0,
+    REQ_SILENCER_UPDATE_RATE_PHASE_RD_STM_REP_1,
+    REQ_SILENCER_COMPLETION_STEPS_INTENSITY_RD_SILENCER_MODE,
+    REQ_SILENCER_COMPLETION_STEPS_PHASE_RD_SILENCER_UPDATE_RATE_INTENSITY,
+    REQ_PULSE_WIDTH_ENCODER_FULL_WIDTH_START_RD_SILENCER_UPDATE_RATE_PHASE,
+    REQ_DEBUG_OUT_IDX_RD_SILENCER_COMPLETION_STEPS_INTENSITY,
+    RD_SILENCER_COMPLETION_STEPS_PHASE,
+    RD_PULSE_WIDTH_ENCODER_FULL_WIDTH_START,
+    RD_DEBUG_OUT_IDX,
+    CLR_UPDATE_SETTINGS_BIT,
+
+    REQ_ECAT_SYNC_TIME_0,
+    REQ_ECAT_SYNC_TIME_1,
+    REQ_ECAT_SYNC_TIME_2,
+    REQ_ECAT_SYNC_TIME_3_RD_ECAT_SYNC_TIME_0,
+    RD_ECAT_SYNC_TIME_1,
+    RD_ECAT_SYNC_TIME_2,
+    RD_ECAT_SYNC_TIME_3,
     CLR_SYNC_BIT
   } state_t;
 
@@ -193,20 +88,20 @@ module controller #(
       REQ_WR_VER_MINOR: begin
         we <= 1'b1;
 
-        din <= {8'd0, VERSION_NUM_MINOR};
-        addr <= ADDR_VERSION_NUM_MINOR;
+        din <= {8'd0, params::VERSION_NUM_MINOR};
+        addr <= params::ADDR_VERSION_NUM_MINOR;
 
         state <= REQ_WR_VER;
       end
       REQ_WR_VER: begin
-        din   <= {8'h00, VERSION_NUM};
-        addr  <= ADDR_VERSION_NUM_MAJOR;
+        din   <= {8'h00, params::VERSION_NUM};
+        addr  <= params::ADDR_VERSION_NUM_MAJOR;
 
         state <= WAIT_WR_VER_0_REQ_RD_CTL_FLAG;
       end
       WAIT_WR_VER_0_REQ_RD_CTL_FLAG: begin
         we <= 1'b0;
-        addr <= ADDR_CTL_FLAG;
+        addr <= params::ADDR_CTL_FLAG;
 
         state <= WR_VER_MINOR_WAIT_RD_CTL_FLAG_0;
       end
@@ -214,208 +109,366 @@ module controller #(
         state <= WR_VER_WAIT_RD_CTL_FLAG_1;
       end
       WR_VER_WAIT_RD_CTL_FLAG_1: begin
-        state <= RD_CTL_FLAG_REQ_RD_MOD_FREQ_DIV_0;
+        state <= WAIT_0;
       end
       ////////////////////////// initial //////////////////////////
 
-      //////////////////////////// run ////////////////////////////
-      RD_CTL_FLAG_REQ_RD_MOD_FREQ_DIV_0: begin
+      //////////////////////////// wait ///////////////////////////
+      WAIT_0: begin
+        we <= 1'b1;
+        addr <= params::ADDR_FPGA_STATE;
+        din <= {15'h00, THERMO};
         ctl_flags <= dout;
-        if (ctl_flags[CTL_FLAG_SYNC_BIT]) begin
+
+        state <= WAIT_1;
+      end
+      WAIT_1: begin
+        if (ctl_flags[params::CTL_FLAG_SYNC_BIT]) begin
           we <= 1'b1;
-          addr <= ADDR_CTL_FLAG;
-          din <= ctl_flags & ~(1 << CTL_FLAG_SYNC_BIT);
+          addr <= params::ADDR_CTL_FLAG;
+          din <= ctl_flags & ~(1 << params::CTL_FLAG_SYNC_BIT);
 
-          state <= REQ_RD_EC_SYNC_TIME_0;
+          state <= REQ_ECAT_SYNC_TIME_0;
+        end else if (ctl_flags[params::CTL_FLAG_SET_BIT]) begin
+          we <= 1'b1;
+          addr <= params::ADDR_CTL_FLAG;
+          din <= ctl_flags & ~(1 << params::CTL_FLAG_SET_BIT);
+
+          state <= REQ_MOD_REQ_RD_SEGMENT;
         end else begin
-          addr  <= ADDR_MOD_FREQ_DIV_0;
-
-          state <= WR_FPGA_STATE_REQ_RD_MOD_FREQ_DIV_1;
+          addr <= params::ADDR_CTL_FLAG;
+          we <= 1'b0;
+          state <= WAIT_0;
         end
       end
-      WR_FPGA_STATE_REQ_RD_MOD_FREQ_DIV_1: begin
-        addr  <= ADDR_MOD_FREQ_DIV_1;
+      //////////////////////////// wait ///////////////////////////
 
-        state <= RD_MOD_CYCLE_REQ_RD_DEBUG_OUTPUT;
-      end
-      RD_MOD_CYCLE_REQ_RD_DEBUG_OUTPUT: begin
-        addr <= ADDR_DEBUG_OUT_IDX;
-
-        cycle_m <= dout;
-
-        state <= RD_MOD_FREQ_DIV_0_REQ_RD_SILENCER_UPDATE_RATE_INTENSITY;
-      end
-      RD_MOD_FREQ_DIV_0_REQ_RD_SILENCER_UPDATE_RATE_INTENSITY: begin
-        addr <= ADDR_SILENCER_UPDATE_RATE_INTENSITY;
-
-        freq_div_m[15:0] <= dout;
-
-        state <= RD_MOD_FREQ_DIV_1_REQ_RD_SILENCER_UPDATE_RATE_PHASE;
-      end
-      RD_MOD_FREQ_DIV_1_REQ_RD_SILENCER_UPDATE_RATE_PHASE: begin
-        addr <= ADDR_SILENCER_UPDATE_RATE_PHASE;
-
-        freq_div_m[31:16] <= dout;
-
-        state <= RD_DEBUG_OUTPUT_REQ_RD_SILENCER_COMPLETION_STEPS_INTENSITY;
-      end
-      RD_DEBUG_OUTPUT_REQ_RD_SILENCER_COMPLETION_STEPS_INTENSITY: begin
-        addr <= ADDR_SILENCER_COMPLETION_STEPS_INTENSITY;
-
-        debug_output_idx <= dout[7:0];
-
-        state <= RD_SILENCER_UPDATE_RATE_INTENSITY_REQ_RD_SILENCER_COMPLETION_STEPS_PHASE;
-      end
-      RD_SILENCER_UPDATE_RATE_INTENSITY_REQ_RD_SILENCER_COMPLETION_STEPS_PHASE: begin
-        addr <= ADDR_SILENCER_COMPLETION_STEPS_PHASE;
-
-        update_rate_intensity_s <= dout;
-
-        state <= RD_SILENCER_UPDATE_RATE_PHASE_REQ_RD_SILENCER_CTL_FLAG;
-      end
-      RD_SILENCER_UPDATE_RATE_PHASE_REQ_RD_SILENCER_CTL_FLAG: begin
-        addr <= ADDR_SILENCER_CTL_FLAG;
-
-        update_rate_phase_s <= dout;
-
-        state <= RD_SILENCER_COMPLETION_STEPS_INTENSITY_REQ_RD_STM_CYCLE;
-      end
-      RD_SILENCER_COMPLETION_STEPS_INTENSITY_REQ_RD_STM_CYCLE: begin
-        addr <= ADDR_STM_CYCLE;
-
-        completion_steps_intensity <= dout;
-
-        state <= RD_SILENCER_COMPLETION_STEPS_PHASE_REQ_RD_STM_FREQ_DIV_0;
-      end
-      RD_SILENCER_COMPLETION_STEPS_PHASE_REQ_RD_STM_FREQ_DIV_0: begin
-        addr <= ADDR_STM_FREQ_DIV_0;
-
-        completion_steps_phase <= dout;
-
-        state <= RD_SILENCER_CTL_FLAG_REQ_RD_STM_FREQ_DIV_1;
-      end
-      RD_SILENCER_CTL_FLAG_REQ_RD_STM_FREQ_DIV_1: begin
-        addr <= ADDR_STM_FREQ_DIV_1;
-
-        ctl_flags_s <= dout;
-
-        state <= RD_STM_CYCLE_REQ_RD_SOUND_SPEED_0;
-      end
-      RD_STM_CYCLE_REQ_RD_SOUND_SPEED_0: begin
-        addr <= ADDR_SOUND_SPEED_0;
-
-        cycle_stm <= dout;
-
-        state <= RD_STM_FREQ_DIV_0_REQ_RD_SOUND_SPEED_1;
-      end
-      RD_STM_FREQ_DIV_0_REQ_RD_SOUND_SPEED_1: begin
-        addr <= ADDR_SOUND_SPEED_1;
-
-        freq_div_stm[15:0] <= dout;
-
-        state <= RD_STM_FREQ_DIV_1_REQ_RD_STM_START_IDX;
-      end
-      RD_STM_FREQ_DIV_1_REQ_RD_STM_START_IDX: begin
-        addr <= ADDR_STM_START_IDX;
-
-        freq_div_stm[31:16] <= dout;
-
-        state <= RD_SOUND_SPEED_0_REQ_RD_STM_FINISH_IDX;
-      end
-      RD_SOUND_SPEED_0_REQ_RD_STM_FINISH_IDX: begin
-        addr <= ADDR_STM_FINISH_IDX;
-
-        sound_speed[15:0] <= dout;
-
-        state <= RD_SOUND_SPEED_1_REQ_RD_CTL_FLAG;
-      end
-      RD_SOUND_SPEED_1_REQ_RD_CTL_FLAG: begin
-        addr <= ADDR_CTL_FLAG;
-
-        sound_speed[31:16] <= dout;
-
-        state <= RD_STM_START_IDX_REQ_WR_FPGA_STATE;
-      end
-      RD_STM_START_IDX_REQ_WR_FPGA_STATE: begin
-        we <= 1'b1;
-        addr <= ADDR_FPGA_STATE;
-        din <= {15'h00, THERMO};
-        stm_start_idx <= dout;
-
-        state <= RD_STM_FINISH_IDX_REQ_RD_MOD_CYCLE;
-      end
-      RD_STM_FINISH_IDX_REQ_RD_MOD_CYCLE: begin
+      //////////////////////////// load ///////////////////////////
+      REQ_MOD_REQ_RD_SEGMENT: begin
         we <= 1'b0;
-        addr <= ADDR_MOD_CYCLE;
 
-        stm_finish_idx <= dout;
+        addr <= params::ADDR_MOD_REQ_RD_SEGMENT;
 
-        state <= RD_CTL_FLAG_REQ_RD_MOD_FREQ_DIV_0;
+        state <= REQ_MOD_CYCLE_0;
       end
-      //////////////////////////// run ////////////////////////////
+      REQ_MOD_CYCLE_0: begin
+        addr <= params::ADDR_MOD_CYCLE_0;
+
+        state <= REQ_MOD_FREQ_DIV_0_0;
+      end
+      REQ_MOD_FREQ_DIV_0_0: begin
+        addr <= params::ADDR_MOD_FREQ_DIV_0_0;
+
+        state <= REQ_MOD_FREQ_DIV_0_1_RD_MOD_REQ_RD_SEGMENT;
+      end
+      REQ_MOD_FREQ_DIV_0_1_RD_MOD_REQ_RD_SEGMENT: begin
+        addr <= params::ADDR_MOD_FREQ_DIV_0_1;
+
+        MOD_SETTINGS.REQ_RD_SEGMENT <= dout[0];
+
+        state <= REQ_MOD_CYCLE_1_RD_MOD_CYCLE_0;
+      end
+      REQ_MOD_CYCLE_1_RD_MOD_CYCLE_0: begin
+        addr <= params::ADDR_MOD_CYCLE_1;
+
+        MOD_SETTINGS.CYCLE_0 <= dout[14:0];
+
+        state <= REQ_MOD_FREQ_DIV_1_0_RD_MOD_FREQ_DIV_0_0;
+      end
+      REQ_MOD_FREQ_DIV_1_0_RD_MOD_FREQ_DIV_0_0: begin
+        addr <= params::ADDR_MOD_FREQ_DIV_1_0;
+
+        MOD_SETTINGS.FREQ_DIV_0[15:0] <= dout;
+
+        state <= REQ_MOD_FREQ_DIV_1_1_RD_MOD_FREQ_DIV_0_1;
+      end
+      REQ_MOD_FREQ_DIV_1_1_RD_MOD_FREQ_DIV_0_1: begin
+        addr <= params::ADDR_MOD_FREQ_DIV_1_1;
+
+        MOD_SETTINGS.FREQ_DIV_0[31:16] <= dout;
+
+        state <= REQ_MOD_REP_0_RD_MOD_CYCLE_1;
+      end
+      REQ_MOD_REP_0_RD_MOD_CYCLE_1: begin
+        addr <= params::ADDR_MOD_REP_0;
+
+        MOD_SETTINGS.CYCLE_1 <= dout[14:0];
+
+        state <= REQ_MOD_REP_1_RD_MOD_FREQ_DIV_1_0;
+      end
+      REQ_MOD_REP_1_RD_MOD_FREQ_DIV_1_0: begin
+        addr <= params::ADDR_MOD_REP_1;
+
+        MOD_SETTINGS.FREQ_DIV_1[15:0] <= dout;
+
+        state <= REQ_STM_MODE_RD_MOD_FREQ_DIV_1_1;
+      end
+      REQ_STM_MODE_RD_MOD_FREQ_DIV_1_1: begin
+        addr <= params::ADDR_STM_MODE;
+
+        MOD_SETTINGS.FREQ_DIV_1[31:16] <= dout;
+
+        state <= REQ_STM_REQ_RD_SEGMENT_RD_MOD_REP_0;
+      end
+      REQ_STM_REQ_RD_SEGMENT_RD_MOD_REP_0: begin
+        addr <= params::ADDR_STM_REQ_RD_SEGMENT;
+
+        MOD_SETTINGS.REP[15:0] <= dout;
+
+        state <= REQ_STM_CYCLE_0_RD_MOD_REP_1;
+      end
+      REQ_STM_CYCLE_0_RD_MOD_REP_1: begin
+        addr <= params::ADDR_STM_CYCLE_0;
+
+        MOD_SETTINGS.REP[31:16] <= dout;
+
+        state <= REQ_STM_FREQ_DIV_0_0_RD_STM_MODE;
+      end
+      REQ_STM_FREQ_DIV_0_0_RD_STM_MODE: begin
+        addr <= params::ADDR_STM_FREQ_DIV_0_0;
+
+        STM_SETTINGS.MODE <= dout[0];
+
+        state <= REQ_STM_FREQ_DIV_0_1_RD_STM_REQ_RD_SEGMENT;
+      end
+      REQ_STM_FREQ_DIV_0_1_RD_STM_REQ_RD_SEGMENT: begin
+        addr <= params::ADDR_STM_FREQ_DIV_0_1;
+
+        STM_SETTINGS.REQ_RD_SEGMENT <= dout[0];
+
+        state <= REQ_STM_CYCLE_1_RD_STM_CYCLE_0;
+      end
+      REQ_STM_CYCLE_1_RD_STM_CYCLE_0: begin
+        addr <= params::ADDR_STM_CYCLE_1;
+
+        STM_SETTINGS.CYCLE_0 <= dout;
+
+        state <= REQ_STM_FREQ_DIV_1_0_RD_STM_FREQ_DIV_0_0;
+      end
+      REQ_STM_FREQ_DIV_1_0_RD_STM_FREQ_DIV_0_0: begin
+        addr <= params::ADDR_STM_FREQ_DIV_1_0;
+
+        STM_SETTINGS.FREQ_DIV_0[15:0] <= dout;
+
+        state <= REQ_STM_FREQ_DIV_1_1_RD_STM_FREQ_DIV_0_1;
+      end
+      REQ_STM_FREQ_DIV_1_1_RD_STM_FREQ_DIV_0_1: begin
+        addr <= params::ADDR_STM_FREQ_DIV_1_1;
+
+        STM_SETTINGS.FREQ_DIV_0[31:16] <= dout;
+
+        state <= REQ_STM_SOUND_SPEED_0_RD_STM_CYCLE_1;
+      end
+      REQ_STM_SOUND_SPEED_0_RD_STM_CYCLE_1: begin
+        addr <= params::ADDR_STM_SOUND_SPEED_0;
+
+        STM_SETTINGS.CYCLE_1 <= dout;
+
+        state <= REQ_STM_SOUND_SPEED_1_RD_STM_FREQ_DIV_1_0;
+      end
+      REQ_STM_SOUND_SPEED_1_RD_STM_FREQ_DIV_1_0: begin
+        addr <= params::ADDR_STM_SOUND_SPEED_1;
+
+        STM_SETTINGS.FREQ_DIV_1[15:0] <= dout;
+
+        state <= REQ_STM_REP_0_RD_STM_FREQ_DIV_1_1;
+      end
+      REQ_STM_REP_0_RD_STM_FREQ_DIV_1_1: begin
+        addr <= params::ADDR_STM_REP_0;
+
+        STM_SETTINGS.FREQ_DIV_1[31:16] <= dout;
+
+        state <= REQ_STM_REP_1_RD_STM_SOUND_SPEED_0;
+      end
+      REQ_STM_REP_1_RD_STM_SOUND_SPEED_0: begin
+        addr <= params::ADDR_STM_REP_1;
+
+        STM_SETTINGS.SOUND_SPEED[15:0] <= dout;
+
+        state <= REQ_SILENCER_MODE_RD_STM_SOUND_SPEED_1;
+      end
+      REQ_SILENCER_MODE_RD_STM_SOUND_SPEED_1: begin
+        addr <= params::ADDR_SILENCER_MODE;
+
+        STM_SETTINGS.SOUND_SPEED[31:16] <= dout;
+
+        state <= REQ_SILENCER_UPDATE_RATE_INTENSITY_RD_STM_REP_0;
+      end
+      REQ_SILENCER_UPDATE_RATE_INTENSITY_RD_STM_REP_0: begin
+        addr <= params::ADDR_SILENCER_UPDATE_RATE_INTENSITY;
+
+        STM_SETTINGS.REP[15:0] <= dout;
+
+        state <= REQ_SILENCER_UPDATE_RATE_PHASE_RD_STM_REP_1;
+      end
+      REQ_SILENCER_UPDATE_RATE_PHASE_RD_STM_REP_1: begin
+        addr <= params::ADDR_SILENCER_UPDATE_RATE_PHASE;
+
+        STM_SETTINGS.REP[31:16] <= dout;
+
+        state <= REQ_SILENCER_COMPLETION_STEPS_INTENSITY_RD_SILENCER_MODE;
+      end
+      REQ_SILENCER_COMPLETION_STEPS_INTENSITY_RD_SILENCER_MODE: begin
+        addr <= params::ADDR_SILENCER_COMPLETION_STEPS_INTENSITY;
+
+        SILENCER_SETTINGS.MODE <= dout[0];
+
+        state <= REQ_SILENCER_COMPLETION_STEPS_PHASE_RD_SILENCER_UPDATE_RATE_INTENSITY;
+      end
+      REQ_SILENCER_COMPLETION_STEPS_PHASE_RD_SILENCER_UPDATE_RATE_INTENSITY: begin
+        addr <= params::ADDR_SILENCER_COMPLETION_STEPS_PHASE;
+
+        SILENCER_SETTINGS.UPDATE_RATE_INTENSITY <= dout;
+
+        state <= REQ_PULSE_WIDTH_ENCODER_FULL_WIDTH_START_RD_SILENCER_UPDATE_RATE_PHASE;
+      end
+      REQ_PULSE_WIDTH_ENCODER_FULL_WIDTH_START_RD_SILENCER_UPDATE_RATE_PHASE: begin
+        addr <= params::ADDR_PULSE_WIDTH_ENCODER_FULL_WIDTH_START;
+
+        SILENCER_SETTINGS.UPDATE_RATE_PHASE <= dout;
+
+        state <= REQ_DEBUG_OUT_IDX_RD_SILENCER_COMPLETION_STEPS_INTENSITY;
+      end
+      REQ_DEBUG_OUT_IDX_RD_SILENCER_COMPLETION_STEPS_INTENSITY: begin
+        addr <= params::ADDR_DEBUG_OUT_IDX;
+
+        SILENCER_SETTINGS.COMPLETION_STEPS_INTENSITY <= dout;
+
+        state <= RD_SILENCER_COMPLETION_STEPS_PHASE;
+      end
+      RD_SILENCER_COMPLETION_STEPS_PHASE: begin
+        SILENCER_SETTINGS.COMPLETION_STEPS_PHASE <= dout;
+
+        addr <= params::ADDR_CTL_FLAG;
+
+        state <= RD_PULSE_WIDTH_ENCODER_FULL_WIDTH_START;
+      end
+      RD_PULSE_WIDTH_ENCODER_FULL_WIDTH_START: begin
+        PULSE_WIDTH_ENCODER_SETTINGS.FULL_WIDTH_START <= dout;
+
+        we <= 1'b1;
+        addr <= params::ADDR_FPGA_STATE;
+        din <= {15'h00, THERMO};
+
+        state <= RD_DEBUG_OUT_IDX;
+      end
+      RD_DEBUG_OUT_IDX: begin
+        DEBUG_SETTINGS.OUTPUT_IDX <= dout[7:0];
+
+        we <= 1'b0;
+        addr <= params::ADDR_CTL_FLAG;
+
+        UPDATE_SETTINGS <= 1'b1;
+
+        state <= CLR_UPDATE_SETTINGS_BIT;
+      end
+      CLR_UPDATE_SETTINGS_BIT: begin
+        UPDATE_SETTINGS <= 1'b0;
+
+        ctl_flags <= dout;
+        we <= 1'b1;
+        addr <= params::ADDR_FPGA_STATE;
+        din <= {15'h00, THERMO};
+
+        state <= WAIT_1;
+      end
+      //////////////////////////// load ///////////////////////////
 
       //////////////////////// synchronize ////////////////////////
-      REQ_RD_EC_SYNC_TIME_0: begin
+      REQ_ECAT_SYNC_TIME_0: begin
         we <= 1'b0;
+        addr <= params::ADDR_ECAT_SYNC_TIME_0;
 
-        addr <= ADDR_EC_SYNC_TIME_0;
-
-        state <= REQ_RD_EC_SYNC_TIME_1;
+        state <= REQ_ECAT_SYNC_TIME_1;
       end
-      REQ_RD_EC_SYNC_TIME_1: begin
-        addr  <= ADDR_EC_SYNC_TIME_1;
+      REQ_ECAT_SYNC_TIME_1: begin
+        addr <= params::ADDR_ECAT_SYNC_TIME_1;
 
-        state <= REQ_RD_EC_SYNC_TIME_2;
+        state <= REQ_ECAT_SYNC_TIME_2;
       end
-      REQ_RD_EC_SYNC_TIME_2: begin
-        addr  <= ADDR_EC_SYNC_TIME_2;
+      REQ_ECAT_SYNC_TIME_2: begin
+        addr <= params::ADDR_ECAT_SYNC_TIME_2;
 
-        state <= REQ_RD_EC_SYNC_TIME_3_RD_EC_SYNC_TIME_0;
+        state <= REQ_ECAT_SYNC_TIME_3_RD_ECAT_SYNC_TIME_0;
       end
-      REQ_RD_EC_SYNC_TIME_3_RD_EC_SYNC_TIME_0: begin
-        addr <= ADDR_EC_SYNC_TIME_3;
+      REQ_ECAT_SYNC_TIME_3_RD_ECAT_SYNC_TIME_0: begin
+        addr <= params::ADDR_ECAT_SYNC_TIME_3;
 
-        ecat_sync_time[15:0] <= dout;
+        SYNC_SETTINGS.ECAT_SYNC_TIME[15:0] <= dout;
 
-        state <= RD_EC_SYNC_TIME_1;
+        state <= RD_ECAT_SYNC_TIME_1;
       end
-      RD_EC_SYNC_TIME_1: begin
-        addr <= ADDR_CTL_FLAG;
+      RD_ECAT_SYNC_TIME_1: begin
+        SYNC_SETTINGS.ECAT_SYNC_TIME[31:16] <= dout;
 
-        ecat_sync_time[31:16] <= dout;
+        addr <= params::ADDR_CTL_FLAG;
 
-        state <= RD_EC_SYNC_TIME_2;
+        state <= RD_ECAT_SYNC_TIME_2;
       end
-      RD_EC_SYNC_TIME_2: begin
-        ecat_sync_time[47:32] <= dout;
+      RD_ECAT_SYNC_TIME_2: begin
+        SYNC_SETTINGS.ECAT_SYNC_TIME[47:32] <= dout;
 
-        state <= RD_EC_SYNC_TIME_3;
+        we <= 1'b1;
+        addr <= params::ADDR_FPGA_STATE;
+        din <= {15'h00, THERMO};
+
+        state <= RD_ECAT_SYNC_TIME_3;
       end
-      RD_EC_SYNC_TIME_3: begin
-        ecat_sync_time[63:48] <= dout;
+      RD_ECAT_SYNC_TIME_3: begin
+        SYNC_SETTINGS.ECAT_SYNC_TIME[63:48] <= dout;
 
-        sync_set <= 1'b1;
+        we <= 1'b0;
+        addr <= params::ADDR_CTL_FLAG;
+
+        SYNC_SETTINGS.SET <= 1'b1;
 
         state <= CLR_SYNC_BIT;
       end
       CLR_SYNC_BIT: begin
+        SYNC_SETTINGS.SET <= 1'b0;
+
         ctl_flags <= dout;
+        we <= 1'b1;
+        addr <= params::ADDR_FPGA_STATE;
+        din <= {15'h00, THERMO};
 
-        sync_set <= 1'b0;
-
-        state <= RD_CTL_FLAG_REQ_RD_MOD_FREQ_DIV_0;
+        state <= WAIT_1;
       end
       //////////////////////// synchronize ////////////////////////
-
       default: begin
       end
     endcase
   end
 
-  always_ff @(posedge CLK) begin
-    dly_cnt <= (dly_cnt == DEPTH - 1) ? 0 : dly_cnt + 1;
-    dly_set <= (dly_set == DEPTH - 1) ? 0 : dly_set + 1;
-    delay_m[dly_set] <= dly_dout;
+  initial begin
+    MOD_SETTINGS.REQ_RD_SEGMENT = 1'b0;
+    MOD_SETTINGS.CYCLE_0 = 15'd1;
+    MOD_SETTINGS.FREQ_DIV_0 = 32'd5120;
+    MOD_SETTINGS.CYCLE_1 = 15'd1;
+    MOD_SETTINGS.FREQ_DIV_1 = 32'd5120;
+    MOD_SETTINGS.REP = 32'hFFFFFFFF;
+
+    STM_SETTINGS.MODE = params::STM_MODE_GAIN;
+    STM_SETTINGS.REQ_RD_SEGMENT = 1'b0;
+    STM_SETTINGS.CYCLE_0 = '0;
+    STM_SETTINGS.FREQ_DIV_0 = 32'hFFFFFFFF;
+    STM_SETTINGS.CYCLE_1 = '0;
+    STM_SETTINGS.FREQ_DIV_1 = 32'hFFFFFFFF;
+    STM_SETTINGS.REP = 32'hFFFFFFFF;
+    STM_SETTINGS.SOUND_SPEED = '0;
+
+    SILENCER_SETTINGS.MODE                       = params::SILNCER_MODE_FIXED_COMPLETION_STEPS;
+    SILENCER_SETTINGS.UPDATE_RATE_INTENSITY      = 16'd256;
+    SILENCER_SETTINGS.UPDATE_RATE_PHASE          = 16'd256;
+    SILENCER_SETTINGS.COMPLETION_STEPS_INTENSITY = 16'd10;
+    SILENCER_SETTINGS.COMPLETION_STEPS_PHASE     = 16'd40;
+
+    SYNC_SETTINGS.SET = 1'b0;
+    SYNC_SETTINGS.ECAT_SYNC_TIME = '0;
+
+    PULSE_WIDTH_ENCODER_SETTINGS.FULL_WIDTH_START = 16'd65025;
+
+    DEBUG_SETTINGS.OUTPUT_IDX = 8'hFF;
   end
 
 endmodule

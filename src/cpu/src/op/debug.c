@@ -1,14 +1,3 @@
-// File: debug.h
-// Project: op
-// Created Date: 31/12/2023
-// Author: Shun Suzuki
-// -----
-// Last Modified: 01/01/2024
-// Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
-// -----
-// Copyright (c) 2023 Shun Suzuki. All rights reserved.
-//
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -32,7 +21,8 @@ uint8_t configure_debug(const volatile uint8_t* p_data) {
   const DebugOutIdx* p = (const DebugOutIdx*)p_data;
   uint8_t idx = p->idx;
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_DEBUG_OUT_IDX, idx);
-  return ERR_NONE;
+
+  return NO_ERR | REQ_UPDATE_SETTINGS;
 }
 
 #ifdef __cplusplus

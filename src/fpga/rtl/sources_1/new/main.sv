@@ -1,35 +1,28 @@
-/*
- * File: main.sv
- * Project: new
- * Created Date: 18/05/2023
- * Author: Shun Suzuki
- * -----
- * Last Modified: 27/12/2023
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2023 Shun Suzuki. All rights reserved.
- *
- */
-
 `timescale 1ns / 1ps
 module main #(
     parameter int DEPTH = 249
 ) (
-    input var CLK,
-    input var CAT_SYNC0,
-    cpu_bus_if.ctl_port CPU_BUS_CTL,
-    cpu_bus_if.normal_port CPU_BUS_NORMAL,
-    cpu_bus_if.stm_port CPU_BUS_STM,
-    cpu_bus_if.mod_port CPU_BUS_MOD,
-    input var THERMO,
-    output var FORCE_FAN,
-    output var PWM_OUT[DEPTH],
-    output var GPIO_OUT[2]
+    input wire CLK,
+    input wire CAT_SYNC0,
+    memory_bus_if.bram_port MEM_BUS,
+    input wire THERMO,
+    output wire FORCE_FAN,
+    output wire PWM_OUT[DEPTH],
+    output wire GPIO_OUT[2]
 );
 
-  `include "params.vh"
+  cnt_bus_if cnt_bus ();
+  modulation_bus_if mod_bus ();
+  stm_bus_if stm_bus ();
+  duty_table_bus_if duty_table_bus ();
 
-  localparam string ENABLE_STM = "TRUE";
+  logic update_settings;
+  settings::mod_settings_t mod_settings;
+  settings::stm_settings_t stm_settings;
+  settings::silencer_settings_t silencer_settings;
+  settings::sync_settings_t sync_settings;
+  settings::pulse_width_encoder_settings_t pulse_width_encoder_settings;
+  settings::debug_settings_t debug_settings;
 
   logic [63:0] sys_time;
   logic skip_one_assert;
@@ -37,42 +30,14 @@ module main #(
   logic [8:0] time_cnt;
   logic update;
 
-  logic [63:0] ecat_sync_time;
-  logic sync_set;
-
   logic [7:0] intensity;
   logic [7:0] phase;
   logic dout_valid;
 
-  logic op_mode;
-  logic [7:0] intensity_normal;
-  logic [7:0] phase_normal;
-  logic dout_valid_normal;
-
-  logic [7:0] intensity_stm;
-  logic [7:0] phase_stm;
-  logic dout_valid_stm;
-  logic [15:0] stm_idx;
-  logic stm_gain_mode;
-  logic [15:0] cycle_stm;
-  logic [31:0] freq_div_stm;
-  logic [31:0] sound_speed;
-  logic [15:0] stm_start_idx;
-  logic [15:0] stm_finish_idx;
-  logic use_stm_start_idx, use_stm_finish_idx;
-
-  logic [15:0] cycle_m;
-  logic [31:0] freq_div_m;
   logic [15:0] intensity_m;
   logic [7:0] phase_m;
-  logic [15:0] delay_m[DEPTH];
   logic dout_valid_m;
 
-  logic [15:0] update_rate_intensity_s;
-  logic [15:0] update_rate_phase_s;
-  logic fixed_completion_steps;
-  logic [15:0] completion_steps_intensity_s;
-  logic [15:0] completion_steps_phase_s;
   logic [15:0] intensity_s;
   logic [7:0] phase_s;
   logic dout_valid_s;
@@ -81,45 +46,36 @@ module main #(
   logic [7:0] phase_e;
   logic dout_valid_e;
 
-  logic [7:0] debug_output_idx;
+  memory memory (
+      .CLK(CLK),
+      .MEM_BUS(MEM_BUS),
+      .CNT_BUS_IF(cnt_bus.in_port),
+      .MOD_BUS(mod_bus.in_port),
+      .STM_BUS(stm_bus.in_port),
+      .DUTY_TABLE_BUS(duty_table_bus.in_port)
+  );
+
+  controller controller (
+      .CLK(CLK),
+      .THERMO(THERMO),
+      .cnt_bus(cnt_bus.out_port),
+      .UPDATE_SETTINGS(update_settings),
+      .MOD_SETTINGS(mod_settings),
+      .STM_SETTINGS(stm_settings),
+      .SILENCER_SETTINGS(silencer_settings),
+      .SYNC_SETTINGS(sync_settings),
+      .PULSE_WIDTH_ENCODER_SETTINGS(pulse_width_encoder_settings),
+      .DEBUG_SETTINGS(debug_settings),
+      .FORCE_FAN(FORCE_FAN)
+  );
 
   synchronizer synchronizer (
       .CLK(CLK),
-      .ECAT_SYNC_TIME(ecat_sync_time),
-      .SET(sync_set),
+      .SYNC_SETTINGS(sync_settings),
       .ECAT_SYNC(CAT_SYNC0),
       .SYS_TIME(sys_time),
       .SYNC(),
       .SKIP_ONE_ASSERT(skip_one_assert)
-  );
-
-  controller #(
-      .DEPTH(DEPTH)
-  ) controller (
-      .CLK(CLK),
-      .THERMO(THERMO),
-      .FORCE_FAN(FORCE_FAN),
-      .CPU_BUS(CPU_BUS_CTL),
-      .ECAT_SYNC_TIME(ecat_sync_time),
-      .SYNC_SET(sync_set),
-      .OP_MODE(op_mode),
-      .STM_GAIN_MODE(stm_gain_mode),
-      .CYCLE_M(cycle_m),
-      .FREQ_DIV_M(freq_div_m),
-      .DELAY_M(delay_m),
-      .UPDATE_RATE_INTENSITY_S(update_rate_intensity_s),
-      .UPDATE_RATE_PHASE_S(update_rate_phase_s),
-      .FIXED_COMPLETION_STEPS(fixed_completion_steps),
-      .COMPLETION_STEPS_INTENSITY(completion_steps_intensity_s),
-      .COMPLETION_STEPS_PHASE(completion_steps_phase_s),
-      .CYCLE_STM(cycle_stm),
-      .FREQ_DIV_STM(freq_div_stm),
-      .SOUND_SPEED(sound_speed),
-      .STM_START_IDX(stm_start_idx),
-      .USE_STM_START_IDX(use_stm_start_idx),
-      .STM_FINISH_IDX(stm_finish_idx),
-      .USE_STM_FINISH_IDX(use_stm_finish_idx),
-      .DEBUG_OUTPUT_IDX(debug_output_idx)
   );
 
   time_cnt_generator #(
@@ -132,82 +88,41 @@ module main #(
       .UPDATE(update)
   );
 
-  if (ENABLE_STM == "TRUE") begin
-    normal_operator #(
-        .DEPTH(DEPTH)
-    ) normal_operator (
-        .CLK(CLK),
-        .CPU_BUS(CPU_BUS_NORMAL),
-        .UPDATE(update),
-        .INTENSITY(intensity_normal),
-        .PHASE(phase_normal),
-        .DOUT_VALID(dout_valid_normal)
-    );
-
-    stm_operator #(
-        .DEPTH(DEPTH)
-    ) stm_operator (
-        .CLK(CLK),
-        .SYS_TIME(sys_time),
-        .UPDATE(update),
-        .CYCLE_STM(cycle_stm),
-        .FREQ_DIV_STM(freq_div_stm),
-        .SOUND_SPEED(sound_speed),
-        .STM_GAIN_MODE(stm_gain_mode),
-        .CPU_BUS(CPU_BUS_STM),
-        .INTENSITY(intensity_stm),
-        .PHASE(phase_stm),
-        .DOUT_VALID(dout_valid_stm),
-        .IDX(stm_idx)
-    );
-
-    mux mux (
-        .CLK(CLK),
-        .OP_MODE(op_mode),
-        .INTENSITY_NORMAL(intensity_normal),
-        .PHASE_NORMAL(phase_normal),
-        .DOUT_VALID_NORMAL(dout_valid_normal),
-        .INTENSITY_STM(intensity_stm),
-        .PHASE_STM(phase_stm),
-        .DOUT_VALID_STM(dout_valid_stm),
-        .STM_IDX(stm_idx),
-        .USE_STM_START_IDX(use_stm_start_idx),
-        .USE_STM_FINISH_IDX(use_stm_finish_idx),
-        .STM_START_IDX(stm_start_idx),
-        .STM_FINISH_IDX(stm_finish_idx),
-        .INTENSITY(intensity),
-        .PHASE(phase),
-        .DOUT_VALID(dout_valid)
-    );
-  end else begin
-    normal_operator #(
-        .DEPTH(DEPTH)
-    ) normal_operator (
-        .CLK(CLK),
-        .CPU_BUS(CPU_BUS_NORMAL),
-        .UPDATE(update),
-        .INTENSITY(intensity),
-        .PHASE(phase),
-        .DOUT_VALID(dout_valid)
-    );
-  end
-
-  modulator #(
+  stm #(
       .DEPTH(DEPTH)
-  ) modulator (
+  ) stm (
       .CLK(CLK),
       .SYS_TIME(sys_time),
-      .CYCLE_M(cycle_m),
-      .FREQ_DIV_M(freq_div_m),
-      .CPU_BUS(CPU_BUS_MOD),
+      .UPDATE(update),
+      .UPDATE_SETTINGS(update_settings),
+      .STM_SETTINGS(stm_settings),
+      .STM_BUS(stm_bus.stm_port),
+      .STM_BUS_FOCUS(stm_bus.out_focus_port),
+      .STM_BUS_GAIN(stm_bus.out_gain_port),
+      .INTENSITY(intensity),
+      .PHASE(phase),
+      .DOUT_VALID(dout_valid),
+      .DEBUG_IDX(),
+      .DEBUG_SEGMENT()
+  );
+
+  modulation #(
+      .DEPTH(DEPTH)
+  ) modulation (
+      .CLK(CLK),
+      .SYS_TIME(sys_time),
+      .UPDATE_SETTINGS(update_settings),
+      .MOD_SETTINGS(mod_settings),
       .DIN_VALID(dout_valid),
       .INTENSITY_IN(intensity),
-      .PHASE_IN(phase),
-      .DELAY_M(delay_m),
       .INTENSITY_OUT(intensity_m),
+      .PHASE_IN(phase),
       .PHASE_OUT(phase_m),
       .DOUT_VALID(dout_valid_m),
-      .IDX()
+      .MOD_BUS(mod_bus.out_port),
+      .DEBUG_IDX(),
+      .DEBUG_SEGMENT(),
+      .DEBUG_STOP()
   );
 
   silencer #(
@@ -215,11 +130,7 @@ module main #(
   ) silencer (
       .CLK(CLK),
       .DIN_VALID(dout_valid_m),
-      .UPDATE_RATE_INTENSITY(update_rate_intensity_s),
-      .UPDATE_RATE_PHASE(update_rate_phase_s),
-      .COMPLETION_STEPS_INTENSITY(completion_steps_intensity_s),
-      .COMPLETION_STEPS_PHASE(completion_steps_phase_s),
-      .FIXED_COMPLETION_STEPS(fixed_completion_steps),
+      .SILENCER_SETTINGS(silencer_settings),
       .INTENSITY_IN(intensity_m),
       .PHASE_IN(phase_m),
       .INTENSITY_OUT(intensity_s),
@@ -231,6 +142,8 @@ module main #(
       .DEPTH(DEPTH)
   ) pulse_width_encoder (
       .CLK(CLK),
+      .DUTY_TABLE_BUS(duty_table_bus.out_port),
+      .PULSE_WIDTH_ENCODER_SETTINGS(pulse_width_encoder_settings),
       .DIN_VALID(dout_valid_s),
       .INTENSITY_IN(intensity_s),
       .PHASE_IN(phase_s),
@@ -248,9 +161,12 @@ module main #(
       .DIN_VALID(dout_valid_e),
       .PULSE_WIDTH(pulse_width_e),
       .PHASE(phase_e),
-      .PWM_OUT(PWM_OUT)
+      .PWM_OUT(PWM_OUT),
+      .DOUT_VALID()
   );
 
+
+  // DEBUG 
   logic gpio_out_0;
   logic gpio_out_1;
 
@@ -259,7 +175,7 @@ module main #(
 
   always_ff @(posedge CLK) begin
     gpio_out_0 <= time_cnt < 9'd256;
-    gpio_out_1 <= debug_output_idx == 8'hFF ? 1'b0 : PWM_OUT[debug_output_idx];
+    gpio_out_1 <= debug_settings.OUTPUT_IDX == 8'hFF ? 1'b0 : PWM_OUT[debug_settings.OUTPUT_IDX];
   end
 
 endmodule

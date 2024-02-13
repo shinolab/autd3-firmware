@@ -1,23 +1,12 @@
-/*
- * File: pulse_width_encoder.sv
- * Project: modulation
- * Created Date: 17/11/2023
- * Author: Shun Suzuki
- * -----
- * Last Modified: 21/11/2023
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2023 Shun Suzuki. All rights reserved.
- *
- */
-
 module pulse_width_encoder #(
     parameter int DEPTH = 249
 ) (
-    input var CLK,
-    input var DIN_VALID,
-    input var [15:0] INTENSITY_IN,
-    input var [7:0] PHASE_IN,
+    input wire CLK,
+    input wire settings::pulse_width_encoder_settings_t PULSE_WIDTH_ENCODER_SETTINGS,
+    duty_table_bus_if.out_port DUTY_TABLE_BUS,
+    input wire DIN_VALID,
+    input wire [15:0] INTENSITY_IN,
+    input wire [7:0] PHASE_IN,
     output var [8:0] PULSE_WIDTH_OUT,
     output var [7:0] PHASE_OUT,
     output var DOUT_VALID
@@ -28,13 +17,6 @@ module pulse_width_encoder #(
   logic [15:0] addr;
   logic [7:0] dout;
   logic full_width[3];
-
-  BRAM_ASIN asin_bram (
-      .clka (CLK),
-      .ena  (1'b1),
-      .addra(addr),
-      .douta(dout)
-  );
 
   logic [7:0] phase_buf[DEPTH];
   logic [$clog2(DEPTH):0] phase_set_cnt = 0;
@@ -51,6 +33,9 @@ module pulse_width_encoder #(
   } state_t;
 
   state_t state = WAITING;
+
+  assign DUTY_TABLE_BUS.IDX = addr;
+  assign dout = DUTY_TABLE_BUS.VALUE;
 
   assign PULSE_WIDTH_OUT = pulse_width_out;
   assign PHASE_OUT = phase_out;
@@ -98,7 +83,7 @@ module pulse_width_encoder #(
   end
 
   always_ff @(posedge CLK) begin
-    full_width[0] <= INTENSITY_IN == 16'd65025;  // 255*255
+    full_width[0] <= INTENSITY_IN >= PULSE_WIDTH_ENCODER_SETTINGS.FULL_WIDTH_START;
     full_width[1] <= full_width[0];
     full_width[2] <= full_width[1];
   end

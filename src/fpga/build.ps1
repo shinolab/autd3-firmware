@@ -1,15 +1,3 @@
-# File: build.ps1
-# Project: autd3-library-firmware-fpga
-# Created Date: 06/12/2021
-# Author: Shun Suzuki
-# -----
-# Last Modified: 30/05/2022
-# Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
-# -----
-# Copyright (c) 2021 Shun Suzuki. All rights reserved.
-# 
-
-
 Param(
     [string]$vivado_dir = "NULL",
     [Switch]$no_proj_gen = $false,

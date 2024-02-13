@@ -1,7 +1,7 @@
 # AUTD3-FPGA
 
-Version: 5.1.1
+Version: 6.0.0
 
 # Author
 
-Shun Suzuki, 2022-2023
+Shun Suzuki, 2022-2024
