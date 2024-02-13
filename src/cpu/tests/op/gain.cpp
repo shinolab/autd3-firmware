@@ -67,3 +67,26 @@ TEST(Op, Gain) {
       ASSERT_EQ(bram_read_stm(0, i), (i << 8) | i);
   }
 }
+
+TEST(Op, GainInvalidSegment) {
+  init_app();
+
+  RX_STR data;
+  std::memset(data.data, 0, sizeof(RX_STR));
+
+  Header* header = reinterpret_cast<Header*>(data.data);
+  header->msg_id = get_msg_id();
+  header->slot_2_offset = 0;
+
+  auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+  data_body[0] = TAG_GAIN;
+  data_body[1] = 0xFF;
+
+  auto frame = to_frame_data(data);
+
+  recv_ethercat(&frame[0]);
+  update();
+
+  const auto ack = _sTx.ack >> 8;
+  ASSERT_EQ(ack, ERR_INVALID_SEGMENT);
+}

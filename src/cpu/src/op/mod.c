@@ -2,11 +2,12 @@
 extern "C" {
 #endif
 
+#include "mod.h"
+
 #include <assert.h>
 #include <stddef.h>
 
 #include "app.h"
-#include "mod.h"
 #include "params.h"
 #include "utils.h"
 
@@ -119,8 +120,8 @@ uint8_t write_mod(const volatile uint8_t* p_data) {
         bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_CYCLE_1,
                    max(1, _mod_cycle) - 1);
         break;
-      default:
-        break;
+      default:  // LCOV_EXCL_LINE
+        break;  // LCOV_EXCL_LINE
     }
 
     ret |= REQ_UPDATE_SETTINGS;

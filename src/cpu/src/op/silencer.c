@@ -67,8 +67,8 @@ uint8_t config_silencer(const volatile uint8_t* p_data) {
                  SILNCER_MODE_FIXED_UPDATE_RATE);
       _silencer_strict_mode = false;
       break;
-    default:
-      return ERR_INVALID_MODE;
+    default:                    // LCOV_EXCL_LINE
+      return ERR_INVALID_MODE;  // LCOV_EXCL_LINE
   }
 
   return NO_ERR | REQ_UPDATE_SETTINGS;

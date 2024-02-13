@@ -24,7 +24,7 @@ TEST(Op, FocusSTM) {
 
   // segment 0
   {
-    const uint32_t size = 1024;
+    const uint32_t size = 65536;
     const uint32_t freq_div = 0x12345678;
     const uint32_t sound_speed = 0x9ABCDEF0;
     const uint32_t rep = 0x87654321;
@@ -38,7 +38,7 @@ TEST(Op, FocusSTM) {
       auto offset = 4;
       if (cnt == 0) {
         data_body[1] = FOCUS_STM_FLAG_BEGIN;
-        *reinterpret_cast<uint32_t*>(data_body + 3) = 0;
+        *reinterpret_cast<uint8_t*>(data_body + 3) = 0;
         *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
         *reinterpret_cast<uint32_t*>(data_body + 8) = sound_speed;
         *reinterpret_cast<uint32_t*>(data_body + 12) = rep;
@@ -101,7 +101,7 @@ TEST(Op, FocusSTM) {
       auto offset = 4;
       if (cnt == 0) {
         data_body[1] = FOCUS_STM_FLAG_BEGIN;
-        *reinterpret_cast<uint32_t*>(data_body + 3) = 1;
+        *reinterpret_cast<uint8_t*>(data_body + 3) = 1;
         *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
         *reinterpret_cast<uint32_t*>(data_body + 8) = sound_speed;
         *reinterpret_cast<uint32_t*>(data_body + 12) = rep;
@@ -147,6 +147,31 @@ TEST(Op, FocusSTM) {
       ASSERT_EQ(bram_read_stm(1, 4 * i + 3), (buf[i] >> 48) & 0xFFFF);
     }
   }
+}
+
+TEST(Op, FocusSTMInvalidSegment) {
+  init_app();
+
+  RX_STR data;
+  std::memset(data.data, 0, sizeof(RX_STR));
+
+  Header* header = reinterpret_cast<Header*>(data.data);
+  header->slot_2_offset = 0;
+
+  header->msg_id = get_msg_id();
+
+  auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+  data_body[0] = TAG_FOCUS_STM;
+  data_body[1] = FOCUS_STM_FLAG_BEGIN;
+  *reinterpret_cast<uint8_t*>(data_body + 3) = 0xFF;
+  *reinterpret_cast<uint32_t*>(data_body + 4) = 0xFFFFFFFF;
+  auto frame = to_frame_data(data);
+
+  recv_ethercat(&frame[0]);
+  update();
+
+  const auto ack = _sTx.ack >> 8;
+  ASSERT_EQ(ack, ERR_INVALID_SEGMENT);
 }
 
 TEST(Op, InvalidCompletionStepsIntensityFocusSTM) {

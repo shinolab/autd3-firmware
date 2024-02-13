@@ -137,6 +137,34 @@ TEST(Op, GainSTMPhaseIntensityFull) {
   }
 }
 
+TEST(Op, GainSTMInvalidSegment) {
+  init_app();
+
+  RX_STR data;
+  std::memset(data.data, 0, sizeof(RX_STR));
+
+  Header* header = reinterpret_cast<Header*>(data.data);
+  header->slot_2_offset = 0;
+
+  header->msg_id = get_msg_id();
+
+  auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+  data_body[0] = TAG_GAIN_STM;
+  data_body[1] = GAIN_STM_FLAG_BEGIN;
+  *reinterpret_cast<uint8_t*>(data_body + 2) =
+      GAIN_STM_MODE_INTENSITY_PHASE_FULL;
+  *reinterpret_cast<uint8_t*>(data_body + 3) = 0xFF;
+  *reinterpret_cast<uint32_t*>(data_body + 4) = 0xFFFFFFFF;
+
+  auto frame = to_frame_data(data);
+
+  recv_ethercat(&frame[0]);
+  update();
+
+  const auto ack = _sTx.ack >> 8;
+  ASSERT_EQ(ack, ERR_INVALID_SEGMENT);
+}
+
 TEST(Op, GainSTMPhaseFull) {
   init_app();
 

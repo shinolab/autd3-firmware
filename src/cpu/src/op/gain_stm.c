@@ -175,8 +175,8 @@ uint8_t write_gain_stm(const volatile uint8_t* p_data) {
         bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE_1,
                    max(1, _stm_cycle) - 1);
         break;
-      default:
-        break;
+      default:  // LCOV_EXCL_LINE
+        break;  // LCOV_EXCL_LINE
     }
 
     ret |= REQ_UPDATE_SETTINGS;
