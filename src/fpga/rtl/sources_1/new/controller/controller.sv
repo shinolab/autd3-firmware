@@ -130,7 +130,10 @@ module controller (
 
           state <= REQ_ECAT_SYNC_TIME_0;
         end else if (ctl_flags[params::CTL_FLAG_SET_BIT]) begin
-          we <= 1'b0;
+          we <= 1'b1;
+          addr <= params::ADDR_CTL_FLAG;
+          din <= ctl_flags & ~(1 << params::CTL_FLAG_SET_BIT);
+
           state <= REQ_MOD_REQ_RD_SEGMENT;
         end else begin
           addr <= params::ADDR_CTL_FLAG;
@@ -141,8 +144,9 @@ module controller (
       //////////////////////////// wait ///////////////////////////
 
       //////////////////////////// load ///////////////////////////
-
       REQ_MOD_REQ_RD_SEGMENT: begin
+        we <= 1'b0;
+
         addr <= params::ADDR_MOD_REQ_RD_SEGMENT;
 
         state <= REQ_MOD_CYCLE_0;

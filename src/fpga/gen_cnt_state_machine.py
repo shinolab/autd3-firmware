@@ -212,7 +212,10 @@ module controller (
 
           state <= {sync_states[0]};
         end else if (ctl_flags[params::CTL_FLAG_SET_BIT]) begin
-          we <= 1'b0;
+          we <= 1'b1;
+          addr <= params::ADDR_CTL_FLAG;
+          din <= ctl_flags & ~(1 << params::CTL_FLAG_SET_BIT);
+
           state <= {states[0]};
         end else begin
           addr <= params::ADDR_CTL_FLAG;
@@ -230,8 +233,7 @@ module controller (
 
     f.writelines(
         """
-      //////////////////////////// load ///////////////////////////
-"""
+      //////////////////////////// load ///////////////////////////"""
     )
 
     for i, ((req_param, _, _), (param, bits, dst)) in enumerate(
@@ -241,6 +243,13 @@ module controller (
             f"""
       {states[i]}: begin"""
         )
+
+        if i == 0:
+            f.writelines(
+                """
+        we <= 1'b0;
+"""
+            )
 
         if req_param != "":
             f.writelines(
