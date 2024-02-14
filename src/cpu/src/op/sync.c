@@ -2,8 +2,6 @@
 #include "iodefine.h"
 #include "params.h"
 
-extern volatile uint16_t _fpga_flags_internal;
-
 inline static uint64_t get_next_sync0() {
   volatile uint64_t next_sync0 = ECATC.DC_CYC_START_TIME.LONGLONG;
   volatile uint64_t sys_time = ECATC.DC_SYS_TIME.LONGLONG;
@@ -16,7 +14,6 @@ inline static uint64_t get_next_sync0() {
 
 uint8_t synchronize(void) {
   volatile uint64_t next_sync0;
-  volatile uint16_t flag;
 
   next_sync0 = get_next_sync0();
   bram_cpy_volatile(BRAM_SELECT_CONTROLLER, BRAM_ADDR_ECAT_SYNC_TIME_0,
