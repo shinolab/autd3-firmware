@@ -3,7 +3,8 @@ module modulation_swapchain (
     input wire CLK,
     input wire UPDATE_SETTINGS,
     input wire REQ_RD_SEGMENT,
-    input wire [31:0] REP,
+    input wire [31:0] REP_0,
+    input wire [31:0] REP_1,
     input wire [14:0] IDX_0_IN,
     input wire [14:0] IDX_1_IN,
     output wire SEGMENT,
@@ -44,12 +45,12 @@ module modulation_swapchain (
         stop  <= 1'b0;
         state <= INFINITE_LOOP;
       end else begin
-        if (REP == 32'hFFFFFFFF) begin
+        if (((REQ_RD_SEGMENT == 1'b0) & (REP_0 == 32'hFFFFFFFF)) | ((REQ_RD_SEGMENT == 1'b1) & (REP_1 == 32'hFFFFFFFF))) begin
           stop <= 1'b0;
           segment <= REQ_RD_SEGMENT;
           state <= INFINITE_LOOP;
         end else begin
-          rep <= REP;
+          rep <= REQ_RD_SEGMENT == 1'b0 ? REP_0 : REP_1;
           req_segment <= REQ_RD_SEGMENT;
           state <= WAIT_START;
         end

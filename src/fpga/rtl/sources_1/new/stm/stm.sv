@@ -20,6 +20,7 @@ module stm #(
   logic start = 1'b0;
   logic segment = '0;
   logic [15:0] idx = '0;
+  logic [31:0] sound_speed = '0;
 
   assign STM_BUS.MODE = mode;
   assign STM_BUS.SEGMENT = segment;
@@ -52,19 +53,17 @@ module stm #(
       .UPDATE_SETTINGS_OUT(update_settings)
   );
 
-  logic swapchain_mode;
   logic [15:0] swapchain_idx_0, swapchain_idx_1;
   logic swapchain_segment;
   logic swapchain_stop;
   stm_swapchain stm_swapchain (
       .CLK(CLK),
       .UPDATE_SETTINGS(update_settings),
-      .REQ_MODE(STM_SETTINGS.MODE),
       .REQ_RD_SEGMENT(STM_SETTINGS.REQ_RD_SEGMENT),
-      .REP(STM_SETTINGS.REP),
+      .REP_0(STM_SETTINGS.REP_0),
+      .REP_1(STM_SETTINGS.REP_1),
       .IDX_0_IN(timer_idx_0),
       .IDX_1_IN(timer_idx_1),
-      .MODE(swapchain_mode),
       .STOP(swapchain_stop),
       .SEGMENT(swapchain_segment),
       .IDX_0_OUT(swapchain_idx_0),
@@ -90,7 +89,7 @@ module stm #(
       .START(start),
       .IDX(idx),
       .STM_BUS(STM_BUS_FOCUS),
-      .SOUND_SPEED(STM_SETTINGS.SOUND_SPEED),
+      .SOUND_SPEED(sound_speed),
       .INTENSITY(intensity_focus),
       .PHASE(phase_focus),
       .DOUT_VALID(dout_valid_focus)
@@ -99,9 +98,10 @@ module stm #(
   always_ff @(posedge CLK) begin
     if (UPDATE) begin
       if (swapchain_stop == 1'b0) begin
-        mode <= swapchain_mode;
         segment <= swapchain_segment;
+        mode <= swapchain_segment == 1'b0 ? STM_SETTINGS.MODE_0 : STM_SETTINGS.MODE_1;
         idx <= swapchain_segment == 1'b0 ? swapchain_idx_0 : swapchain_idx_1;
+        sound_speed <= swapchain_segment == 1'b0 ? STM_SETTINGS.SOUND_SPEED_0 : STM_SETTINGS.SOUND_SPEED_1;
       end
       start <= 1'b1;
     end else begin

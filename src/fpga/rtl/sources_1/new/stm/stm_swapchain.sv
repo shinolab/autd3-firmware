@@ -2,19 +2,16 @@
 module stm_swapchain (
     input wire CLK,
     input wire UPDATE_SETTINGS,
-    input wire REQ_MODE,
     input wire REQ_RD_SEGMENT,
-    input wire [31:0] REP,
+    input wire [31:0] REP_0,
+    input wire [31:0] REP_1,
     input wire [15:0] IDX_0_IN,
     input wire [15:0] IDX_1_IN,
-    output wire MODE,
     output wire STOP,
     output wire SEGMENT,
     output wire [15:0] IDX_0_OUT,
     output wire [15:0] IDX_1_OUT
 );
-
-  logic mode = params::STM_MODE_GAIN;
 
   logic segment = 1'b0;
   logic req_segment;
@@ -29,7 +26,6 @@ module stm_swapchain (
   assign idx_0 = IDX_0_IN;
   assign idx_1 = IDX_1_IN;
 
-  assign MODE = mode;
   assign SEGMENT = segment;
   assign STOP = stop;
   assign IDX_0_OUT = idx_0_buf;
@@ -45,17 +41,16 @@ module stm_swapchain (
 
   always_ff @(posedge CLK) begin
     if (UPDATE_SETTINGS) begin
-      mode <= REQ_MODE;
       if (REQ_RD_SEGMENT == segment) begin
         stop  <= 1'b0;
         state <= INFINITE_LOOP;
       end else begin
-        if (REP == 32'hFFFFFFFF) begin
+        if (((REQ_RD_SEGMENT == 1'b0) & (REP_0 == 32'hFFFFFFFF)) | ((REQ_RD_SEGMENT == 1'b1) & (REP_1 == 32'hFFFFFFFF))) begin
           stop <= 1'b0;
           segment <= REQ_RD_SEGMENT;
           state <= INFINITE_LOOP;
         end else begin
-          rep <= REP;
+          rep <= REQ_RD_SEGMENT == 1'b0 ? REP_0 : REP_1;
           req_segment <= REQ_RD_SEGMENT;
           state <= WAIT_START;
         end
@@ -63,24 +58,13 @@ module stm_swapchain (
     end else begin
       case (state)
         WAIT_START: begin
-          if (req_segment == 1'b0) begin
-            if (idx_0 == '0) begin
-              stop <= 1'b0;
-              loop_cnt <= '0;
-              segment <= 1'b0;
-              state <= FINITE_LOOP;
-            end else begin
-              state <= WAIT_START;
-            end
+          if (((req_segment == 1'b0) & (idx_0 == '0)) | ((req_segment == 1'b1) & (idx_1 == '0))) begin
+            stop <= 1'b0;
+            loop_cnt <= '0;
+            segment <= req_segment;
+            state <= FINITE_LOOP;
           end else begin
-            if (idx_1 == '0) begin
-              stop <= 1'b0;
-              loop_cnt <= '0;
-              segment <= 1'b1;
-              state <= FINITE_LOOP;
-            end else begin
-              state <= WAIT_START;
-            end
+            state <= WAIT_START;
           end
         end
         INFINITE_LOOP: begin

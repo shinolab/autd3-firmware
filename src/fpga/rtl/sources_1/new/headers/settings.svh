@@ -5,21 +5,25 @@ package settings;
     logic REQ_RD_SEGMENT;
     logic [14:0] CYCLE_0;
     logic [31:0] FREQ_DIV_0;
+    logic [31:0] REP_0;
     logic [14:0] CYCLE_1;
     logic [31:0] FREQ_DIV_1;
-    logic [31:0] REP;
+    logic [31:0] REP_1;
   } mod_settings_t;
 
   typedef struct {
     logic UPDATE;
-    logic MODE;
     logic REQ_RD_SEGMENT;
+    logic MODE_0;
+    logic MODE_1;
     logic [15:0] CYCLE_0;
     logic [31:0] FREQ_DIV_0;
+    logic [31:0] REP_0;
+    logic [31:0] SOUND_SPEED_0;
     logic [15:0] CYCLE_1;
     logic [31:0] FREQ_DIV_1;
-    logic [31:0] REP;
-    logic [31:0] SOUND_SPEED;
+    logic [31:0] REP_1;
+    logic [31:0] SOUND_SPEED_1;
   } stm_settings_t;
 
   typedef struct {

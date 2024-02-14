@@ -12,15 +12,18 @@ mod_params = (
         ("MOD_CYCLE_1", 15, "CYCLE_1"),
         ("MOD_FREQ_DIV_1_0", 16, "FREQ_DIV_1[15:0]"),
         ("MOD_FREQ_DIV_1_1", 16, "FREQ_DIV_1[31:16]"),
-        ("MOD_REP_0", 16, "REP[15:0]"),
-        ("MOD_REP_1", 16, "REP[31:16]"),
+        ("MOD_REP_0_0", 16, "REP_0[15:0]"),
+        ("MOD_REP_0_1", 16, "REP_0[31:16]"),
+        ("MOD_REP_1_0", 16, "REP_1[15:0]"),
+        ("MOD_REP_1_1", 16, "REP_1[31:16]"),
     ],
 )
 
 stm_params = (
     "STM",
     [
-        ("STM_MODE", 1, "MODE"),
+        ("STM_MODE_0", 1, "MODE_0"),
+        ("STM_MODE_1", 1, "MODE_1"),
         ("STM_REQ_RD_SEGMENT", 1, "REQ_RD_SEGMENT"),
         ("STM_CYCLE_0", 16, "CYCLE_0"),
         ("STM_FREQ_DIV_0_0", 16, "FREQ_DIV_0[15:0]"),
@@ -28,10 +31,14 @@ stm_params = (
         ("STM_CYCLE_1", 16, "CYCLE_1"),
         ("STM_FREQ_DIV_1_0", 16, "FREQ_DIV_1[15:0]"),
         ("STM_FREQ_DIV_1_1", 16, "FREQ_DIV_1[31:16]"),
-        ("STM_SOUND_SPEED_0", 16, "SOUND_SPEED[15:0]"),
-        ("STM_SOUND_SPEED_1", 16, "SOUND_SPEED[31:16]"),
-        ("STM_REP_0", 16, "REP[15:0]"),
-        ("STM_REP_1", 16, "REP[31:16]"),
+        ("STM_SOUND_SPEED_0_0", 16, "SOUND_SPEED_0[15:0]"),
+        ("STM_SOUND_SPEED_0_1", 16, "SOUND_SPEED_0[31:16]"),
+        ("STM_SOUND_SPEED_1_0", 16, "SOUND_SPEED_1[15:0]"),
+        ("STM_SOUND_SPEED_1_1", 16, "SOUND_SPEED_1[31:16]"),
+        ("STM_REP_0_0", 16, "REP_0[15:0]"),
+        ("STM_REP_0_1", 16, "REP_0[31:16]"),
+        ("STM_REP_1_0", 16, "REP_1[15:0]"),
+        ("STM_REP_1_1", 16, "REP_1[31:16]"),
     ],
 )
 
@@ -344,17 +351,21 @@ module controller (
     MOD_SETTINGS.FREQ_DIV_0                       = 32'd5120;
     MOD_SETTINGS.CYCLE_1                          = 15'd1;
     MOD_SETTINGS.FREQ_DIV_1                       = 32'd5120;
-    MOD_SETTINGS.REP                              = 32'hFFFFFFFF;
+    MOD_SETTINGS.REP_0                            = 32'hFFFFFFFF;
+    MOD_SETTINGS.REP_1                            = 32'hFFFFFFFF;
 
     STM_SETTINGS.UPDATE                           = 1'b0;
-    STM_SETTINGS.MODE                             = params::STM_MODE_GAIN;
+    STM_SETTINGS.MODE_0                           = params::STM_MODE_GAIN;
+    STM_SETTINGS.MODE_1                           = params::STM_MODE_GAIN;
     STM_SETTINGS.REQ_RD_SEGMENT                   = 1'b0;
     STM_SETTINGS.CYCLE_0                          = '0;
     STM_SETTINGS.FREQ_DIV_0                       = 32'hFFFFFFFF;
     STM_SETTINGS.CYCLE_1                          = '0;
     STM_SETTINGS.FREQ_DIV_1                       = 32'hFFFFFFFF;
-    STM_SETTINGS.REP                              = 32'hFFFFFFFF;
-    STM_SETTINGS.SOUND_SPEED                      = '0;
+    STM_SETTINGS.REP_0                            = 32'hFFFFFFFF;
+    STM_SETTINGS.REP_1                            = 32'hFFFFFFFF;
+    STM_SETTINGS.SOUND_SPEED_0                    = '0;
+    STM_SETTINGS.SOUND_SPEED_1                    = '0;
 
     SILENCER_SETTINGS.UPDATE                      = 1'b0;
     SILENCER_SETTINGS.MODE                        = params::SILNCER_MODE_FIXED_COMPLETION_STEPS;
