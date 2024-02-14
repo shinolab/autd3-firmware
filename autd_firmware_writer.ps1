@@ -1,5 +1,5 @@
 ﻿Param(
-    [string]$version = "5.1.1",
+    [string]$version = "6.0.0-rc.1",
     [string]$vivado_dir = "NULL"
 )
 
