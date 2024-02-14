@@ -16,7 +16,6 @@ module main #(
   stm_bus_if stm_bus ();
   duty_table_bus_if duty_table_bus ();
 
-  logic update_settings;
   settings::mod_settings_t mod_settings;
   settings::stm_settings_t stm_settings;
   settings::silencer_settings_t silencer_settings;
@@ -59,7 +58,6 @@ module main #(
       .CLK(CLK),
       .THERMO(THERMO),
       .cnt_bus(cnt_bus.out_port),
-      .UPDATE_SETTINGS(update_settings),
       .MOD_SETTINGS(mod_settings),
       .STM_SETTINGS(stm_settings),
       .SILENCER_SETTINGS(silencer_settings),
@@ -94,7 +92,6 @@ module main #(
       .CLK(CLK),
       .SYS_TIME(sys_time),
       .UPDATE(update),
-      .UPDATE_SETTINGS(update_settings),
       .STM_SETTINGS(stm_settings),
       .STM_BUS(stm_bus.stm_port),
       .STM_BUS_FOCUS(stm_bus.out_focus_port),
@@ -111,7 +108,6 @@ module main #(
   ) modulation (
       .CLK(CLK),
       .SYS_TIME(sys_time),
-      .UPDATE_SETTINGS(update_settings),
       .MOD_SETTINGS(mod_settings),
       .DIN_VALID(dout_valid),
       .INTENSITY_IN(intensity),

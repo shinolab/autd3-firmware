@@ -48,6 +48,7 @@ void init_app(void) {
   bram_write(BRAM_SELECT_CONTROLLER,
              BRAM_ADDR_PULSE_WIDTH_ENCODER_FULL_WIDTH_START,
              65025);  // 255 * 255
+  set_and_wait_update(CTL_FLAG_PULSE_WIDTH_ENCODER_SET);
 }
 
 uint8_t handle_payload(const volatile uint8_t* p_data) {
@@ -112,9 +113,8 @@ void update(void) {
       if ((_ack & ERR_BIT) != 0) goto FINISH;
     }
 
-    if ((_ack & REQ_UPDATE_SETTINGS) != 0)
-      bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG,
-                 _fpga_flags_internal | CTL_FLAG_SET);
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG,
+               _fpga_flags_internal);
 
     _ack = header->msg_id;
   } else {

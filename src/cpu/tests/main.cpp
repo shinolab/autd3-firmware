@@ -122,6 +122,8 @@ void fpga_write(uint16_t bram_addr, uint16_t value) {
       exit(1);
   }
 }
+
+void set_and_wait_update(uint16_t) {}
 }
 
 int main(int argc, char** argv) {

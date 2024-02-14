@@ -71,7 +71,9 @@ uint8_t config_silencer(const volatile uint8_t* p_data) {
       return ERR_INVALID_MODE;  // LCOV_EXCL_LINE
   }
 
-  return NO_ERR | REQ_UPDATE_SETTINGS;
+  set_and_wait_update(CTL_FLAG_SILENCER_SET);
+
+  return NO_ERR;
 }
 
 #ifdef __cplusplus

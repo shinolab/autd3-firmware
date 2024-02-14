@@ -22,7 +22,9 @@ uint8_t configure_debug(const volatile uint8_t* p_data) {
   uint8_t idx = p->idx;
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_DEBUG_OUT_IDX, idx);
 
-  return NO_ERR | REQ_UPDATE_SETTINGS;
+  set_and_wait_update(CTL_FLAG_DEBUG_SET);
+
+  return NO_ERR;
 }
 
 #ifdef __cplusplus

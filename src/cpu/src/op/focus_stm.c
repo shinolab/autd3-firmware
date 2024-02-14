@@ -74,7 +74,6 @@ uint8_t write_focus_stm(const volatile uint8_t* p_data) {
   uint32_t rep;
   uint8_t segment;
   volatile uint32_t page_capacity;
-  uint8_t ret = NO_ERR;
 
   if ((p->subseq.flag & FOCUS_STM_FLAG_BEGIN) == FOCUS_STM_FLAG_BEGIN) {
     _stm_cycle = 0;
@@ -153,10 +152,12 @@ uint8_t write_focus_stm(const volatile uint8_t* p_data) {
       default:  // LCOV_EXCL_LINE
         break;  // LCOV_EXCL_LINE
     }
-    ret |= REQ_UPDATE_SETTINGS;
+
+    if ((p->subseq.flag & FOCUS_STM_FLAG_UPDATE) != 0)
+      set_and_wait_update(CTL_FLAG_STM_SET);
   }
 
-  return ret;
+  return NO_ERR;
 }
 
 #ifdef __cplusplus

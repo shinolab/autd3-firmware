@@ -26,7 +26,7 @@ uint8_t configure_force_fan(const volatile uint8_t* p_data) {
   else
     _fpga_flags_internal &= ~CTL_FLAG_FORCE_FAN;
 
-  return NO_ERR | REQ_UPDATE_SETTINGS;
+  return NO_ERR;
 }
 
 #ifdef __cplusplus

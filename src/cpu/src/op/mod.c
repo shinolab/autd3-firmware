@@ -2,12 +2,11 @@
 extern "C" {
 #endif
 
-#include "mod.h"
-
 #include <assert.h>
 #include <stddef.h>
 
 #include "app.h"
+#include "mod.h"
 #include "params.h"
 #include "utils.h"
 
@@ -65,7 +64,6 @@ uint8_t write_mod(const volatile uint8_t* p_data) {
   uint32_t freq_div;
   uint8_t segment;
   uint32_t rep;
-  uint8_t ret = NO_ERR;
 
   volatile uint16_t write = p->subseq.size;
 
@@ -124,10 +122,11 @@ uint8_t write_mod(const volatile uint8_t* p_data) {
         break;  // LCOV_EXCL_LINE
     }
 
-    ret |= REQ_UPDATE_SETTINGS;
+    if ((p->subseq.flag & MODULATION_FLAG_UPDATE) != 0)
+      set_and_wait_update(CTL_FLAG_MOD_SET);
   }
 
-  return ret;
+  return NO_ERR;
 }
 
 #ifdef __cplusplus

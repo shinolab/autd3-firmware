@@ -14,15 +14,16 @@ extern volatile uint32_t _stm_freq_div;
 typedef ALIGN2 struct {
   uint8_t tag;
   uint8_t segment;
+  uint16_t flag;
 } Gain;
 
 uint8_t write_gain(const volatile uint8_t* p_data) {
-  static_assert(sizeof(Gain) == 2, "Gain is not valid.");
+  static_assert(sizeof(Gain) == 4, "Gain is not valid.");
   static_assert(offsetof(Gain, tag) == 0, "Gain is not valid.");
   static_assert(offsetof(Gain, segment) == 1, "Gain is not valid.");
+  static_assert(offsetof(Gain, flag) == 2, "Gain is not valid.");
 
   const Gain* p = (const Gain*)p_data;
-
   uint8_t segment = p->segment;
 
   switch (segment) {
@@ -49,7 +50,9 @@ uint8_t write_gain(const volatile uint8_t* p_data) {
                     TRANS_NUM);
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_REQ_RD_SEGMENT, segment);
 
-  return NO_ERR | REQ_UPDATE_SETTINGS;
+  if ((p->flag & GAIN_FLAG_UPDATE) != 0) set_and_wait_update(CTL_FLAG_STM_SET);
+
+  return NO_ERR;
 }
 
 #ifdef __cplusplus

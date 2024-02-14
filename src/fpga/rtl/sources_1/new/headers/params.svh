@@ -61,8 +61,13 @@ package params;
   localparam bit [7:0] ADDR_PULSE_WIDTH_ENCODER_FULL_WIDTH_START = 8'h61;
   localparam bit [7:0] ADDR_DEBUG_OUT_IDX = 8'hF0;
 
+  localparam int CTL_FLAG_MOD_SET_BIT = 0;
+  localparam int CTL_FLAG_STM_SET_BIT = 1;
+  localparam int CTL_FLAG_SILENCER_SET_BIT = 2;
+  localparam int CTL_FLAG_PULSE_WIDTH_ENCODER_SET_BIT = 3;
+  localparam int CTL_FLAG_DEBUG_SET_BIT = 4;
+  localparam int CTL_FLAG_SYNC_SET_BIT = 5;
+
   localparam int CTL_FLAG_FORCE_FAN_BIT = 13;
-  localparam int CTL_FLAG_SET_BIT = 14;
-  localparam int CTL_FLAG_SYNC_BIT = 15;
 
 endpackage

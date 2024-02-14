@@ -110,6 +110,8 @@ inline static void bram_set(uint8_t bram_select, uint16_t base_bram_addr,
   for (auto i = 0; i < cnt; i++) fpga_write(addr++, value);
 }
 
+void set_and_wait_update(uint16_t flag);
+
 #ifdef __cplusplus
 }
 #endif

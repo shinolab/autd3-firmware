@@ -29,7 +29,6 @@ module sim_controller ();
   );
 
   logic thermo;
-  logic update_settings;
   settings::mod_settings_t mod_settings;
   settings::stm_settings_t stm_settings;
   settings::silencer_settings_t silencer_settings;
@@ -42,7 +41,6 @@ module sim_controller ();
       .CLK(CLK),
       .THERMO(thermo),
       .cnt_bus(cnt_bus.out_port),
-      .UPDATE_SETTINGS(update_settings),
       .MOD_SETTINGS(mod_settings),
       .STM_SETTINGS(stm_settings),
       .SILENCER_SETTINGS(silencer_settings),
@@ -62,6 +60,7 @@ module sim_controller ();
   initial begin
     sim_helper_random.init();
 
+    mod_settings_in.UPDATE = 1'b1;
     mod_settings_in.REQ_RD_SEGMENT = sim_helper_random.range(1'b1, 0);
     mod_settings_in.CYCLE_0 = sim_helper_random.range(15'h7FFF, 0);
     mod_settings_in.FREQ_DIV_0 = sim_helper_random.range(32'hFFFFFFFF, 0);
@@ -69,6 +68,7 @@ module sim_controller ();
     mod_settings_in.FREQ_DIV_1 = sim_helper_random.range(32'hFFFFFFFF, 0);
     mod_settings_in.REP = sim_helper_random.range(32'hFFFFFFFF, 0);
 
+    stm_settings_in.UPDATE = 1'b1;
     stm_settings_in.MODE = sim_helper_random.range(1'b1, 0);
     stm_settings_in.REQ_RD_SEGMENT = sim_helper_random.range(1'b1, 0);
     stm_settings_in.CYCLE_0 = sim_helper_random.range(16'hFFFF, 0);
@@ -78,16 +78,20 @@ module sim_controller ();
     stm_settings_in.REP = sim_helper_random.range(32'hFFFFFFFF, 0);
     stm_settings_in.SOUND_SPEED = sim_helper_random.range(32'hFFFFFFFF, 0);
 
+    silencer_settings_in.UPDATE = 1'b1;
     silencer_settings_in.MODE = sim_helper_random.range(1'b1, 0);
     silencer_settings_in.UPDATE_RATE_INTENSITY = sim_helper_random.range(16'hFFFF, 0);
     silencer_settings_in.UPDATE_RATE_PHASE = sim_helper_random.range(16'hFFFF, 0);
     silencer_settings_in.COMPLETION_STEPS_INTENSITY = sim_helper_random.range(16'hFFFF, 0);
     silencer_settings_in.COMPLETION_STEPS_PHASE = sim_helper_random.range(16'hFFFF, 0);
 
+    sync_settings_in.UPDATE = 1'b1;
     sync_settings_in.ECAT_SYNC_TIME = sim_helper_random.range(64'hFFFFFFFFFFFFFFFF, 0);
 
+    pulse_width_encoder_settings_in.UPDATE = 1'b1;
     pulse_width_encoder_settings_in.FULL_WIDTH_START = sim_helper_random.range(16'hFFFF, 0);
 
+    debug_settings_in.UPDATE = 1'b1;
     debug_settings_in.OUTPUT_IDX = sim_helper_random.range(8'hFF, 0);
 
     @(posedge locked);
@@ -101,33 +105,38 @@ module sim_controller ();
     $display("memory initialized");
 
     sim_helper_bram.bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_CTL_FLAG,
-                               16'b1 << params::CTL_FLAG_SET_BIT);
-
-    @(posedge update_settings);
+                               (16'b1 << params::CTL_FLAG_MOD_SET_BIT) | (16'b1 << params::CTL_FLAG_STM_SET_BIT) | (16'b1 << params::CTL_FLAG_SILENCER_SET_BIT) | (16'b1 << params::CTL_FLAG_PULSE_WIDTH_ENCODER_SET_BIT) | (16'b1 << params::CTL_FLAG_DEBUG_SET_BIT) | (16'b1 << params::CTL_FLAG_SYNC_SET_BIT));
+    @(posedge mod_settings.UPDATE);
     if (mod_settings_in !== mod_settings) begin
       $error("MOD_SETTINGS mismatch");
       $finish();
     end
+
+    @(posedge stm_settings.UPDATE);
     if (stm_settings_in !== stm_settings) begin
       $error("STM_SETTINGS mismatch");
       $finish();
     end
+
+    @(posedge silencer_settings.UPDATE);
     if (silencer_settings_in !== silencer_settings) begin
       $error("SILENCER_SETTINGS mismatch");
       $finish();
     end
+
+    @(posedge pulse_width_encoder_settings.UPDATE);
     if (pulse_width_encoder_settings_in !== pulse_width_encoder_settings) begin
       $error("PULSE_WIDTH_ENCODER_SETTINGS mismatch");
       $finish();
     end
+
+    @(posedge debug_settings.UPDATE);
     if (debug_settings_in !== debug_settings) begin
       $error("DEBUG_SETTINGS mismatch");
       $finish();
     end
 
-    sim_helper_bram.bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_CTL_FLAG,
-                               16'b1 << params::CTL_FLAG_SYNC_BIT);
-    @(posedge sync_settings.SET);
+    @(posedge sync_settings.UPDATE);
     if (sync_settings_in.ECAT_SYNC_TIME !== sync_settings.ECAT_SYNC_TIME) begin
       $error("SYNC_SETTINGS mismatch");
       $finish();

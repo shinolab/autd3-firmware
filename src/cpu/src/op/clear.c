@@ -83,7 +83,12 @@ uint8_t clear(void) {
 
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_DEBUG_OUT_IDX, 0xFF);
 
-  return NO_ERR | REQ_UPDATE_SETTINGS;
+  set_and_wait_update(CTL_FLAG_MOD_SET);
+  set_and_wait_update(CTL_FLAG_STM_SET);
+  set_and_wait_update(CTL_FLAG_SILENCER_SET);
+  set_and_wait_update(CTL_FLAG_DEBUG_SET);
+
+  return NO_ERR;
 }
 
 #ifdef __cplusplus

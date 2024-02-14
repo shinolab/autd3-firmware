@@ -64,7 +64,6 @@ uint8_t write_gain_stm(const volatile uint8_t* p_data) {
   uint32_t freq_div;
   uint32_t rep;
   uint8_t segment;
-  uint8_t ret = NO_ERR;
 
   if ((p->subseq.flag & GAIN_STM_FLAG_BEGIN) == GAIN_STM_FLAG_BEGIN) {
     _stm_cycle = 0;
@@ -179,10 +178,11 @@ uint8_t write_gain_stm(const volatile uint8_t* p_data) {
         break;  // LCOV_EXCL_LINE
     }
 
-    ret |= REQ_UPDATE_SETTINGS;
+    if ((p->subseq.flag & GAIN_STM_FLAG_UPDATE) != 0)
+      set_and_wait_update(CTL_FLAG_STM_SET);
   }
 
-  return ret;
+  return NO_ERR;
 }
 
 #ifdef __cplusplus

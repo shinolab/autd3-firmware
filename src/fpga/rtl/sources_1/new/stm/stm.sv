@@ -5,7 +5,6 @@ module stm #(
     input wire CLK,
     input wire [63:0] SYS_TIME,
     input wire UPDATE,
-    input wire UPDATE_SETTINGS,
     input settings::stm_settings_t STM_SETTINGS,
     stm_bus_if.stm_port STM_BUS,
     stm_bus_if.out_focus_port STM_BUS_FOCUS,
@@ -42,7 +41,7 @@ module stm #(
   logic [15:0] timer_idx_0, timer_idx_1;
   stm_timer stm_timer (
       .CLK(CLK),
-      .UPDATE_SETTINGS_IN(UPDATE_SETTINGS),
+      .UPDATE_SETTINGS_IN(STM_SETTINGS.UPDATE),
       .SYS_TIME(SYS_TIME),
       .CYCLE_0(STM_SETTINGS.CYCLE_0),
       .FREQ_DIV_0(STM_SETTINGS.FREQ_DIV_0),

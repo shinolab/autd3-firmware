@@ -25,7 +25,7 @@ TEST(Op, Gain) {
     data_body[0] = TAG_GAIN;
     data_body[1] = 0;
     for (uint8_t i = 0; i < TRANS_NUM; i++)
-      *reinterpret_cast<uint16_t*>((data_body + 2 + i * 2)) = (i << 8) | i;
+      *reinterpret_cast<uint16_t*>((data_body + 4 + i * 2)) = (i << 8) | i;
 
     auto frame = to_frame_data(data);
 
@@ -51,7 +51,7 @@ TEST(Op, Gain) {
     data_body[0] = TAG_GAIN;
     data_body[1] = 1;
     for (uint8_t i = 0; i < TRANS_NUM; i++)
-      *reinterpret_cast<uint16_t*>((data_body + 2 + i * 2)) = (i << 8) | i;
+      *reinterpret_cast<uint16_t*>((data_body + 4 + i * 2)) = (i << 8) | i;
 
     auto frame = to_frame_data(data);
 

@@ -78,7 +78,7 @@ module synchronizer (
   always_ff @(posedge CLK) begin
     if (set & sync) begin
       set <= 1'b0;
-    end else if (SYNC_SETTINGS.SET) begin
+    end else if (SYNC_SETTINGS.UPDATE) begin
       set <= 1'b1;
       ecat_sync_time <= SYNC_SETTINGS.ECAT_SYNC_TIME;
     end

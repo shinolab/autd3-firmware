@@ -4,7 +4,6 @@ module modulation #(
 ) (
     input wire CLK,
     input wire [63:0] SYS_TIME,
-    input wire UPDATE_SETTINGS,
     input wire settings::mod_settings_t MOD_SETTINGS,
     input wire DIN_VALID,
     input wire [7:0] INTENSITY_IN,
@@ -21,7 +20,7 @@ module modulation #(
   logic [14:0] idx_0_timer, idx_1_timer;
   modulation_timer modulation_timer (
       .CLK(CLK),
-      .UPDATE_SETTINGS_IN(UPDATE_SETTINGS),
+      .UPDATE_SETTINGS_IN(MOD_SETTINGS.UPDATE),
       .SYS_TIME(SYS_TIME),
       .CYCLE_0(MOD_SETTINGS.CYCLE_0),
       .FREQ_DIV_0(MOD_SETTINGS.FREQ_DIV_0),
