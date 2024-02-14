@@ -56,9 +56,7 @@ TEST(Op, GainSTMPhaseIntensityFull) {
 
       cnt++;
 
-      if (cnt == size) {
-        data_body[1] |= GAIN_STM_FLAG_END;
-      }
+      if (cnt == size) data_body[1] |= GAIN_STM_FLAG_END | GAIN_STM_FLAG_UPDATE;
 
       auto frame = to_frame_data(data);
 
@@ -69,13 +67,13 @@ TEST(Op, GainSTMPhaseIntensityFull) {
       ASSERT_EQ(ack, header->msg_id);
     }
 
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_MODE), STM_MODE_GAIN);
+    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_MODE_0), STM_MODE_GAIN);
     ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REQ_RD_SEGMENT), 0);
     ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_CYCLE_0), size - 1);
     ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_FREQ_DIV_0_0), 0x5678);
     ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_FREQ_DIV_0_1), 0x1234);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REP_0), 0x4321);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REP_1), 0x8765);
+    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REP_0_0), 0x4321);
+    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REP_0_1), 0x8765);
     for (uint16_t i = 0; i < size; i++)
       for (uint16_t j = 0; j < TRANS_NUM; j++)
         ASSERT_EQ(bram_read_stm(0, 256 * i + j), i + j);
@@ -111,9 +109,7 @@ TEST(Op, GainSTMPhaseIntensityFull) {
 
       cnt++;
 
-      if (cnt == size) {
-        data_body[1] |= GAIN_STM_FLAG_END;
-      }
+      if (cnt == size) data_body[1] |= GAIN_STM_FLAG_END;
 
       auto frame = to_frame_data(data);
 
@@ -124,16 +120,37 @@ TEST(Op, GainSTMPhaseIntensityFull) {
       ASSERT_EQ(ack, header->msg_id);
     }
 
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_MODE), STM_MODE_GAIN);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REQ_RD_SEGMENT), 1);
+    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_MODE_1), STM_MODE_GAIN);
+    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REQ_RD_SEGMENT), 0);
     ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_CYCLE_1), size - 1);
     ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_FREQ_DIV_1_0), 0x4321);
     ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_FREQ_DIV_1_1), 0x8765);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REP_0), 0x5678);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REP_1), 0x1234);
+    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REP_1_0), 0x5678);
+    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REP_1_1), 0x1234);
     for (uint16_t i = 0; i < size; i++)
       for (uint16_t j = 0; j < TRANS_NUM; j++)
         ASSERT_EQ(bram_read_stm(1, 256 * i + j), i + j);
+  }
+
+  // change segment
+  {
+    Header* header = reinterpret_cast<Header*>(data.data);
+    header->msg_id = get_msg_id();
+    header->slot_2_offset = 0;
+
+    auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+    data_body[0] = TAG_GAIN_STM_CHANGE_SEGMENT;
+    data_body[1] = 1;
+
+    auto frame = to_frame_data(data);
+
+    recv_ethercat(&frame[0]);
+    update();
+
+    const auto ack = _sTx.ack >> 8;
+    ASSERT_EQ(ack, header->msg_id);
+
+    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REQ_RD_SEGMENT), 1);
   }
 }
 
@@ -212,7 +229,7 @@ TEST(Op, GainSTMPhaseFull) {
 
     cnt += 2;
 
-    if (cnt == size) data_body[1] |= GAIN_STM_FLAG_END;
+    if (cnt == size) data_body[1] |= GAIN_STM_FLAG_END | GAIN_STM_FLAG_UPDATE;
     data_body[1] |= (2 - 1) << 6;
 
     auto frame = to_frame_data(data);
@@ -224,13 +241,13 @@ TEST(Op, GainSTMPhaseFull) {
     ASSERT_EQ(ack, header->msg_id);
   }
 
-  ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_MODE), STM_MODE_GAIN);
+  ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_MODE_0), STM_MODE_GAIN);
   ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REQ_RD_SEGMENT), 0);
   ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_CYCLE_0), size - 1);
   ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_FREQ_DIV_0_0), 0x5678);
   ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_FREQ_DIV_0_1), 0x1234);
-  ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REP_0), 0x4321);
-  ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REP_1), 0x8765);
+  ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REP_0_0), 0x4321);
+  ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REP_0_1), 0x8765);
   for (uint16_t i = 0; i < size; i++)
     for (uint16_t j = 0; j < TRANS_NUM; j++)
       ASSERT_EQ(bram_read_stm(0, 256 * i + j),
@@ -285,7 +302,7 @@ TEST(Op, GainSTMPhaseHalf) {
 
     cnt += 4;
 
-    if (cnt == size) data_body[1] |= GAIN_STM_FLAG_END;
+    if (cnt == size) data_body[1] |= GAIN_STM_FLAG_END | GAIN_STM_FLAG_UPDATE;
     data_body[1] |= (4 - 1) << 6;
 
     auto frame = to_frame_data(data);
@@ -297,13 +314,13 @@ TEST(Op, GainSTMPhaseHalf) {
     ASSERT_EQ(ack, header->msg_id);
   }
 
-  ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_MODE), STM_MODE_GAIN);
+  ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_MODE_0), STM_MODE_GAIN);
   ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REQ_RD_SEGMENT), 0);
   ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_CYCLE_0), size - 1);
   ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_FREQ_DIV_0_0), 0x5678);
   ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_FREQ_DIV_0_1), 0x1234);
-  ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REP_0), 0x4321);
-  ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REP_1), 0x8765);
+  ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REP_0_0), 0x4321);
+  ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REP_0_1), 0x8765);
   for (uint16_t i = 0; i < size; i++)
     for (uint16_t j = 0; j < TRANS_NUM; j++) {
       const auto phase = static_cast<uint8_t>(i + j) >> 4;

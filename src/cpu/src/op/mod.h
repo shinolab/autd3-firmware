@@ -4,7 +4,7 @@
 #include "app.h"
 #include "params.h"
 
-inline static void change_mod_segment(uint16_t segment) {
+inline static void change_mod_wr_segment(uint16_t segment) {
   asm("dmb");
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_MEM_WR_SEGMENT, segment);
   asm("dmb");

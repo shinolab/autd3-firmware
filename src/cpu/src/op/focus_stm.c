@@ -44,6 +44,11 @@ typedef union {
   FocusSTMSubseq subseq;
 } FocusSTM;
 
+typedef ALIGN2 struct {
+  uint8_t tag;
+  uint8_t segment;
+} FocusSTMUpdate;
+
 uint8_t write_focus_stm(const volatile uint8_t* p_data) {
   static_assert(sizeof(FocusSTMHead) == 16, "FocusSTM is not valid.");
   static_assert(offsetof(FocusSTMHead, tag) == 0, "FocusSTM is not valid.");
@@ -94,23 +99,30 @@ uint8_t write_focus_stm(const volatile uint8_t* p_data) {
       case 0:
         bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0_0,
                  (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
+        bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_MODE_0,
+                   STM_MODE_FOCUS);
+        bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_SOUND_SPEED_0_0,
+                 (uint16_t*)&sound_speed, sizeof(uint32_t) >> 1);
+        bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_REP_0_0, (uint16_t*)&rep,
+                 sizeof(uint32_t) >> 1);
         break;
       case 1:
         bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_1_0,
                  (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
+        bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_MODE_1,
+                   STM_MODE_FOCUS);
+        bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_SOUND_SPEED_1_0,
+                 (uint16_t*)&sound_speed, sizeof(uint32_t) >> 1);
+        bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_REP_1_0, (uint16_t*)&rep,
+                 sizeof(uint32_t) >> 1);
         break;
       default:
         return ERR_INVALID_SEGMENT;
     }
     _stm_segment = segment;
 
-    bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_SOUND_SPEED_0,
-             (uint16_t*)&sound_speed, sizeof(uint32_t) >> 1);
-    bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_REP_0, (uint16_t*)&rep,
-             sizeof(uint32_t) >> 1);
-
-    change_stm_segment(segment);
-    change_stm_page(0);
+    change_stm_wr_segment(segment);
+    change_stm_wr_page(0);
 
     src = (const uint16_t*)(&p_data[sizeof(FocusSTMHead)]);
   } else {
@@ -128,8 +140,8 @@ uint8_t write_focus_stm(const volatile uint8_t* p_data) {
                        page_capacity);
     _stm_cycle = _stm_cycle + page_capacity;
 
-    change_stm_page((_stm_cycle & ~FOCUS_STM_BUF_PAGE_SIZE_MASK) >>
-                    FOCUS_STM_BUF_PAGE_SIZE_WIDTH);
+    change_stm_wr_page((_stm_cycle & ~FOCUS_STM_BUF_PAGE_SIZE_MASK) >>
+                       FOCUS_STM_BUF_PAGE_SIZE_WIDTH);
 
     bram_cpy_focus_stm((_stm_cycle & FOCUS_STM_BUF_PAGE_SIZE_MASK) << 2,
                        src + 4 * page_capacity, size - page_capacity);
@@ -137,9 +149,6 @@ uint8_t write_focus_stm(const volatile uint8_t* p_data) {
   }
 
   if ((p->subseq.flag & FOCUS_STM_FLAG_END) == FOCUS_STM_FLAG_END) {
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_MODE, STM_MODE_FOCUS);
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_REQ_RD_SEGMENT,
-               _stm_segment);
     switch (_stm_segment) {
       case 0:
         bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE_0,
@@ -153,9 +162,26 @@ uint8_t write_focus_stm(const volatile uint8_t* p_data) {
         break;  // LCOV_EXCL_LINE
     }
 
-    if ((p->subseq.flag & FOCUS_STM_FLAG_UPDATE) != 0)
+    if ((p->subseq.flag & FOCUS_STM_FLAG_UPDATE) != 0) {
+      bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_REQ_RD_SEGMENT,
+                 _stm_segment);
       set_and_wait_update(CTL_FLAG_STM_SET);
+    }
   }
+
+  return NO_ERR;
+}
+
+uint8_t change_focus_stm_segment(const volatile uint8_t* p_data) {
+  static_assert(sizeof(FocusSTMUpdate) == 2, "FocusSTM is not valid.");
+  static_assert(offsetof(FocusSTMUpdate, tag) == 0, "FocusSTM is not valid.");
+  static_assert(offsetof(FocusSTMUpdate, segment) == 1,
+                "FocusSTM is not valid.");
+
+  const FocusSTMUpdate* p = (const FocusSTMUpdate*)p_data;
+
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_REQ_RD_SEGMENT, p->segment);
+  set_and_wait_update(CTL_FLAG_STM_SET);
 
   return NO_ERR;
 }

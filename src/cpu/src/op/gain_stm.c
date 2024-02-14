@@ -42,6 +42,11 @@ typedef union {
   GainSTMSubseq subseq;
 } GainSTM;
 
+typedef ALIGN2 struct {
+  uint8_t tag;
+  uint8_t segment;
+} GainSTMUpdate;
+
 uint8_t write_gain_stm(const volatile uint8_t* p_data) {
   static_assert(sizeof(GainSTMHead) == 12, "GainSTM is not valid.");
   static_assert(offsetof(GainSTMHead, tag) == 0, "GainSTM is not valid.");
@@ -84,21 +89,24 @@ uint8_t write_gain_stm(const volatile uint8_t* p_data) {
       case 0:
         bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0_0,
                  (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
+        bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_MODE_0, STM_MODE_GAIN);
+        bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_REP_0_0, (uint16_t*)&rep,
+                 sizeof(uint32_t) >> 1);
         break;
       case 1:
         bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_1_0,
                  (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
+        bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_MODE_1, STM_MODE_GAIN);
+        bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_REP_1_0, (uint16_t*)&rep,
+                 sizeof(uint32_t) >> 1);
         break;
       default:
         return ERR_INVALID_SEGMENT;
     }
     _stm_segment = segment;
 
-    bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_REP_0, (uint16_t*)&rep,
-             sizeof(uint32_t) >> 1);
-
-    change_stm_segment(segment);
-    change_stm_page(0);
+    change_stm_wr_segment(segment);
+    change_stm_wr_page(0);
 
     src_base = (const uint16_t*)(&p_data[sizeof(GainSTMHead)]);
   } else {
@@ -158,13 +166,10 @@ uint8_t write_gain_stm(const volatile uint8_t* p_data) {
   }
 
   if ((_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) == 0)
-    change_stm_page((_stm_cycle & ~GAIN_STM_BUF_PAGE_SIZE_MASK) >>
-                    GAIN_STM_BUF_PAGE_SIZE_WIDTH);
+    change_stm_wr_page((_stm_cycle & ~GAIN_STM_BUF_PAGE_SIZE_MASK) >>
+                       GAIN_STM_BUF_PAGE_SIZE_WIDTH);
 
   if ((p->subseq.flag & GAIN_STM_FLAG_END) == GAIN_STM_FLAG_END) {
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_MODE, STM_MODE_GAIN);
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_REQ_RD_SEGMENT,
-               _stm_segment);
     switch (_stm_segment) {
       case 0:
         bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE_0,
@@ -178,9 +183,25 @@ uint8_t write_gain_stm(const volatile uint8_t* p_data) {
         break;  // LCOV_EXCL_LINE
     }
 
-    if ((p->subseq.flag & GAIN_STM_FLAG_UPDATE) != 0)
+    if ((p->subseq.flag & GAIN_STM_FLAG_UPDATE) != 0) {
+      bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_REQ_RD_SEGMENT,
+                 _stm_segment);
       set_and_wait_update(CTL_FLAG_STM_SET);
+    }
   }
+
+  return NO_ERR;
+}
+
+uint8_t change_gain_stm_segment(const volatile uint8_t* p_data) {
+  static_assert(sizeof(GainSTMUpdate) == 2, "GainSTM is not valid.");
+  static_assert(offsetof(GainSTMUpdate, tag) == 0, "GainSTM is not valid.");
+  static_assert(offsetof(GainSTMUpdate, segment) == 1, "GainSTM is not valid.");
+
+  const GainSTMUpdate* p = (const GainSTMUpdate*)p_data;
+
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_REQ_RD_SEGMENT, p->segment);
+  set_and_wait_update(CTL_FLAG_STM_SET);
 
   return NO_ERR;
 }

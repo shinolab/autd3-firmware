@@ -13,10 +13,13 @@ extern uint8_t clear(void);
 extern uint8_t synchronize(void);
 extern uint8_t firmware_info(const volatile uint8_t*);
 extern uint8_t write_mod(const volatile uint8_t*);
+extern uint8_t change_mod_segment(const volatile uint8_t*);
 extern uint8_t config_silencer(const volatile uint8_t*);
 extern uint8_t write_gain(const volatile uint8_t*);
 extern uint8_t write_focus_stm(const volatile uint8_t*);
+extern uint8_t change_focus_stm_segment(const volatile uint8_t*);
 extern uint8_t write_gain_stm(const volatile uint8_t*);
+extern uint8_t change_gain_stm_segment(const volatile uint8_t*);
 extern uint8_t configure_force_fan(const volatile uint8_t*);
 extern uint8_t configure_reads_fpga_state(const volatile uint8_t*);
 extern uint8_t configure_debug(const volatile uint8_t*);
@@ -61,6 +64,8 @@ uint8_t handle_payload(const volatile uint8_t* p_data) {
       return firmware_info(p_data);
     case TAG_MODULATION:
       return write_mod(p_data);
+    case TAG_MODULATION_CHANGE_SEGMENT:
+      return change_mod_segment(p_data);
     case TAG_SILENCER:
       return config_silencer(p_data);
     case TAG_GAIN:
@@ -69,6 +74,11 @@ uint8_t handle_payload(const volatile uint8_t* p_data) {
       return write_focus_stm(p_data);
     case TAG_GAIN_STM:
       return write_gain_stm(p_data);
+    case TAG_GAIN_CHANGE_SEGMENT:
+    case TAG_GAIN_STM_CHANGE_SEGMENT:
+      return change_gain_stm_segment(p_data);
+    case TAG_FOCUS_STM_CHANGE_SEGMENT:
+      return change_focus_stm_segment(p_data);
     case TAG_FORCE_FAN:
       return configure_force_fan(p_data);
     case TAG_READS_FPGA_STATE:

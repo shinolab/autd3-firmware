@@ -55,9 +55,8 @@ TEST(Op, FocusSTM) {
 
       cnt += send;
 
-      if (cnt == size) {
-        data_body[1] = FOCUS_STM_FLAG_END;
-      }
+      if (cnt == size)
+        data_body[1] |= FOCUS_STM_FLAG_END | FOCUS_STM_FLAG_UPDATE;
 
       auto frame = to_frame_data(data);
 
@@ -68,15 +67,15 @@ TEST(Op, FocusSTM) {
       ASSERT_EQ(ack, header->msg_id);
     }
 
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_MODE), STM_MODE_FOCUS);
+    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_MODE_0), STM_MODE_FOCUS);
     ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REQ_RD_SEGMENT), 0);
     ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_CYCLE_0), size - 1);
     ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_FREQ_DIV_0_0), 0x5678);
     ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_FREQ_DIV_0_1), 0x1234);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_SOUND_SPEED_0), 0xDEF0);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_SOUND_SPEED_1), 0x9ABC);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REP_0), 0x4321);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REP_1), 0x8765);
+    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_SOUND_SPEED_0_0), 0xDEF0);
+    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_SOUND_SPEED_0_1), 0x9ABC);
+    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REP_0_0), 0x4321);
+    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REP_0_1), 0x8765);
     for (size_t i = 0; i < size; i++) {
       ASSERT_EQ(bram_read_stm(0, 4 * i), buf[i] & 0xFFFF);
       ASSERT_EQ(bram_read_stm(0, 4 * i + 1), (buf[i] >> 16) & 0xFFFF);
@@ -118,9 +117,7 @@ TEST(Op, FocusSTM) {
 
       cnt += send;
 
-      if (cnt == size) {
-        data_body[1] = FOCUS_STM_FLAG_END;
-      }
+      if (cnt == size) data_body[1] |= FOCUS_STM_FLAG_END;
 
       auto frame = to_frame_data(data);
 
@@ -131,21 +128,42 @@ TEST(Op, FocusSTM) {
       ASSERT_EQ(ack, header->msg_id);
     }
 
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_MODE), STM_MODE_FOCUS);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REQ_RD_SEGMENT), 1);
+    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_MODE_1), STM_MODE_FOCUS);
+    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REQ_RD_SEGMENT), 0);
     ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_CYCLE_1), size - 1);
     ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_FREQ_DIV_1_0), 0x4321);
     ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_FREQ_DIV_1_1), 0x8765);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_SOUND_SPEED_0), 0xCBA9);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_SOUND_SPEED_1), 0x0FED);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REP_0), 0x5678);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REP_1), 0x1234);
+    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_SOUND_SPEED_1_0), 0xCBA9);
+    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_SOUND_SPEED_1_1), 0x0FED);
+    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REP_1_0), 0x5678);
+    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REP_1_1), 0x1234);
     for (size_t i = 0; i < size; i++) {
       ASSERT_EQ(bram_read_stm(1, 4 * i), buf[i] & 0xFFFF);
       ASSERT_EQ(bram_read_stm(1, 4 * i + 1), (buf[i] >> 16) & 0xFFFF);
       ASSERT_EQ(bram_read_stm(1, 4 * i + 2), (buf[i] >> 32) & 0xFFFF);
       ASSERT_EQ(bram_read_stm(1, 4 * i + 3), (buf[i] >> 48) & 0xFFFF);
     }
+  }
+
+  // change segment
+  {
+    Header* header = reinterpret_cast<Header*>(data.data);
+    header->msg_id = get_msg_id();
+    header->slot_2_offset = 0;
+
+    auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+    data_body[0] = TAG_FOCUS_STM_CHANGE_SEGMENT;
+    data_body[1] = 1;
+
+    auto frame = to_frame_data(data);
+
+    recv_ethercat(&frame[0]);
+    update();
+
+    const auto ack = _sTx.ack >> 8;
+    ASSERT_EQ(ack, header->msg_id);
+
+    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REQ_RD_SEGMENT), 1);
   }
 }
 
