@@ -15,8 +15,9 @@ extern "C" {
 #define FOCUS_STM_BUF_PAGE_SIZE_MASK (FOCUS_STM_BUF_PAGE_SIZE - 1)
 
 extern volatile uint8_t _stm_segment;
-extern volatile uint32_t _stm_cycle;
-extern volatile uint32_t _stm_freq_div;
+extern volatile uint8_t _stm_mode[2];
+extern volatile uint32_t _stm_cycle[2];
+extern volatile uint32_t _stm_freq_div[2];
 
 extern volatile bool_t _silencer_strict_mode;
 extern volatile uint32_t _min_freq_div_intensity;
@@ -81,19 +82,19 @@ uint8_t write_focus_stm(const volatile uint8_t* p_data) {
   volatile uint32_t page_capacity;
 
   if ((p->subseq.flag & FOCUS_STM_FLAG_BEGIN) == FOCUS_STM_FLAG_BEGIN) {
-    _stm_cycle = 0;
-
     freq_div = p->head.freq_div;
     sound_speed = p->head.sound_speed;
     rep = p->head.rep;
     segment = p->head.segment;
+
+    _stm_cycle[segment] = 0;
 
     if (_silencer_strict_mode) {
       if ((freq_div < _min_freq_div_intensity) ||
           (freq_div < _min_freq_div_phase))
         return ERR_FREQ_DIV_TOO_SMALL;
     }
-    _stm_freq_div = freq_div;
+    _stm_freq_div[segment] = freq_div;
 
     switch (segment) {
       case 0:
@@ -129,34 +130,39 @@ uint8_t write_focus_stm(const volatile uint8_t* p_data) {
     src = (const uint16_t*)(&p_data[sizeof(FocusSTMSubseq)]);
   }
 
-  page_capacity = (_stm_cycle & ~FOCUS_STM_BUF_PAGE_SIZE_MASK) +
-                  FOCUS_STM_BUF_PAGE_SIZE - _stm_cycle;
+  page_capacity = (_stm_cycle[_stm_segment] & ~FOCUS_STM_BUF_PAGE_SIZE_MASK) +
+                  FOCUS_STM_BUF_PAGE_SIZE - _stm_cycle[_stm_segment];
   if (size < page_capacity) {
-    bram_cpy_focus_stm((_stm_cycle & FOCUS_STM_BUF_PAGE_SIZE_MASK) << 2, src,
-                       size);
-    _stm_cycle = _stm_cycle + size;
+    bram_cpy_focus_stm(
+        (_stm_cycle[_stm_segment] & FOCUS_STM_BUF_PAGE_SIZE_MASK) << 2, src,
+        size);
+    _stm_cycle[_stm_segment] = _stm_cycle[_stm_segment] + size;
   } else {
-    bram_cpy_focus_stm((_stm_cycle & FOCUS_STM_BUF_PAGE_SIZE_MASK) << 2, src,
-                       page_capacity);
-    _stm_cycle = _stm_cycle + page_capacity;
+    bram_cpy_focus_stm(
+        (_stm_cycle[_stm_segment] & FOCUS_STM_BUF_PAGE_SIZE_MASK) << 2, src,
+        page_capacity);
+    _stm_cycle[_stm_segment] = _stm_cycle[_stm_segment] + page_capacity;
 
-    change_stm_wr_page((_stm_cycle & ~FOCUS_STM_BUF_PAGE_SIZE_MASK) >>
-                       FOCUS_STM_BUF_PAGE_SIZE_WIDTH);
+    change_stm_wr_page(
+        (_stm_cycle[_stm_segment] & ~FOCUS_STM_BUF_PAGE_SIZE_MASK) >>
+        FOCUS_STM_BUF_PAGE_SIZE_WIDTH);
 
-    bram_cpy_focus_stm((_stm_cycle & FOCUS_STM_BUF_PAGE_SIZE_MASK) << 2,
+    bram_cpy_focus_stm((_stm_cycle[_stm_segment] & FOCUS_STM_BUF_PAGE_SIZE_MASK)
+                           << 2,
                        src + 4 * page_capacity, size - page_capacity);
-    _stm_cycle = _stm_cycle + size - page_capacity;
+    _stm_cycle[_stm_segment] = _stm_cycle[_stm_segment] + size - page_capacity;
   }
 
   if ((p->subseq.flag & FOCUS_STM_FLAG_END) == FOCUS_STM_FLAG_END) {
+    _stm_mode[_stm_segment] = STM_MODE_FOCUS;
     switch (_stm_segment) {
       case 0:
         bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE_0,
-                   max(1, _stm_cycle) - 1);
+                   max(1, _stm_cycle[_stm_segment]) - 1);
         break;
       case 1:
         bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE_1,
-                   max(1, _stm_cycle) - 1);
+                   max(1, _stm_cycle[_stm_segment]) - 1);
         break;
       default:  // LCOV_EXCL_LINE
         break;  // LCOV_EXCL_LINE
@@ -179,6 +185,9 @@ uint8_t change_focus_stm_segment(const volatile uint8_t* p_data) {
                 "FocusSTM is not valid.");
 
   const FocusSTMUpdate* p = (const FocusSTMUpdate*)p_data;
+
+  if (_stm_mode[p->segment] != STM_MODE_FOCUS || _stm_cycle[p->segment] == 1)
+    return ERR_INVALID_SEGMENT_TRANSITION;
 
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_REQ_RD_SEGMENT, p->segment);
   set_and_wait_update(CTL_FLAG_STM_SET);

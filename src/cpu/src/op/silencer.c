@@ -8,8 +8,8 @@ extern "C" {
 #include "app.h"
 #include "params.h"
 
-extern volatile uint32_t _mod_freq_div;
-extern volatile uint32_t _stm_freq_div;
+extern volatile uint32_t _mod_freq_div[2];
+extern volatile uint32_t _stm_freq_div[2];
 
 volatile bool_t _silencer_strict_mode;
 volatile uint32_t _min_freq_div_intensity;
@@ -44,10 +44,13 @@ uint8_t config_silencer(const volatile uint8_t* p_data) {
       _min_freq_div_intensity = (uint32_t)value_intensity << 9;
       _min_freq_div_phase = (uint32_t)value_phase << 9;
       if (_silencer_strict_mode) {
-        if (_mod_freq_div < _min_freq_div_intensity)
+        if ((_mod_freq_div[0] < _min_freq_div_intensity) ||
+            _mod_freq_div[1] < _min_freq_div_intensity)
           return ERR_COMPLETION_STEPS_TOO_LARGE;
-        if ((_stm_freq_div < _min_freq_div_intensity) ||
-            (_stm_freq_div < _min_freq_div_phase))
+        if (((_stm_freq_div[0] < _min_freq_div_intensity) ||
+             (_stm_freq_div[0] < _min_freq_div_phase)) ||
+            (_stm_freq_div[1] < _min_freq_div_intensity) ||
+            (_stm_freq_div[1] < _min_freq_div_phase))
           return ERR_COMPLETION_STEPS_TOO_LARGE;
       }
       bram_write(BRAM_SELECT_CONTROLLER,

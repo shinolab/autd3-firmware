@@ -9,13 +9,20 @@ extern "C" {
 #include "params.h"
 #include "stm.h"
 
-extern volatile uint32_t _stm_freq_div;
+extern volatile uint8_t _stm_mode[2];
+extern volatile uint32_t _stm_cycle[2];
+extern volatile uint32_t _stm_freq_div[2];
 
 typedef ALIGN2 struct {
   uint8_t tag;
   uint8_t segment;
   uint16_t flag;
 } Gain;
+
+typedef ALIGN2 struct {
+  uint8_t tag;
+  uint8_t segment;
+} GainUpdate;
 
 uint8_t write_gain(const volatile uint8_t* p_data) {
   static_assert(sizeof(Gain) == 4, "Gain is not valid.");
@@ -46,7 +53,8 @@ uint8_t write_gain(const volatile uint8_t* p_data) {
     default:
       return ERR_INVALID_SEGMENT;
   }
-  _stm_freq_div = 0xFFFFFFFF;
+  _stm_cycle[segment] = 1;
+  _stm_freq_div[segment] = 0xFFFFFFFF;
 
   change_stm_wr_segment(segment);
   change_stm_wr_page(0);
@@ -58,6 +66,22 @@ uint8_t write_gain(const volatile uint8_t* p_data) {
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_REQ_RD_SEGMENT, segment);
     set_and_wait_update(CTL_FLAG_STM_SET);
   }
+
+  return NO_ERR;
+}
+
+uint8_t change_gain_segment(const volatile uint8_t* p_data) {
+  static_assert(sizeof(GainUpdate) == 2, "GainUpdate is not valid.");
+  static_assert(offsetof(GainUpdate, tag) == 0, "GainUpdate is not valid.");
+  static_assert(offsetof(GainUpdate, segment) == 1, "GainUpdate is not valid.");
+
+  const GainUpdate* p = (const GainUpdate*)p_data;
+
+  if (_stm_mode[p->segment] != STM_MODE_GAIN || _stm_cycle[p->segment] != 1)
+    return ERR_INVALID_SEGMENT_TRANSITION;
+
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_REQ_RD_SEGMENT, p->segment);
+  set_and_wait_update(CTL_FLAG_STM_SET);
 
   return NO_ERR;
 }

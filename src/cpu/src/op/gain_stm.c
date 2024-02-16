@@ -15,8 +15,9 @@ extern "C" {
 #define GAIN_STM_BUF_PAGE_SIZE_MASK (GAIN_STM_BUF_PAGE_SIZE - 1)
 
 volatile uint8_t _stm_segment;
-volatile uint32_t _stm_cycle;
-volatile uint32_t _stm_freq_div;
+volatile uint8_t _stm_mode[2];
+volatile uint32_t _stm_cycle[2];
+volatile uint32_t _stm_freq_div[2];
 volatile uint8_t _gain_stm_mode;
 
 extern volatile bool_t _silencer_strict_mode;
@@ -71,11 +72,11 @@ uint8_t write_gain_stm(const volatile uint8_t* p_data) {
   uint8_t segment;
 
   if ((p->subseq.flag & GAIN_STM_FLAG_BEGIN) == GAIN_STM_FLAG_BEGIN) {
-    _stm_cycle = 0;
-
     _gain_stm_mode = p->head.mode;
     rep = p->head.rep;
     segment = p->head.segment;
+
+    _stm_cycle[segment] = 0;
 
     freq_div = p->head.freq_div;
     if (_silencer_strict_mode) {
@@ -83,7 +84,7 @@ uint8_t write_gain_stm(const volatile uint8_t* p_data) {
           (freq_div < _min_freq_div_phase))
         return ERR_FREQ_DIV_TOO_SMALL;
     }
-    _stm_freq_div = freq_div;
+    _stm_freq_div[segment] = freq_div;
 
     switch (segment) {
       case 0:
@@ -117,67 +118,75 @@ uint8_t write_gain_stm(const volatile uint8_t* p_data) {
 
   switch (_gain_stm_mode) {
     case GAIN_STM_MODE_INTENSITY_PHASE_FULL:
-      bram_cpy_volatile(BRAM_SELECT_STM,
-                        (_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src,
-                        TRANS_NUM);
-      _stm_cycle = _stm_cycle + 1;
+      bram_cpy_volatile(
+          BRAM_SELECT_STM,
+          (_stm_cycle[_stm_segment] & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src,
+          TRANS_NUM);
+      _stm_cycle[_stm_segment] = _stm_cycle[_stm_segment] + 1;
       break;
     case GAIN_STM_MODE_PHASE_FULL:
       bram_cpy_gain_stm_phase_full(
-          (_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src, 0, TRANS_NUM);
-      _stm_cycle = _stm_cycle + 1;
+          (_stm_cycle[_stm_segment] & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src, 0,
+          TRANS_NUM);
+      _stm_cycle[_stm_segment] = _stm_cycle[_stm_segment] + 1;
 
       if (send > 1) {
         src = src_base;
         bram_cpy_gain_stm_phase_full(
-            (_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src, 8, TRANS_NUM);
-        _stm_cycle = _stm_cycle + 1;
+            (_stm_cycle[_stm_segment] & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src,
+            8, TRANS_NUM);
+        _stm_cycle[_stm_segment] = _stm_cycle[_stm_segment] + 1;
       }
       break;
     case GAIN_STM_MODE_PHASE_HALF:
       bram_cpy_gain_stm_phase_half(
-          (_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src, 0, TRANS_NUM);
-      _stm_cycle = _stm_cycle + 1;
+          (_stm_cycle[_stm_segment] & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src, 0,
+          TRANS_NUM);
+      _stm_cycle[_stm_segment] = _stm_cycle[_stm_segment] + 1;
 
       if (send > 1) {
         src = src_base;
         bram_cpy_gain_stm_phase_half(
-            (_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src, 4, TRANS_NUM);
-        _stm_cycle = _stm_cycle + 1;
+            (_stm_cycle[_stm_segment] & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src,
+            4, TRANS_NUM);
+        _stm_cycle[_stm_segment] = _stm_cycle[_stm_segment] + 1;
       }
 
       if (send > 2) {
         src = src_base;
         bram_cpy_gain_stm_phase_half(
-            (_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src, 8, TRANS_NUM);
-        _stm_cycle = _stm_cycle + 1;
+            (_stm_cycle[_stm_segment] & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src,
+            8, TRANS_NUM);
+        _stm_cycle[_stm_segment] = _stm_cycle[_stm_segment] + 1;
       }
 
       if (send > 3) {
         src = src_base;
         bram_cpy_gain_stm_phase_half(
-            (_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src, 12,
-            TRANS_NUM);
-        _stm_cycle = _stm_cycle + 1;
+            (_stm_cycle[_stm_segment] & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src,
+            12, TRANS_NUM);
+        _stm_cycle[_stm_segment] = _stm_cycle[_stm_segment] + 1;
       }
       break;
     default:
       return ERR_INVALID_GAIN_STM_MODE;
   }
 
-  if ((_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) == 0)
-    change_stm_wr_page((_stm_cycle & ~GAIN_STM_BUF_PAGE_SIZE_MASK) >>
-                       GAIN_STM_BUF_PAGE_SIZE_WIDTH);
+  if ((_stm_cycle[_stm_segment] & GAIN_STM_BUF_PAGE_SIZE_MASK) == 0)
+    change_stm_wr_page(
+        (_stm_cycle[_stm_segment] & ~GAIN_STM_BUF_PAGE_SIZE_MASK) >>
+        GAIN_STM_BUF_PAGE_SIZE_WIDTH);
 
   if ((p->subseq.flag & GAIN_STM_FLAG_END) == GAIN_STM_FLAG_END) {
+    _stm_mode[_stm_segment] = STM_MODE_GAIN;
     switch (_stm_segment) {
       case 0:
         bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE_0,
-                   max(1, _stm_cycle) - 1);
+                   max(1, _stm_cycle[_stm_segment]) - 1);
         break;
       case 1:
         bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE_1,
-                   max(1, _stm_cycle) - 1);
+                   max(1, _stm_cycle[_stm_segment]) - 1);
         break;
       default:  // LCOV_EXCL_LINE
         break;  // LCOV_EXCL_LINE
@@ -199,6 +208,9 @@ uint8_t change_gain_stm_segment(const volatile uint8_t* p_data) {
   static_assert(offsetof(GainSTMUpdate, segment) == 1, "GainSTM is not valid.");
 
   const GainSTMUpdate* p = (const GainSTMUpdate*)p_data;
+
+  if (_stm_mode[p->segment] != STM_MODE_GAIN || _stm_cycle[p->segment] == 1)
+    return ERR_INVALID_SEGMENT_TRANSITION;
 
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_REQ_RD_SEGMENT, p->segment);
   set_and_wait_update(CTL_FLAG_STM_SET);

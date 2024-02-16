@@ -12,7 +12,7 @@ extern "C" {
 #include "utils.h"
 
 volatile uint32_t _mod_cycle;
-volatile uint32_t _mod_freq_div;
+volatile uint32_t _mod_freq_div[2];
 volatile uint32_t _mod_segment;
 
 extern volatile bool_t _silencer_strict_mode;
@@ -84,7 +84,7 @@ uint8_t write_mod(const volatile uint8_t* p_data) {
 
     if (_silencer_strict_mode & (freq_div < _min_freq_div_intensity))
       return ERR_FREQ_DIV_TOO_SMALL;
-    _mod_freq_div = freq_div;
+    _mod_freq_div[segment] = freq_div;
 
     switch (segment) {
       case 0:
