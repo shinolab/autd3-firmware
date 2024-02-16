@@ -162,6 +162,8 @@ with open(path, "w") as f:
 module controller (
     input wire CLK,
     input wire THERMO,
+    input wire STM_SEGMENT,
+    input wire MOD_SEGMENT,
     cnt_bus_if.out_port cnt_bus,
     output var settings::mod_settings_t MOD_SETTINGS,
     output var settings::stm_settings_t STM_SETTINGS,
@@ -235,7 +237,7 @@ module controller (
       WAIT_0: begin
         we   <= 1'b1;
         addr <= params::ADDR_FPGA_STATE;
-        din  <= {{15'h00, THERMO}};
+        din  <= {13'h00, STM_SEGMENT, MOD_SEGMENT, THERMO};
 
        """
     )
@@ -300,7 +302,7 @@ module controller (
                     """
         we <= 1'b1;
         addr <= params::ADDR_FPGA_STATE;
-        din <= {15'h00, THERMO};"""
+        din  <= {13'h00, STM_SEGMENT, MOD_SEGMENT, THERMO};"""
                 )
 
             if i == len(states) - 2:
@@ -322,7 +324,7 @@ module controller (
                     f"""
         we <= 1'b1;
         addr <= params::ADDR_FPGA_STATE;
-        din <= {{15'h00, THERMO}};
+        din  <= {{13'h00, STM_SEGMENT, MOD_SEGMENT, THERMO}};
         ctl_flags <= dout;
         {name}_SETTINGS.UPDATE <= 1'b0;
         state <= WAIT_1;"""

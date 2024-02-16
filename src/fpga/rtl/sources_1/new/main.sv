@@ -45,6 +45,9 @@ module main #(
   logic [7:0] phase_e;
   logic dout_valid_e;
 
+  logic stm_segment;
+  logic mod_segment;
+
   memory memory (
       .CLK(CLK),
       .MEM_BUS(MEM_BUS),
@@ -57,6 +60,8 @@ module main #(
   controller controller (
       .CLK(CLK),
       .THERMO(THERMO),
+      .STM_SEGMENT(stm_segment),
+      .MOD_SEGMENT(mod_segment),
       .cnt_bus(cnt_bus.out_port),
       .MOD_SETTINGS(mod_settings),
       .STM_SETTINGS(stm_settings),
@@ -100,7 +105,7 @@ module main #(
       .PHASE(phase),
       .DOUT_VALID(dout_valid),
       .DEBUG_IDX(),
-      .DEBUG_SEGMENT()
+      .DEBUG_SEGMENT(stm_segment)
   );
 
   modulation #(
@@ -117,7 +122,7 @@ module main #(
       .DOUT_VALID(dout_valid_m),
       .MOD_BUS(mod_bus.out_port),
       .DEBUG_IDX(),
-      .DEBUG_SEGMENT(),
+      .DEBUG_SEGMENT(mod_segment),
       .DEBUG_STOP()
   );
 
