@@ -47,6 +47,7 @@ module main #(
 
   logic stm_segment;
   logic mod_segment;
+  logic [15:0] stm_cycle;
 
   memory memory (
       .CLK(CLK),
@@ -62,6 +63,7 @@ module main #(
       .THERMO(THERMO),
       .STM_SEGMENT(stm_segment),
       .MOD_SEGMENT(mod_segment),
+      .STM_CYCLE(stm_cycle),
       .cnt_bus(cnt_bus.out_port),
       .MOD_SETTINGS(mod_settings),
       .STM_SETTINGS(stm_settings),
@@ -105,7 +107,8 @@ module main #(
       .PHASE(phase),
       .DOUT_VALID(dout_valid),
       .DEBUG_IDX(),
-      .DEBUG_SEGMENT(stm_segment)
+      .DEBUG_SEGMENT(stm_segment),
+      .DEBUG_CYCLE(stm_cycle)
   );
 
   modulation #(

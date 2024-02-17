@@ -13,13 +13,15 @@ module stm #(
     output wire [7:0] PHASE,
     output wire DOUT_VALID,
     output wire [15:0] DEBUG_IDX,
-    output wire DEBUG_SEGMENT
+    output wire DEBUG_SEGMENT,
+    output wire [15:0] DEBUG_CYCLE
 );
 
   logic mode = params::STM_MODE_GAIN;
   logic start = 1'b0;
   logic segment = '0;
   logic [15:0] idx = '0;
+  logic [15:0] cycle = '0;
   logic [31:0] sound_speed = '0;
 
   assign STM_BUS.MODE = mode;
@@ -38,6 +40,7 @@ module stm #(
 
   assign DEBUG_IDX = idx;
   assign DEBUG_SEGMENT = segment;
+  assign DEBUG_CYCLE = cycle;
 
   logic [15:0] timer_idx_0, timer_idx_1;
   stm_timer stm_timer (
@@ -102,6 +105,7 @@ module stm #(
         mode <= swapchain_segment == 1'b0 ? STM_SETTINGS.MODE_0 : STM_SETTINGS.MODE_1;
         idx <= swapchain_segment == 1'b0 ? swapchain_idx_0 : swapchain_idx_1;
         sound_speed <= swapchain_segment == 1'b0 ? STM_SETTINGS.SOUND_SPEED_0 : STM_SETTINGS.SOUND_SPEED_1;
+        cycle <= swapchain_segment == 1'b0 ? STM_SETTINGS.CYCLE_0 : STM_SETTINGS.CYCLE_1;
       end
       start <= 1'b1;
     end else begin

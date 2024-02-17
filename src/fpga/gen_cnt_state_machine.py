@@ -164,6 +164,7 @@ module controller (
     input wire THERMO,
     input wire STM_SEGMENT,
     input wire MOD_SEGMENT,
+    input wire [15:0] STM_CYCLE,
     cnt_bus_if.out_port cnt_bus,
     output var settings::mod_settings_t MOD_SETTINGS,
     output var settings::stm_settings_t STM_SETTINGS,
@@ -237,7 +238,7 @@ module controller (
       WAIT_0: begin
         we   <= 1'b1;
         addr <= params::ADDR_FPGA_STATE;
-        din  <= {13'h00, STM_SEGMENT, MOD_SEGMENT, THERMO};
+        din  <= {8'h00, 1'h0 /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO};
 
        """
     )
@@ -302,7 +303,7 @@ module controller (
                     """
         we <= 1'b1;
         addr <= params::ADDR_FPGA_STATE;
-        din  <= {13'h00, STM_SEGMENT, MOD_SEGMENT, THERMO};"""
+        din  <= {8'h00, 1'h0 /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO};"""
                 )
 
             if i == len(states) - 2:
@@ -324,7 +325,7 @@ module controller (
                     f"""
         we <= 1'b1;
         addr <= params::ADDR_FPGA_STATE;
-        din  <= {{13'h00, STM_SEGMENT, MOD_SEGMENT, THERMO}};
+        din  <= {{8'h00, 1'h0 /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO}};
         ctl_flags <= dout;
         {name}_SETTINGS.UPDATE <= 1'b0;
         state <= WAIT_1;"""
