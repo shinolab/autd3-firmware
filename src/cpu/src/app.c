@@ -24,6 +24,8 @@ extern uint8_t write_gain_stm(const volatile uint8_t*);
 extern uint8_t change_gain_stm_segment(const volatile uint8_t*);
 extern uint8_t configure_force_fan(const volatile uint8_t*);
 extern uint8_t configure_reads_fpga_state(const volatile uint8_t*);
+extern uint8_t change_mod_segment(const volatile uint8_t*);
+extern uint8_t config_pwe(const volatile uint8_t*);
 extern uint8_t configure_debug(const volatile uint8_t*);
 extern uint8_t read_fpga_state(void);
 
@@ -86,6 +88,8 @@ uint8_t handle_payload(const volatile uint8_t* p_data) {
       return configure_force_fan(p_data);
     case TAG_READS_FPGA_STATE:
       return configure_reads_fpga_state(p_data);
+    case TAG_CONFIG_PULSE_WIDTH_ENCODER:
+      return config_pwe(p_data);
     case TAG_DEBUG:
       return configure_debug(p_data);
     default:
