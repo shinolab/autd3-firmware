@@ -14,6 +14,9 @@ package params;
   localparam bit [1:0] BRAM_SELECT_DUTY_TABLE = 2'h2;
   localparam bit [1:0] BRAM_SELECT_STM = 2'h3;
 
+  localparam bit [5:0] BRAM_CNT_SEL_MAIN = 6'h00;
+  localparam bit [5:0] BRAM_CNT_SEL_FILTER = 6'h01;
+
   localparam bit STM_MODE_FOCUS = 1'b0;
   localparam bit STM_MODE_GAIN = 1'b1;
 

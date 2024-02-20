@@ -4,7 +4,8 @@ module memory (
     cnt_bus_if.in_port CNT_BUS_IF,
     modulation_bus_if.in_port MOD_BUS,
     stm_bus_if.in_port STM_BUS,
-    duty_table_bus_if.in_port DUTY_TABLE_BUS
+    duty_table_bus_if.in_port DUTY_TABLE_BUS,
+    filter_bus_if.in_port FILTER_BUS
 );
 
   logic bus_clk;
@@ -23,10 +24,13 @@ module memory (
   assign data_in = MEM_BUS.DATA_IN;
   assign MEM_BUS.DATA_OUT = data_out;
 
+  logic [5:0] cnt_sel;
+  assign cnt_sel = addr[13:8];
+
   ///////////////////////////// Controller ////////////////////////////
   logic ctl_en;
 
-  assign ctl_en = (select == params::BRAM_SELECT_CONTROLLER) & en;
+  assign ctl_en = (cnt_sel == params::BRAM_CNT_SEL_MAIN) & (select == params::BRAM_SELECT_CONTROLLER) & en;
 
   BRAM_CONTROLLER ctl_bram (
       .clka (bus_clk),
@@ -42,6 +46,26 @@ module memory (
       .doutb(CNT_BUS_IF.DOUT)
   );
   ///////////////////////////// Controller ////////////////////////////
+
+  /////////////////////////////// Filter //////////////////////////////
+  logic filter_en;
+
+  assign filter_en = (cnt_sel == params::BRAM_CNT_SEL_FILTER) & (select == params::BRAM_SELECT_CONTROLLER) & en;
+
+  BRAM_FILTER filter_bram (
+      .clka (bus_clk),
+      .ena  (filter_en),
+      .wea  (we),
+      .addra(addr[7:0]),
+      .dina (data_in),
+      .douta(data_out),
+      .clkb (CLK),
+      .web  (FILTER_BUS.WE),
+      .addrb(FILTER_BUS.ADDR),
+      .dinb (FILTER_BUS.DIN),
+      .doutb(FILTER_BUS.DOUT)
+  );
+  /////////////////////////////// Filter //////////////////////////////
 
   ///////////////////////////// Duty table ////////////////////////////
   logic duty_table_en;

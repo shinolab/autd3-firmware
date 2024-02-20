@@ -6,8 +6,6 @@ module modulation_multiplier #(
     input wire DIN_VALID,
     input wire [7:0] INTENSITY_IN,
     output wire [15:0] INTENSITY_OUT,
-    input wire [7:0] PHASE_IN,
-    output wire [7:0] PHASE_OUT,
     output wire DOUT_VALID,
     modulation_bus_if.out_port MOD_BUS,
     input wire [14:0] IDX_0,
@@ -40,9 +38,6 @@ module modulation_multiplier #(
   assign mod = MOD_BUS.VALUE;
   assign MOD_BUS.SEGMENT = segment_buf;
 
-  assign DOUT_VALID = dout_valid;
-  assign INTENSITY_OUT = p[15:0];
-
   assign DEBUG_IDX = idx;
   assign DEBUG_SEGMENT = segment_buf;
   assign DEBUG_STOP = stop_buf;
@@ -57,12 +52,21 @@ module modulation_multiplier #(
   );
 
   delay_fifo #(
-      .WIDTH(8),
-      .DEPTH(6)
-  ) delay_fifo_phase (
+      .WIDTH(16),
+      .DEPTH(4)
+  ) delay_fifo_intensity_out (
       .CLK (CLK),
-      .DIN (PHASE_IN),
-      .DOUT(PHASE_OUT)
+      .DIN (p[15:0]),
+      .DOUT(INTENSITY_OUT)
+  );
+
+  delay_fifo #(
+      .WIDTH(1),
+      .DEPTH(4)
+  ) delay_fifo_dout_valid (
+      .CLK (CLK),
+      .DIN (dout_valid),
+      .DOUT(DOUT_VALID)
   );
 
   mult #(

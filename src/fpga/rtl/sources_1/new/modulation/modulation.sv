@@ -12,6 +12,7 @@ module modulation #(
     output wire [7:0] PHASE_OUT,
     output wire DOUT_VALID,
     modulation_bus_if.out_port MOD_BUS,
+    filter_bus_if.out_port FILTER_BUS,
     output wire [14:0] DEBUG_IDX,
     output wire DEBUG_SEGMENT,
     output wire DEBUG_STOP
@@ -53,8 +54,6 @@ module modulation #(
       .DIN_VALID(DIN_VALID),
       .INTENSITY_IN(INTENSITY_IN),
       .INTENSITY_OUT(INTENSITY_OUT),
-      .PHASE_IN(PHASE_IN),
-      .PHASE_OUT(PHASE_OUT),
       .DOUT_VALID(DOUT_VALID),
       .MOD_BUS(MOD_BUS),
       .IDX_0(idx_0),
@@ -64,6 +63,16 @@ module modulation #(
       .DEBUG_IDX(DEBUG_IDX),
       .DEBUG_SEGMENT(DEBUG_SEGMENT),
       .DEBUG_STOP(DEBUG_STOP)
+  );
+
+  phase_filter #(
+      .DEPTH(DEPTH)
+  ) phase_filter (
+      .CLK(CLK),
+      .FILTER_BUS(FILTER_BUS),
+      .DIN_VALID(DIN_VALID),
+      .PHASE_IN(PHASE_IN),
+      .PHASE_OUT(PHASE_OUT)
   );
 
 endmodule

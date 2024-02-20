@@ -17,12 +17,12 @@ module sim_mod_modulation ();
   sim_helper_bram #(.DEPTH(DEPTH)) sim_helper_bram ();
 
   settings::mod_settings_t mod_settings;
-  logic update_settings;
 
   cnt_bus_if cnt_bus ();
   modulation_bus_if mod_bus ();
   stm_bus_if stm_bus ();
   duty_table_bus_if duty_table_bus ();
+  filter_bus_if filter_bus ();
 
   memory memory (
       .CLK(CLK),
@@ -30,7 +30,8 @@ module sim_mod_modulation ();
       .CNT_BUS_IF(cnt_bus.in_port),
       .MOD_BUS(mod_bus.in_port),
       .STM_BUS(stm_bus.in_port),
-      .DUTY_TABLE_BUS(duty_table_bus.in_port)
+      .DUTY_TABLE_BUS(duty_table_bus.in_port),
+      .FILTER_BUS(filter_bus_if.in_port)
   );
 
   logic din_valid;
@@ -47,7 +48,6 @@ module sim_mod_modulation ();
   ) modulation (
       .CLK(CLK),
       .SYS_TIME(sys_time),
-      .UPDATE_SETTINGS(update_settings),
       .MOD_SETTINGS(mod_settings),
       .DIN_VALID(din_valid),
       .INTENSITY_IN(intensity_in),
@@ -56,6 +56,7 @@ module sim_mod_modulation ();
       .PHASE_OUT(phase_out),
       .DOUT_VALID(dout_valid),
       .MOD_BUS(mod_bus.out_port),
+      .FILTER_BUS(filter_bus_if.out_port),
       .DEBUG_IDX(idx_debug),
       .DEBUG_SEGMENT(segment_debug),
       .DEBUG_STOP(stop_debug)
@@ -66,21 +67,23 @@ module sim_mod_modulation ();
   logic [7:0] mod_buf[2][SIZE];
   logic [7:0] intensity_buf[DEPTH];
   logic [7:0] phase_buf[DEPTH];
+  logic [7:0] phase_offset_buf[DEPTH];
 
   task automatic update(input logic req_segment, input logic [31:0] rep);
     @(posedge CLK);
-    update_settings <= 1'b1;
+    mod_settings.UPDATE <= 1'b1;
     mod_settings.REQ_RD_SEGMENT <= req_segment;
-    mod_settings.REP <= rep;
     if (req_segment === 1'b0) begin
       mod_settings.CYCLE_0 = cycle_buf[req_segment] - 1;
       mod_settings.FREQ_DIV_0 = 512 * freq_div_buf[req_segment];
+      mod_settings.REP_0 <= rep;
     end else begin
       mod_settings.CYCLE_1 = cycle_buf[req_segment] - 1;
       mod_settings.FREQ_DIV_1 = 512 * freq_div_buf[req_segment];
+      mod_settings.REP_1 <= rep;
     end
     @(posedge CLK);
-    update_settings <= 1'b0;
+    mod_settings.UPDATE <= 1'b0;
   endtask
 
   task automatic set();
@@ -100,6 +103,7 @@ module sim_mod_modulation ();
   endtask
 
   logic [15:0] expect_intensity;
+  logic [ 7:0] expect_phase;
   task automatic check();
     while (1) begin
       @(posedge CLK);
@@ -118,8 +122,9 @@ module sim_mod_modulation ();
                expect_intensity, intensity_out);
         $finish();
       end
-      if (phase_out !== phase_buf[i]) begin
-        $error("Phase[%d] at %d: %d !== %d", segment_debug, i, phase_buf[i], phase_out);
+      expect_phase = phase_buf[i] + phase_offset_buf[i] + 0;
+      if (phase_out !== expect_phase) begin
+        $error("Phase[%d] at %d: %d !== %d", segment_debug, i, expect_phase, phase_out);
         $finish();
       end
       @(posedge CLK);
@@ -151,6 +156,10 @@ module sim_mod_modulation ();
       end
       sim_helper_bram.write_mod(segment, mod_buf[segment], cycle_buf[segment]);
     end
+    for (int i = 0; i < DEPTH; i++) begin
+      phase_offset_buf[i] = sim_helper_random.range(8'hFF, 0);
+    end
+    sim_helper_bram.write_phase_filter(phase_offset_buf);
 
     update(0, 32'hFFFFFFFF);
     while (1'b1) begin
@@ -179,6 +188,7 @@ module sim_mod_modulation ();
     end
 
     $display("OK! sim_mod_modulation");
+    $finish();
   end
 
 endmodule

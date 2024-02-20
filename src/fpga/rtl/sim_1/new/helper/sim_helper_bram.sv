@@ -39,8 +39,18 @@ module sim_helper_bram #(
     CPU_WE0_N <= 1;
   endtask
 
-  task automatic write_cnt(logic [4:0] sel, logic [7:0] addr, logic [15:0] data);
-    bram_write(params::BRAM_SELECT_CONTROLLER, {2'b00, 1'b0, sel, addr}, data);
+  task automatic write_cnt(logic [7:0] addr, logic [15:0] data);
+    bram_write(params::BRAM_SELECT_CONTROLLER, {2'b00, params::BRAM_CNT_SEL_MAIN, addr}, data);
+  endtask
+
+  task automatic write_phase_filter(logic [7:0] data[DEPTH]);
+    automatic int i;
+    for (i = 0; i < DEPTH / 2; i++) begin
+      bram_write(params::BRAM_SELECT_CONTROLLER, {2'b00, params::BRAM_CNT_SEL_FILTER, 1'b0, i[6:0]},
+                 {data[2*i+1], data[2*i]});
+    end
+    bram_write(params::BRAM_SELECT_CONTROLLER, {2'b00, params::BRAM_CNT_SEL_FILTER, 1'b0, i[6:0]}, {
+               8'h00, data[DEPTH-1]});
   endtask
 
   task automatic write_duty_table(input logic [7:0] value[65536]);
@@ -119,12 +129,15 @@ module sim_helper_bram #(
                settings.FREQ_DIV_1[15:0]);
     bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_FREQ_DIV_1_1,
                settings.FREQ_DIV_1[31:16]);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_REP_0, settings.REP[15:0]);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_REP_1, settings.REP[31:16]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_REP_0_0, settings.REP_0[15:0]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_REP_0_1, settings.REP_0[31:16]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_REP_1_0, settings.REP_1[15:0]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_REP_1_1, settings.REP_1[31:16]);
   endtask
 
   task automatic write_stm_settings(input settings::stm_settings_t settings);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_MODE, settings.MODE);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_MODE_0, settings.MODE_0);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_MODE_1, settings.MODE_1);
     bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_REQ_RD_SEGMENT,
                settings.REQ_RD_SEGMENT);
     bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_CYCLE_0, settings.CYCLE_0);
@@ -137,12 +150,18 @@ module sim_helper_bram #(
                settings.FREQ_DIV_1[15:0]);
     bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_FREQ_DIV_1_1,
                settings.FREQ_DIV_1[31:16]);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_REP_0, settings.REP[15:0]);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_REP_1, settings.REP[31:16]);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_SOUND_SPEED_0,
-               settings.SOUND_SPEED[15:0]);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_SOUND_SPEED_1,
-               settings.SOUND_SPEED[31:16]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_REP_0_0, settings.REP_0[15:0]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_REP_0_1, settings.REP_0[31:16]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_REP_1_0, settings.REP_1[15:0]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_REP_1_1, settings.REP_1[31:16]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_SOUND_SPEED_0_0,
+               settings.SOUND_SPEED_0[15:0]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_SOUND_SPEED_0_1,
+               settings.SOUND_SPEED_0[31:16]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_SOUND_SPEED_1_0,
+               settings.SOUND_SPEED_1[15:0]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_SOUND_SPEED_1_1,
+               settings.SOUND_SPEED_1[31:16]);
   endtask
 
   task automatic write_silencer_settings(input settings::silencer_settings_t settings);
