@@ -42,6 +42,7 @@ void fpga_write(uint16_t bram_addr, uint16_t value);
 uint16_t bram_read_controller(uint32_t bram_addr);
 uint16_t bram_read_mod(uint32_t segment, uint32_t bram_addr);
 uint16_t bram_read_duty_table(uint32_t bram_addr);
+uint16_t bram_read_phase_filter(uint32_t bram_addr);
 uint16_t bram_read_stm(uint32_t segment, uint32_t bram_addr);
 
 inline static uint16_t get_addr(uint8_t bram_select, uint16_t bram_addr) {

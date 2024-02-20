@@ -43,6 +43,7 @@ set_source_files_properties(
   ${PROJECT_SOURCE_DIR}/../src/op/reads_fpga_state.c
   ${PROJECT_SOURCE_DIR}/../src/op/silencer.c
   ${PROJECT_SOURCE_DIR}/../src/op/pulse_width_encoder.c
+  ${PROJECT_SOURCE_DIR}/../src/op/phase_filter.c
   PROPERTIES LANGUAGE CXX
 )
 
