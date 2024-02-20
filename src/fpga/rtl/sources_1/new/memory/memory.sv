@@ -58,7 +58,7 @@ module memory (
       .wea  (we),
       .addra(addr[7:0]),
       .dina (data_in),
-      .douta(data_out),
+      .douta(),
       .clkb (CLK),
       .web  (FILTER_BUS.WE),
       .addrb(FILTER_BUS.ADDR),
