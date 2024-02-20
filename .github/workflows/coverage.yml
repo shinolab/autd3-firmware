@@ -52,7 +52,7 @@ jobs:
           python3 build.py cpu cov --cmake-extra="-DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12"
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: src/cpu/tests/build/CMakeFiles/test_autd3-firmware.dir/coverage.info
