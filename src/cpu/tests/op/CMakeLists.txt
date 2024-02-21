@@ -6,9 +6,10 @@ target_sources(test_autd3-firmware PRIVATE
   ${PROJECT_SOURCE_DIR}/../src/op/gain_stm.c
   ${PROJECT_SOURCE_DIR}/../src/op/gain.c
   ${PROJECT_SOURCE_DIR}/../src/op/info.c
-  ${PROJECT_SOURCE_DIR}/../src/op/mod_delay.c
   ${PROJECT_SOURCE_DIR}/../src/op/mod.c
   ${PROJECT_SOURCE_DIR}/../src/op/reads_fpga_state.c
+  ${PROJECT_SOURCE_DIR}/../src/op/pulse_width_encoder.c
+  ${PROJECT_SOURCE_DIR}/../src/op/phase_filter.c
   ${PROJECT_SOURCE_DIR}/../src/op/silencer.c
   clear.cpp
   silencer.cpp
@@ -16,10 +17,11 @@ target_sources(test_autd3-firmware PRIVATE
   force_fan.cpp
   gain.cpp
   info.cpp
-  mod_delay.cpp
   mod.cpp
   reads_fpga_state.cpp
   sync.cpp
   focus_stm.cpp
   gain_stm.cpp
+  pulse_width_encoder.cpp
+  phase_filter.cpp
 )

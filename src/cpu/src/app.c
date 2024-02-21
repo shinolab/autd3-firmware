@@ -1,16 +1,3 @@
-/*
- * File: app.c
- * Project: src
- * Created Date: 22/04/2022
- * Author: Shun Suzuki
- * -----
- * Last Modified: 17/01/2024
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
- *
- */
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -27,13 +14,19 @@ extern uint8_t clear(void);
 extern uint8_t synchronize(void);
 extern uint8_t firmware_info(const volatile uint8_t*);
 extern uint8_t write_mod(const volatile uint8_t*);
-extern uint8_t write_mod_delay(const volatile uint8_t*);
+extern uint8_t change_mod_segment(const volatile uint8_t*);
 extern uint8_t config_silencer(const volatile uint8_t*);
 extern uint8_t write_gain(const volatile uint8_t*);
+extern uint8_t change_gain_segment(const volatile uint8_t*);
 extern uint8_t write_focus_stm(const volatile uint8_t*);
+extern uint8_t change_focus_stm_segment(const volatile uint8_t*);
 extern uint8_t write_gain_stm(const volatile uint8_t*);
+extern uint8_t change_gain_stm_segment(const volatile uint8_t*);
 extern uint8_t configure_force_fan(const volatile uint8_t*);
 extern uint8_t configure_reads_fpga_state(const volatile uint8_t*);
+extern uint8_t change_mod_segment(const volatile uint8_t*);
+extern uint8_t config_pwe(const volatile uint8_t*);
+extern uint8_t write_phase_filter(const volatile uint8_t*);
 extern uint8_t configure_debug(const volatile uint8_t*);
 extern uint8_t read_fpga_state(void);
 
@@ -58,7 +51,13 @@ static volatile uint8_t _ack = 0;
 volatile uint8_t _rx_data = 0;
 volatile uint16_t _fpga_flags_internal = 0;
 
-void init_app(void) { clear(); }
+void init_app(void) {
+  clear();
+  bram_write(BRAM_SELECT_CONTROLLER,
+             BRAM_ADDR_PULSE_WIDTH_ENCODER_FULL_WIDTH_START,
+             65025);  // 255 * 255
+  set_and_wait_update(CTL_FLAG_PULSE_WIDTH_ENCODER_SET);
+}
 
 uint8_t handle_payload(const volatile uint8_t* p_data) {
   switch (p_data[0]) {
@@ -70,20 +69,30 @@ uint8_t handle_payload(const volatile uint8_t* p_data) {
       return firmware_info(p_data);
     case TAG_MODULATION:
       return write_mod(p_data);
-    case TAG_MODULATION_DELAY:
-      return write_mod_delay(p_data);
+    case TAG_MODULATION_CHANGE_SEGMENT:
+      return change_mod_segment(p_data);
     case TAG_SILENCER:
       return config_silencer(p_data);
     case TAG_GAIN:
       return write_gain(p_data);
+    case TAG_GAIN_CHANGE_SEGMENT:
+      return change_gain_segment(p_data);
     case TAG_FOCUS_STM:
       return write_focus_stm(p_data);
     case TAG_GAIN_STM:
       return write_gain_stm(p_data);
+    case TAG_GAIN_STM_CHANGE_SEGMENT:
+      return change_gain_stm_segment(p_data);
+    case TAG_FOCUS_STM_CHANGE_SEGMENT:
+      return change_focus_stm_segment(p_data);
     case TAG_FORCE_FAN:
       return configure_force_fan(p_data);
     case TAG_READS_FPGA_STATE:
       return configure_reads_fpga_state(p_data);
+    case TAG_CONFIG_PULSE_WIDTH_ENCODER:
+      return config_pwe(p_data);
+    case TAG_PHASE_FILTER:
+      return write_phase_filter(p_data);
     case TAG_DEBUG:
       return configure_debug(p_data);
     default:
@@ -98,7 +107,8 @@ void update(void) {
   volatile uint8_t* p_data;
   Header* header;
 
-  if ((ECATC.AL_STATUS_CODE.WORD == AL_STATUS_CODE_SYNC_ERR) || (ECATC.AL_STATUS_CODE.WORD == AL_STATUS_CODE_SYNC_MANAGER_WATCHDOG)) {
+  if ((ECATC.AL_STATUS_CODE.WORD == AL_STATUS_CODE_SYNC_ERR) ||
+      (ECATC.AL_STATUS_CODE.WORD == AL_STATUS_CODE_SYNC_MANAGER_WATCHDOG)) {
     if (_wdt_cnt < 0) return;
     if (_wdt_cnt == 0) clear();
     _wdt_cnt = _wdt_cnt - 1;
@@ -117,14 +127,16 @@ void update(void) {
     }
 
     _ack = handle_payload(&p_data[sizeof(Header)]);
-    if (_ack != ERR_NONE) goto FINISH;
+    if ((_ack & ERR_BIT) != 0) goto FINISH;
     if (header->slot_2_offset != 0) {
-      _ack = handle_payload(&p_data[sizeof(Header) + header->slot_2_offset]);
-      if (_ack != ERR_NONE) goto FINISH;
+      _ack |= handle_payload(&p_data[sizeof(Header) + header->slot_2_offset]);
+      if ((_ack & ERR_BIT) != 0) goto FINISH;
     }
 
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG,
+               _fpga_flags_internal);
+
     _ack = header->msg_id;
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG, _fpga_flags_internal);
   } else {
     dly_tsk(1);
   }

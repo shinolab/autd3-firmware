@@ -1,14 +1,3 @@
-// File: app.cpp
-// Project: tests
-// Created Date: 01/01/2024
-// Author: Shun Suzuki
-// -----
-// Last Modified: 01/01/2024
-// Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
-// -----
-// Copyright (c) 2024 Shun Suzuki. All rights reserved.
-//
-
 #include <gtest/gtest.h>
 
 //
@@ -83,7 +72,8 @@ TEST(Op, Slot2) {
     data_body[1] = idx;
   }
   {
-    auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header) + 2;
+    auto* data_body =
+        reinterpret_cast<uint8_t*>(data.data) + sizeof(Header) + 2;
     data_body[0] = TAG_FORCE_FAN;
     data_body[1] = 0x01;
   }
@@ -96,8 +86,9 @@ TEST(Op, Slot2) {
   const auto ack = _sTx.ack >> 8;
   ASSERT_EQ(ack, header->msg_id);
 
-  ASSERT_EQ(bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_DEBUG_OUT_IDX), idx);
-  ASSERT_TRUE((bram_read_raw(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG) & CTL_FLAG_FORCE_FAN_EX) == CTL_FLAG_FORCE_FAN_EX);
+  ASSERT_EQ(bram_read_controller(BRAM_ADDR_DEBUG_OUT_IDX), idx);
+  ASSERT_TRUE((bram_read_controller(BRAM_ADDR_CTL_FLAG) & CTL_FLAG_FORCE_FAN) ==
+              CTL_FLAG_FORCE_FAN);
 }
 
 TEST(Op, WDT) {

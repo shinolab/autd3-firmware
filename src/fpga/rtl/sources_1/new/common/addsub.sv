@@ -1,25 +1,12 @@
-/*
- * File: addsub.sv
- * Project: common
- * Created Date: 04/01/2022
- * Author: Shun Suzuki
- * -----
- * Last Modified: 28/07/2022
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
- * 
- */
-
 `timescale 1ns / 1ps
 module addsub #(
     parameter int WIDTH = 16
 ) (
-    input var CLK,
-    input var [WIDTH-1:0] A,
-    input var [WIDTH-1:0] B,
-    input var ADD,
-    output var [WIDTH-1:0] S
+    input wire CLK,
+    input wire [WIDTH-1:0] A,
+    input wire [WIDTH-1:0] B,
+    input wire ADD,
+    output wire [WIDTH-1:0] S
 );
 
   ADDSUB_MACRO #(

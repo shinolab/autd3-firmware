@@ -1,16 +1,3 @@
-/*
- * File: buf.c
- * Project: src
- * Created Date: 17/01/2024
- * Author: Shun Suzuki
- * -----
- * Last Modified: 17/01/2024
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2024 Shun Suzuki. All rights reserved.
- *
- */
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -34,7 +21,8 @@ bool_t push(const volatile uint16_t* p_data) {
   if (next == _read_cursor) return false;
 
   word_cpy((uint16_t*)&_buf[_write_cursor], (uint16_t*)p_data, 249);
-  word_cpy(((uint16_t*)&_buf[_write_cursor]) + 249, (uint16_t*)&p_data[249 + 1], 64);
+  word_cpy(((uint16_t*)&_buf[_write_cursor]) + 249, (uint16_t*)&p_data[249 + 1],
+           64);
 
   _write_cursor = next;
 

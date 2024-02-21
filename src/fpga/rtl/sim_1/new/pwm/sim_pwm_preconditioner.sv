@@ -1,22 +1,9 @@
-/*
- * File: sim_pwm_preconditioner.sv
- * Project: pwm
- * Created Date: 15/03/2022
- * Author: Shun Suzuki
- * -----
- * Last Modified: 20/11/2023
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
- *
- */
-
 module sim_pwm_preconditioner ();
 
-  logic CLK_20P48M;
+  logic CLK;
   logic locked;
   sim_helper_clk sim_helper_clk (
-      .CLK_20P48M(CLK_20P48M),
+      .CLK_20P48M(CLK),
       .LOCKED(locked),
       .SYS_TIME()
   );
@@ -38,7 +25,7 @@ module sim_pwm_preconditioner ();
   pwm_preconditioner #(
       .DEPTH(DEPTH)
   ) pwm_preconditioner (
-      .CLK(CLK_20P48M),
+      .CLK(CLK),
       .DIN_VALID(din_valid),
       .PULSE_WIDTH(pulse_width),
       .PHASE(phase),
@@ -58,19 +45,19 @@ module sim_pwm_preconditioner ();
       end
     end
     for (int i = 0; i < DEPTH; i++) begin
-      @(posedge CLK_20P48M);
+      @(posedge CLK);
       din_valid <= 1'b1;
       pulse_width <= pulse_width_buf[i];
       phase <= phase_buf[i];
     end
-    @(posedge CLK_20P48M);
+    @(posedge CLK);
     din_valid <= 1'b0;
   endtask
 
 
   task automatic check_manual(int idx, logic [8:0] rise_e, logic [8:0] fall_e);
     while (1) begin
-      @(posedge CLK_20P48M);
+      @(posedge CLK);
       if (dout_valid) begin
         break;
       end
@@ -79,12 +66,12 @@ module sim_pwm_preconditioner ();
     for (int i = 0; i < DEPTH; i++) begin
       if (i === idx) begin
         if ((rise[i] !== rise_e) | (fall[i] !== fall_e)) begin
-          $error("Failed at idx=%d, R(%d) != %d, F(%d) != %d", i, rise[i], rise_e, fall[i], fall_e);
+          $error("At idx=%d, R(%d) != %d, F(%d) != %d", i, rise[i], rise_e, fall[i], fall_e);
           $finish();
         end
       end else begin
         if ((rise[i] !== 0) | (fall[i] !== 0)) begin
-          $error("Failed at idx=%d, R=%d, F=%d", i, rise[i], fall[i]);
+          $error("At idx=%d, R=%d, F=%d", i, rise[i], fall[i]);
           $finish();
         end
       end
@@ -97,18 +84,18 @@ module sim_pwm_preconditioner ();
       phase_buf[i] = sim_helper_random.range(255, 0);
     end
     for (int i = 0; i < DEPTH; i++) begin
-      @(posedge CLK_20P48M);
+      @(posedge CLK);
       din_valid <= 1'b1;
       pulse_width <= pulse_width_buf[i];
       phase <= phase_buf[i];
     end
-    @(posedge CLK_20P48M);
+    @(posedge CLK);
     din_valid <= 1'b0;
   endtask
 
   task automatic check();
     while (1) begin
-      @(posedge CLK_20P48M);
+      @(posedge CLK);
       if (dout_valid) begin
         break;
       end
@@ -117,8 +104,8 @@ module sim_pwm_preconditioner ();
     for (int i = 0; i < DEPTH; i++) begin
       if ((rise[i] !== ((512-phase_buf[i]*2-pulse_width_buf[i]/2+512)%512))
         | (fall[i] !== ((512-phase_buf[i]*2+(pulse_width_buf[i]+1)/2)%512))) begin
-        $error("Failed at idx=%d, d=%d, p=%d, R=%d, F=%d", i, pulse_width_buf[i], phase_buf[i],
-               rise[i], fall[i]);
+        $error("At idx=%d, d=%d, p=%d, R=%d, F=%d", i, pulse_width_buf[i], phase_buf[i], rise[i],
+               fall[i]);
         $finish();
       end
     end
@@ -170,7 +157,7 @@ module sim_pwm_preconditioner ();
     // at random
     sim_helper_random.init();
     for (int i = 0; i < 5000; i++) begin
-      $display("check start @%d", i);
+      $display("Check start @%d", i);
       fork
         set_random();
         check();

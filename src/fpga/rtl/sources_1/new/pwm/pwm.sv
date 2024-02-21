@@ -1,27 +1,14 @@
-/*
- * File: pwm.sv
- * Project: pwm
- * Created Date: 15/03/2022
- * Author: Shun Suzuki
- * -----
- * Last Modified: 20/11/2023
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
- *
- */
-
 module pwm #(
     parameter int DEPTH = 249
 ) (
-    input var CLK,
-    input var [8:0] TIME_CNT,
-    input var UPDATE,
-    input var DIN_VALID,
-    input var [8:0] PULSE_WIDTH,
-    input var [7:0] PHASE,
-    output var PWM_OUT[DEPTH],
-    output var DOUT_VALID
+    input wire CLK,
+    input wire [8:0] TIME_CNT,
+    input wire UPDATE,
+    input wire DIN_VALID,
+    input wire [8:0] PULSE_WIDTH,
+    input wire [7:0] PHASE,
+    output wire PWM_OUT[DEPTH],
+    output wire DOUT_VALID
 );
 
   logic [8:0] R[DEPTH];

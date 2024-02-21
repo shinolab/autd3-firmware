@@ -1,22 +1,8 @@
-/*
- * File: synchronizer.sv
- * Project: synchronizer
- * Created Date: 24/03/2022
- * Author: Shun Suzuki
- * -----
- * Last Modified: 20/11/2023
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
- *
- */
-
 `timescale 1ns / 1ps
 module synchronizer (
-    input var CLK,
-    input var [63:0] ECAT_SYNC_TIME,
-    input var SET,
-    input var ECAT_SYNC,
+    input wire CLK,
+    input wire settings::sync_settings_t SYNC_SETTINGS,
+    input wire ECAT_SYNC,
     output var [63:0] SYS_TIME,
     output var SYNC,
     output var SKIP_ONE_ASSERT
@@ -92,9 +78,9 @@ module synchronizer (
   always_ff @(posedge CLK) begin
     if (set & sync) begin
       set <= 1'b0;
-    end else if (SET) begin
+    end else if (SYNC_SETTINGS.UPDATE) begin
       set <= 1'b1;
-      ecat_sync_time <= ECAT_SYNC_TIME;
+      ecat_sync_time <= SYNC_SETTINGS.ECAT_SYNC_TIME;
     end
   end
 

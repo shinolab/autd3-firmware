@@ -1,25 +1,11 @@
-/*
- * File: pwm_preconditioner.sv
- * Project: pwm
- * Created Date: 15/03/2022
- * Author: Shun Suzuki
- * -----
- * Last Modified: 20/11/2023
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
- *
- */
-
-
 `timescale 1ns / 1ps
 module pwm_preconditioner #(
     parameter int DEPTH = 249
 ) (
-    input var CLK,
-    input var DIN_VALID,
-    input var [8:0] PULSE_WIDTH,
-    input var [7:0] PHASE,
+    input wire CLK,
+    input wire DIN_VALID,
+    input wire [8:0] PULSE_WIDTH,
+    input wire [7:0] PHASE,
     output var [8:0] RISE[DEPTH],
     output var [8:0] FALL[DEPTH],
     output var DOUT_VALID

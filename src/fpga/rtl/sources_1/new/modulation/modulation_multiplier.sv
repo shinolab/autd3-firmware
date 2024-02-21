@@ -1,81 +1,72 @@
-/*
- * File: modulation_multiplier.sv
- * Project: modulation
- * Created Date: 24/03/2022
- * Author: Shun Suzuki
- * -----
- * Last Modified: 20/11/2023
- * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
- * -----
- * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
- *
- */
-
 `timescale 1ns / 1ps
 module modulation_multiplier #(
     parameter int DEPTH = 249
 ) (
-    input var CLK,
-    input var [15:0] CYCLE_M,
-    input var DIN_VALID,
-    input var [15:0] IDX,
-    modulation_bus_if.sampler_port M_BUS,
-    input var [15:0] DELAY_M[DEPTH],
-    input var [7:0] INTENSITY_IN,
-    output var [15:0] INTENSITY_OUT,
-    input var [7:0] PHASE_IN,
-    output var [7:0] PHASE_OUT,
-    output var DOUT_VALID
+    input wire CLK,
+    input wire DIN_VALID,
+    input wire [7:0] INTENSITY_IN,
+    output wire [15:0] INTENSITY_OUT,
+    output wire DOUT_VALID,
+    modulation_bus_if.out_port MOD_BUS,
+    input wire [14:0] IDX_0,
+    input wire [14:0] IDX_1,
+    input wire SEGMENT,
+    input wire STOP,
+    output wire [14:0] DEBUG_IDX,
+    output wire DEBUG_SEGMENT,
+    output wire DEBUG_STOP
 );
 
-  localparam int BRAMLatency = 2;
-  localparam int AddSubLatency = 2;
-  localparam int MultLatency = 3;
-  localparam int Latency = BRAMLatency + 2 * AddSubLatency + MultLatency;
+  localparam int Latency = 1;
 
-  logic [7:0] phase_buf[DEPTH];
-  logic [$clog2(DEPTH):0] phase_set_cnt = 0;
-  logic [7:0] phase_out;
+  logic segment;
+  logic stop;
 
-  logic [31:0] cycle;
-  logic [7:0] intensity_buf[8];
+  logic dout_valid = 1'b0;
 
   logic [7:0] mod;
-
-  logic [15:0] intensity_m;
-
-  logic [17:0] idx_offset_a, idx_offset_b, idx_offset_s;
-  logic [17:0] idx_oc_a, idx_oc_b, idx_oc_s;
-
+  logic [14:0] idx = '0;
+  logic stop_buf = 1'b0, segment_buf = 1'b0;
+  logic [$clog2(DEPTH+(Latency+1))-1:0] cnt, set_cnt;
+  logic [7:0] intensity_buf;
   logic signed [17:0] p;
 
-  logic [$clog2(DEPTH+(Latency+1))-1:0] cnt, delay_cnt, set_cnt;
-  logic dout_valid = 0;
+  assign segment = SEGMENT;
+  assign stop = STOP;
 
-  assign M_BUS.ADDR = idx_oc_s[15:0];
-  assign mod = M_BUS.M;
-  assign DOUT_VALID = dout_valid;
-  assign INTENSITY_OUT = intensity_m;
-  assign PHASE_OUT = phase_out;
+  assign MOD_BUS.IDX = idx;
+  assign mod = MOD_BUS.VALUE;
+  assign MOD_BUS.SEGMENT = segment_buf;
 
-  addsub #(
-      .WIDTH(18)
-  ) addsub_o (
-      .CLK(CLK),
-      .A  (idx_offset_a),
-      .B  (idx_offset_b),
-      .ADD(1'b0),
-      .S  (idx_offset_s)
+  assign DEBUG_IDX = idx;
+  assign DEBUG_SEGMENT = segment_buf;
+  assign DEBUG_STOP = stop_buf;
+
+  delay_fifo #(
+      .WIDTH(8),
+      .DEPTH(3)
+  ) delay_fifo_intensity (
+      .CLK (CLK),
+      .DIN (INTENSITY_IN),
+      .DOUT(intensity_buf)
   );
 
-  addsub #(
-      .WIDTH(18)
-  ) addsub_oc (
-      .CLK(CLK),
-      .A  (idx_oc_a),
-      .B  (idx_oc_b),
-      .ADD(1'b1),
-      .S  (idx_oc_s)
+  delay_fifo #(
+      .WIDTH(16),
+      .DEPTH(4)
+  ) delay_fifo_intensity_out (
+      .CLK (CLK),
+      .DIN (p[15:0]),
+      .DOUT(INTENSITY_OUT)
+  );
+
+  delay_fifo #(
+      .WIDTH(1),
+      .DEPTH(4)
+  ) delay_fifo_dout_valid (
+      .CLK (CLK),
+      .DIN (dout_valid),
+      .DOUT(DOUT_VALID)
   );
 
   mult #(
@@ -83,13 +74,16 @@ module modulation_multiplier #(
       .WIDTH_B(9)
   ) mult (
       .CLK(CLK),
-      .A  ({1'b0, intensity_buf[7]}),
+      .A  ({1'b0, intensity_buf}),
       .B  ({1'b0, mod}),
       .P  (p)
   );
 
-  typedef enum logic {
+  typedef enum logic [2:0] {
     WAITING,
+    WAIT_MOD_LOAD_0,
+    WAIT_MOD_LOAD_1,
+    MOD_LOAD,
     RUN
   } state_t;
 
@@ -102,34 +96,24 @@ module modulation_multiplier #(
         if (DIN_VALID) begin
           cnt <= 0;
           set_cnt <= 0;
-
-          phase_buf[0] <= PHASE_IN;
-          phase_set_cnt <= 1;
-
-          idx_offset_a <= {2'b00, IDX};
-          idx_offset_b <= {2'b00, DELAY_M[0]};
-          delay_cnt <= 1;
-          cycle <= CYCLE_M + 1;
-
-          state <= RUN;
+          stop_buf <= stop;
+          if (stop == 1'b0) begin
+            idx <= segment == 1'b0 ? IDX_0 : IDX_1;
+            segment_buf <= segment;
+          end
+          state <= WAIT_MOD_LOAD_0;
         end
       end
+      WAIT_MOD_LOAD_0: begin
+        state <= WAIT_MOD_LOAD_1;
+      end
+      WAIT_MOD_LOAD_1: begin
+        state <= RUN;
+      end
       RUN: begin
-        if (phase_set_cnt < DEPTH) begin
-          phase_buf[phase_set_cnt] <= PHASE_IN;
-          phase_set_cnt <= phase_set_cnt + 1;
-        end
-
-        delay_cnt <= delay_cnt + 1;
-        idx_offset_b <= {2'b00, DELAY_M[delay_cnt]};
-        idx_oc_a <= idx_offset_s;
-        idx_oc_b <= idx_offset_s[17] == 1'b1 ? {1'b0, cycle[16:0]} : 0;
         cnt <= cnt + 1;
-
         if (cnt > Latency) begin
           dout_valid <= 1'b1;
-          intensity_m <= p[15:0];
-          phase_out <= phase_buf[set_cnt];
           set_cnt <= set_cnt + 1;
           if (set_cnt == DEPTH - 1) begin
             state <= WAITING;
@@ -139,17 +123,6 @@ module modulation_multiplier #(
       default: begin
       end
     endcase
-  end
-
-  always_ff @(posedge CLK) begin
-    intensity_buf[0] <= INTENSITY_IN;
-    intensity_buf[1] <= intensity_buf[0];
-    intensity_buf[2] <= intensity_buf[1];
-    intensity_buf[3] <= intensity_buf[2];
-    intensity_buf[4] <= intensity_buf[3];
-    intensity_buf[5] <= intensity_buf[4];
-    intensity_buf[6] <= intensity_buf[5];
-    intensity_buf[7] <= intensity_buf[6];
   end
 
 endmodule
