@@ -179,7 +179,7 @@
         "OUTPUTDIR": [ { "value": "../../../../autd3-fpga.gen/sources_1/ip/BRAM_CONTROLLER" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "." } ],
-        "SWVERSION": [ { "value": "2023.2" } ],
+        "SWVERSION": [ { "value": "2023.2.2" } ],
         "SYNTHESISFLOW": [ { "value": "GLOBAL" } ]
       }
     },

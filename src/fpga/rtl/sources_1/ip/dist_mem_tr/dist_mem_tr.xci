@@ -90,7 +90,7 @@
         "OUTPUTDIR": [ { "value": "../../../../autd3-fpga.gen/sources_1/ip/dist_mem_tr" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "." } ],
-        "SWVERSION": [ { "value": "2023.2" } ],
+        "SWVERSION": [ { "value": "2023.2.2" } ],
         "SYNTHESISFLOW": [ { "value": "GLOBAL" } ]
       }
     },
