@@ -72,7 +72,8 @@ module modulation #(
       .FILTER_BUS(FILTER_BUS),
       .DIN_VALID(DIN_VALID),
       .PHASE_IN(PHASE_IN),
-      .PHASE_OUT(PHASE_OUT)
+      .PHASE_OUT(PHASE_OUT),
+      .DOUT_VALID()
   );
 
 endmodule
