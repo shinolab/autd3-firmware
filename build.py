@@ -9,8 +9,6 @@ import subprocess
 import sys
 from typing import List, Optional
 
-from packaging import version
-
 
 def err(msg: str):
     print("\033[91mERR \033[0m: " + msg)
@@ -43,10 +41,7 @@ def onexc(func, path, exeption):
 
 def rmtree_f(path):
     try:
-        if version.parse(platform.python_version()) >= version.parse("3.12"):
-            shutil.rmtree(path, onexc=onexc)
-        else:
-            shutil.rmtree(path, onerror=onexc)
+        shutil.rmtree(path, onerror=onexc)
     except FileNotFoundError:
         pass
 
