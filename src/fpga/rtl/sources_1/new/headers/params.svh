@@ -7,7 +7,7 @@ package params;
   localparam int STM_RD_ADDR_WIDTH = $clog2(GAIN_STM_SIZE * 64);
 
   localparam bit [7:0] VERSION_NUM = 8'h8F;
-  localparam bit [7:0] VERSION_NUM_MINOR = 8'h00;
+  localparam bit [7:0] VERSION_NUM_MINOR = 8'h01;
 
   localparam bit [1:0] BRAM_SELECT_CONTROLLER = 2'h0;
   localparam bit [1:0] BRAM_SELECT_MOD = 2'h1;

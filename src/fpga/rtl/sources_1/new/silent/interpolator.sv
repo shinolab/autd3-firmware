@@ -30,9 +30,7 @@ module interpolator #(
   logic add_phase_fg;
   logic signed [17:0] a_intensity, b_intensity, s_intensity;
   logic signed [17:0] a_phase, b_phase, s_phase;
-  logic signed [17:0] a_phase_fold, b_phase_fold, s_phase_fold;
-  logic add_fold;
-  logic [$clog2(DEPTH+(AddSubLatency+1)*4)-1:0] calc_cnt, calc_step_cnt, fold_cnt, set_cnt;
+  logic [$clog2(DEPTH+AddSubLatency*3+1)-1:0] calc_cnt, calc_step_cnt, set_cnt;
 
   logic [15:0] intensity_s;
   logic [7:0] phase_s;
@@ -100,25 +98,14 @@ module interpolator #(
       .S  (s_phase)
   );
 
-  addsub #(
-      .WIDTH(18)
-  ) addsub_phase_fold (
-      .CLK(CLK),
-      .A  (a_phase_fold),
-      .B  (b_phase_fold),
-      .ADD(add_fold),
-      .S  (s_phase_fold)
-  );
-
   always_ff @(posedge CLK) begin
     case (state)
       WAITING: begin
         dout_valid <= 1'b0;
         if (DIN_VALID) begin
-          calc_step_cnt <= 0;
-          calc_cnt <= 0;
-          fold_cnt <= 0;
-          set_cnt <= 0;
+          calc_step_cnt <= '0;
+          calc_cnt <= '0;
+          set_cnt <= '0;
 
           state <= RUN;
         end
@@ -171,34 +158,16 @@ module interpolator #(
           b_phase <= (update_rate_phase_n[6] < s_phase_fg) ? s_phase_fg : update_rate_phase_n[6];
         end
 
-        // phase 4: make phase be in [0, T-1]
-        a_phase_fold <= s_phase;
-        if (s_phase >= 18'sd65536) begin
-          b_phase_fold <= 18'sd65536;
-          add_fold <= 1'b0;
-        end else if (s_phase[17] == 1'b1) begin
-          b_phase_fold <= 18'sd65536;
-          add_fold <= 1'b1;
-        end else begin
-          b_phase_fold <= '0;
-          add_fold <= 1'b1;
-        end
-
         calc_step_cnt <= calc_step_cnt + 1;
         if (calc_step_cnt > 1 + AddSubLatency + AddSubLatency) begin
           calc_cnt <= calc_cnt + 1;
         end
         if (calc_cnt > AddSubLatency) begin
-          if (fold_cnt <= DEPTH - 1) begin
-            current_intensity[fold_cnt] <= s_intensity;
-          end
-          fold_cnt <= fold_cnt + 1;
-        end
-        if (fold_cnt > AddSubLatency) begin
           dout_valid <= 1'b1;
-          current_phase[set_cnt] <= s_phase_fold;
-          intensity_s <= current_intensity[set_cnt];
-          phase_s <= s_phase_fold[15:8];
+          current_intensity[set_cnt] <= s_intensity;
+          current_phase[set_cnt] <= {2'b00, s_phase[15:0]};
+          intensity_s <= s_intensity;
+          phase_s <= s_phase[15:8];
           set_cnt <= set_cnt + 1;
           if (set_cnt == DEPTH - 1) begin
             state <= WAITING;

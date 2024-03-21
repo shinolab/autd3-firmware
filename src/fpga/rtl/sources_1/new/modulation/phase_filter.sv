@@ -5,7 +5,8 @@ module phase_filter #(
     filter_bus_if.out_port FILTER_BUS,
     input var DIN_VALID,
     input var [7:0] PHASE_IN,
-    output var [7:0] PHASE_OUT
+    output var [7:0] PHASE_OUT,
+    output var DOUT_VALID
 );
 
   localparam int AddSubLatency = 2;

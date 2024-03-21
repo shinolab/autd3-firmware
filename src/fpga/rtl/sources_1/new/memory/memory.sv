@@ -56,13 +56,13 @@ module memory (
       .clka (bus_clk),
       .ena  (filter_en),
       .wea  (we),
-      .addra(addr[7:0]),
+      .addra(addr[6:0]),
       .dina (data_in),
       .douta(),
       .clkb (CLK),
-      .web  (FILTER_BUS.WE),
+      .web  ('0),
       .addrb(FILTER_BUS.ADDR),
-      .dinb (FILTER_BUS.DIN),
+      .dinb ('0),
       .doutb(FILTER_BUS.DOUT)
   );
   /////////////////////////////// Filter //////////////////////////////

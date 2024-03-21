@@ -22,11 +22,8 @@ module pwm_preconditioner #(
   logic signed [10:0] a_pulse_width_r, b_pulse_width_r, s_pulse_width_r;
   logic signed [10:0] a_rise, b_rise, s_rise;
   logic signed [10:0] a_fall, b_fall, s_fall;
-  logic signed [10:0] a_fold_rise, b_fold_rise, s_fold_rise;
-  logic fold_rise_addsub;
-  logic signed [10:0] a_fold_fall, b_fold_fall, s_fold_fall;
 
-  logic [$clog2(DEPTH+(AddSubLatency+1)*3)-1:0] cnt, lr_cnt, fold_cnt, set_cnt;
+  logic [$clog2(DEPTH+1+AddSubLatency*2)-1:0] cnt, lr_cnt, set_cnt;
 
   logic dout_valid;
 
@@ -75,25 +72,6 @@ module pwm_preconditioner #(
       .S  (s_fall)
   );
 
-  addsub #(
-      .WIDTH(11)
-  ) add_fold_rise (
-      .CLK(CLK),
-      .A  (a_fold_rise),
-      .B  (b_fold_rise),
-      .ADD(fold_rise_addsub),
-      .S  (s_fold_rise)
-  );
-  addsub #(
-      .WIDTH(11)
-  ) sub_fold_fall (
-      .CLK(CLK),
-      .A  (a_fold_fall),
-      .B  (b_fold_fall),
-      .ADD(1'b0),
-      .S  (s_fold_fall)
-  );
-
   typedef enum logic [2:0] {
     WAITING,
     RUN,
@@ -107,10 +85,9 @@ module pwm_preconditioner #(
       WAITING: begin
         dout_valid <= 1'b0;
         if (DIN_VALID) begin
-          cnt <= 0;
-          lr_cnt <= 0;
-          fold_cnt <= 0;
-          set_cnt <= 0;
+          cnt <= '0;
+          lr_cnt <= '0;
+          set_cnt <= '0;
 
           state <= RUN;
         end
@@ -132,32 +109,9 @@ module pwm_preconditioner #(
           lr_cnt <= lr_cnt + 1;
         end
 
-        // step 3
-        a_fold_rise <= s_rise;
-        if (s_rise[10] == 1'b1) begin
-          b_fold_rise <= 11'd512;
-          fold_rise_addsub <= 1'b1;
-        end else if (11'd512 <= s_rise) begin
-          b_fold_rise <= 11'd512;
-          fold_rise_addsub <= 1'b0;
-        end else begin
-          b_fold_rise <= 0;
-          fold_rise_addsub <= 1'b1;
-        end
-        a_fold_fall <= s_fall;
-        if (11'd512 <= s_fall) begin
-          b_fold_fall <= 11'd512;
-        end else begin
-          b_fold_fall <= 0;
-        end
         if (lr_cnt > AddSubLatency) begin
-          fold_cnt <= fold_cnt + 1;
-        end
-
-        // step 4
-        if (fold_cnt > AddSubLatency) begin
-          rise_buf[set_cnt] <= s_fold_rise[8:0];
-          fall_buf[set_cnt] <= s_fold_fall[8:0];
+          rise_buf[set_cnt] <= s_rise[8:0];
+          fall_buf[set_cnt] <= s_fall[8:0];
 
           set_cnt <= set_cnt + 1;
         end
