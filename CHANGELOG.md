@@ -1,3 +1,7 @@
+# 6.0.1
+
+- Minor performance improvements
+
 # 5.1.0
 
 - Return `READS_FPGA_STATE_ENABLED` in rx data if reads FPGA info is enabled
