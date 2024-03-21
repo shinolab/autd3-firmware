@@ -1,4 +1,4 @@
-﻿Param(
+Param(
     [string]$version = "6.0.0",
     [string]$vivado_dir = "NULL"
 )
@@ -37,7 +37,7 @@ function UpdateCPU([string]$cpuFirmwareFile) {
     ColorEcho "Green" "INFO" "Find J-Link"
 
     Copy-Item -Path $cpuFirmwareFile -Destination "tmp.bin" -Force
-    $command = "jlink -device R7S910018_R4F -if JTAG -speed 4000 -jtagconf -1,-1 -autoconnect 1 -CommanderScript ./scripts/cpu_flash.jlink"
+    $command = "jlink -device R7S910018_R4F -if JTAG -speed 4000 -jtagconf -1,-1 -autoconnect 1 -ExitOnError 1 -CommanderScript ./scripts/cpu_flash.jlink"
     $success = $TRUE
     Invoke-Expression $command | Out-String -Stream | ForEach-Object {
         [string]$line = $_
