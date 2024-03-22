@@ -27,9 +27,7 @@ function UpdateCPU([string]$cpuFirmwareFile) {
     if ($jlink_path -eq "NULL") {
         ColorEcho "Red" "Error" "J-Link is not found. PLease install J-Link."
         Stop-Transcript | Out-Null
-        ColorEcho "Green" "INFO" "Press any key to exit..."
-        $host.UI.RawUI.ReadKey() | Out-Null
-        exit
+        exit -1
     }
     else {
         $env:Path = $jlink_path + ";" + $env:Path
@@ -37,20 +35,16 @@ function UpdateCPU([string]$cpuFirmwareFile) {
     ColorEcho "Green" "INFO" "Find J-Link"
 
     Copy-Item -Path $cpuFirmwareFile -Destination "tmp.bin" -Force
-    $command = "jlink -device R7S910018_R4F -if JTAG -speed 4000 -jtagconf -1,-1 -autoconnect 1 -ExitOnError 1 -CommanderScript ./scripts/cpu_flash.jlink"
-    $success = $TRUE
-    Invoke-Expression $command | Out-String -Stream | ForEach-Object {
-        [string]$line = $_
-        Write-Host $line
-        if ($line.Contains("Cannot connect")) {
-            $success = $FALSE
-        }
-    }
+    & jlink -device R7S910018_R4F -if JTAG -speed 4000 -jtagconf -1,-1 -autoconnect 1 -ExitOnError 1 -CommanderScript ./scripts/cpu_flash.jlink
+    $Success = $?
     Remove-Item -Path "tmp.bin"
-    if ($success) {
+    if ($Success) {
         ColorEcho "Green" "INFO" "Update CPU done."
+    } else {
+        ColorEcho "Red" "ERROR" "Failed to update CPU. Make sure that AUTD is connected and power on."
+        Stop-Transcript | Out-Null
+        exit -1
     }
-    return $success
 }
 
 function AddVivadoToPATH($vivado_dir, $edition) {
@@ -60,9 +54,7 @@ function AddVivadoToPATH($vivado_dir, $edition) {
         if (($xilinx_path -eq "NULL")) {
             ColorEcho "Red" "Error" "Vivado is not found. Install Vivado."
             Stop-Transcript | Out-Null
-            ColorEcho "Green" "INFO" "Press any key to exit..."
-            $host.UI.RawUI.ReadKey() | Out-Null
-            exit
+            exit -1
         }
         
         $vivado_path = Join-Path $xilinx_path $edition
@@ -102,33 +94,26 @@ function UpdateFPGA([string]$fpgaFirmwareFile, [string]$vivado_dir) {
     if ((-not $can_use_vivado) -and (-not $can_use_vivado_lab)) {
         ColorEcho "Red" "Error" "Vivado is not found. Install Vivado or add Vivado install folder to PATH."
         Stop-Transcript | Out-Null
-        ColorEcho "Green" "INFO" "Press any key to exit..."
-        $host.UI.RawUI.ReadKey() | Out-Null
-        exit
-    }
-
-    $command = ""
-    if ($can_use_vivado) {
-        $command = "vivado -mode batch -nojournal -nolog -notrace -source ./scripts/fpga_configuration_script.tcl 2>&1"
-    } elseif ($can_use_vivado_lab) {
-        $command = "vivado_lab -mode batch -nojournal -nolog -notrace -source ./scripts/fpga_configuration_script.tcl 2>&1"
+        exit -1
     }
 
     Copy-Item -Path $fpgaFirmwareFile -Destination "./scripts/tmp.mcs" -Force
     ColorEcho "Green" "INFO" "Invoking Vivado..."
-    $success = $TRUE
-    $result = Invoke-Expression $command | Out-String -Stream | ForEach-Object {
-        [string]$line = $_
-        Write-Host $line
-        if ($line.TrimStart().StartsWith("ERROR")) {
-            $success = $FALSE
-        }
+
+    if ($can_use_vivado) {
+        & vivado -mode batch -nojournal -nolog -notrace -source ./scripts/fpga_configuration_script.tcl
+    } elseif ($can_use_vivado_lab) {
+        & vivado_lab -mode batch -nojournal -nolog -notrace -source ./scripts/fpga_configuration_script.tcl
     }
+    $Success = $?
     Remove-Item -Path "./scripts/tmp.mcs"
-    if ($success) {
+    if ($Success) {
         ColorEcho "Green" "INFO" "Update FPGA done."
+    } else {
+        ColorEcho "Red" "ERROR" "Failed to update FPGA. Make sure that AUTD is connected and power on."
+        Stop-Transcript | Out-Null
+        exit -1
     }
-    return $success
 }
 
 Start-Transcript "autd_firmware_writer.log" | Out-Null
@@ -173,31 +158,16 @@ do {
 }
 until (($select -ge 0 -and $select -le 2) -and $is_num)
 
-$update_cpu_result = $true
-$update_fpga_result = $true
-
 if ($select -eq 0) {
-    $update_cpu_result = UpdateCPU $cpu_firmware
-    $update_fpga_result = UpdateFPGA $fpga_firmware $vivado_dir
+    UpdateCPU $cpu_firmware
+    UpdateFPGA $fpga_firmware $vivado_dir
 }
 if ($select -eq 1) {
-    $update_fpga_result = UpdateFPGA $fpga_firmware $vivado_dir
+    UpdateFPGA $fpga_firmware $vivado_dir
 }
 if ($select -eq 2) {
-    $update_cpu_result = UpdateCPU $cpu_firmware
-}
-
-if ($update_cpu_result -and $update_fpga_result) {
-    ColorEcho "Yellow" "INFO" "Please turn AUTD's power off and on again to load new firmware."
-}
-if (-not $update_cpu_result) {
-    ColorEcho "Red" "ERROR" "Failed to update CPU. Make sure that AUTD is connected and power on."
-}
-if (-not $update_fpga_result) {
-    ColorEcho "Red" "ERROR" "Failed to update FPGA. Make sure that AUTD is connected and power on."
+    UpdateCPU $cpu_firmware
 }
 
 Stop-Transcript | Out-Null
-ColorEcho "Green" "INFO" "Press any key to exit..."
-$host.UI.RawUI.ReadKey() | Out-Null
 exit
