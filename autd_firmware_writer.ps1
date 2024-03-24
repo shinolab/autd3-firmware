@@ -169,5 +169,6 @@ if ($select -eq 2) {
     UpdateCPU $cpu_firmware
 }
 
+ColorEcho "Green" "INFO" "Please turn AUTD's power off and on again to load new firmware."
 Stop-Transcript | Out-Null
 exit
