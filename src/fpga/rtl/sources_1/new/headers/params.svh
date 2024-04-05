@@ -2,12 +2,12 @@ package params;
 
   localparam int NUM_TRANSDUCERS = 249;
 
-  localparam int GAIN_STM_SIZE = 1024;
+  localparam int GAIN_STM_SIZE = 2;
   localparam int STM_WR_ADDR_WIDTH = $clog2(GAIN_STM_SIZE * 256);
   localparam int STM_RD_ADDR_WIDTH = $clog2(GAIN_STM_SIZE * 64);
 
-  localparam bit [7:0] VERSION_NUM = 8'h8F;
-  localparam bit [7:0] VERSION_NUM_MINOR = 8'h01;
+  localparam bit [7:0] VERSION_NUM = 8'h90;
+  localparam bit [7:0] VERSION_NUM_MINOR = 8'h00;
 
   localparam bit [1:0] BRAM_SELECT_CONTROLLER = 2'h0;
   localparam bit [1:0] BRAM_SELECT_MOD = 2'h1;
@@ -69,7 +69,14 @@ package params;
   localparam bit [7:0] ADDR_STM_SOUND_SPEED_1_1 = 8'h63;
   localparam bit [7:0] ADDR_PULSE_WIDTH_ENCODER_TABLE_WR_PAGE = 8'hE0;
   localparam bit [7:0] ADDR_PULSE_WIDTH_ENCODER_FULL_WIDTH_START = 8'hE1;
-  localparam bit [7:0] ADDR_DEBUG_OUT_IDX = 8'hF0;
+  localparam bit [7:0] ADDR_DEBUG_TYPE_0 = 8'hF0;
+  localparam bit [7:0] ADDR_DEBUG_VALUE_0 = 8'hF1;
+  localparam bit [7:0] ADDR_DEBUG_TYPE_1 = 8'hF2;
+  localparam bit [7:0] ADDR_DEBUG_VALUE_1 = 8'hF3;
+  localparam bit [7:0] ADDR_DEBUG_TYPE_2 = 8'hF4;
+  localparam bit [7:0] ADDR_DEBUG_VALUE_2 = 8'hF5;
+  localparam bit [7:0] ADDR_DEBUG_TYPE_3 = 8'hF6;
+  localparam bit [7:0] ADDR_DEBUG_VALUE_3 = 8'hF7;
 
   localparam int CTL_FLAG_MOD_SET_BIT = 0;
   localparam int CTL_FLAG_STM_SET_BIT = 1;
@@ -79,5 +86,11 @@ package params;
   localparam int CTL_FLAG_SYNC_SET_BIT = 5;
 
   localparam int CTL_FLAG_FORCE_FAN_BIT = 13;
+
+  typedef enum logic [7:0] {
+    DBG_NONE,
+    DBG_BASE_SIG,
+    DBG_PWM_OUT
+  } debug_type_t;
 
 endpackage

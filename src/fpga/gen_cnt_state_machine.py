@@ -81,9 +81,14 @@ pwe_params = (
 debug_params = (
     "DEBUG",
     [
-        ("DEBUG_OUT_IDX", 8, "OUTPUT_IDX"),
-        ("DEBUG_DUMMY_0", -1, ""),
-        ("DEBUG_DUMMY_1", -1, ""),
+        ("DEBUG_TYPE_0", 8, "TYPE[0]"),
+        ("DEBUG_VALUE_0", 16, "VALUE[0]"),
+        ("DEBUG_TYPE_1", 8, "TYPE[1]"),
+        ("DEBUG_VALUE_1", 16, "VALUE[1]"),
+        ("DEBUG_TYPE_2", 8, "TYPE[2]"),
+        ("DEBUG_VALUE_2", 16, "VALUE[2]"),
+        ("DEBUG_TYPE_3", 8, "TYPE[3]"),
+        ("DEBUG_VALUE_3", 16, "VALUE[3]"),
     ],
 )
 
@@ -384,7 +389,14 @@ module controller (
     PULSE_WIDTH_ENCODER_SETTINGS.FULL_WIDTH_START = 16'd65025;
 
     DEBUG_SETTINGS.UPDATE                         = 1'b0;
-    DEBUG_SETTINGS.OUTPUT_IDX                     = 8'hFF;
+    DEBUG_SETTINGS.TYPE[0]                        = params::DBG_NONE;
+    DEBUG_SETTINGS.VALUE[0]                       = 16'd0;
+    DEBUG_SETTINGS.TYPE[1]                        = params::DBG_NONE;
+    DEBUG_SETTINGS.VALUE[1]                       = 16'd0;
+    DEBUG_SETTINGS.TYPE[2]                        = params::DBG_NONE;
+    DEBUG_SETTINGS.VALUE[2]                       = 16'd0;
+    DEBUG_SETTINGS.TYPE[3]                        = params::DBG_NONE;
+    DEBUG_SETTINGS.VALUE[3]                       = 16'd0;
   end
 """
     )

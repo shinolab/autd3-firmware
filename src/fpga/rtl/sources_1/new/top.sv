@@ -13,7 +13,7 @@ module top (
     output wire FORCE_FAN,
     input wire THERMO,
     output wire [252:1] XDCR_OUT,
-    output wire GPIO_OUT[2]
+    output wire GPIO_OUT[4]
 );
 
   logic clk;

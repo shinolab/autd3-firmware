@@ -8,7 +8,7 @@ module main #(
     input wire THERMO,
     output wire FORCE_FAN,
     output wire PWM_OUT[DEPTH],
-    output wire GPIO_OUT[2]
+    output wire GPIO_OUT[4]
 );
 
   cnt_bus_if cnt_bus ();
@@ -172,17 +172,14 @@ module main #(
       .DOUT_VALID()
   );
 
-
-  // DEBUG 
-  logic gpio_out_0;
-  logic gpio_out_1;
-
-  assign GPIO_OUT[0] = gpio_out_0;
-  assign GPIO_OUT[1] = gpio_out_1;
-
-  always_ff @(posedge CLK) begin
-    gpio_out_0 <= time_cnt < 9'd256;
-    gpio_out_1 <= debug_settings.OUTPUT_IDX == 8'hFF ? 1'b0 : PWM_OUT[debug_settings.OUTPUT_IDX];
-  end
+  debug #(
+      .DEPTH(DEPTH)
+  ) debug (
+      .CLK(CLK),
+      .DEBUG_SETTINGS(debug_settings),
+      .TIME_CNT(time_cnt),
+      .PWM_OUT(PWM_OUT),
+      .GPIO_OUT(GPIO_OUT)
+  );
 
 endmodule
