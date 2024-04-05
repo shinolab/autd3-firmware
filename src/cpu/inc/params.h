@@ -1,8 +1,8 @@
 #ifndef INC_PARAMS_H_
 #define INC_PARAMS_H_
 
-#define CPU_VERSION_MAJOR (0x8F) /* v6.0 */
-#define CPU_VERSION_MINOR (0x01)
+#define CPU_VERSION_MAJOR (0x90) /* v6.0 */
+#define CPU_VERSION_MINOR (0x00)
 
 #define TRANS_NUM (249)
 

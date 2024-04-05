@@ -6,7 +6,7 @@ extern "C" {
 #include "ecat.h"
 #include "utils.h"
 
-#define BUF_SIZE (64)
+#define BUF_SIZE (32)
 
 static volatile RX_STR _buf[BUF_SIZE];
 volatile uint8_t _write_cursor;
@@ -21,8 +21,7 @@ bool_t push(const volatile uint16_t* p_data) {
   if (next == _read_cursor) return false;
 
   word_cpy((uint16_t*)&_buf[_write_cursor], (uint16_t*)p_data, 249);
-  word_cpy(((uint16_t*)&_buf[_write_cursor]) + 249, (uint16_t*)&p_data[249 + 1],
-           64);
+  word_cpy(((uint16_t*)&_buf[_write_cursor]) + 249, (uint16_t*)&p_data[249 + 1], 64);
 
   _write_cursor = next;
 

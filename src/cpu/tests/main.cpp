@@ -34,9 +34,7 @@ uint32_t stm_wr_segment = 0;
 uint32_t stm_wr_page = 0;
 uint32_t pulse_width_encoder_table_wr_page = 0;
 
-uint16_t bram_read_controller(uint32_t bram_addr) {
-  return controller_bram[bram_addr];
-}
+uint16_t bram_read_controller(uint32_t bram_addr) { return controller_bram[bram_addr]; }
 
 uint16_t bram_read_mod(uint32_t segment, uint32_t bram_addr) {
   switch (segment) {
@@ -49,13 +47,9 @@ uint16_t bram_read_mod(uint32_t segment, uint32_t bram_addr) {
   }
 }
 
-uint16_t bram_read_duty_table(uint32_t bram_addr) {
-  return duty_table_bram[bram_addr];
-}
+uint16_t bram_read_duty_table(uint32_t bram_addr) { return duty_table_bram[bram_addr]; }
 
-uint16_t bram_read_phase_filter(uint32_t bram_addr) {
-  return phase_filter_bram[bram_addr];
-}
+uint16_t bram_read_phase_filter(uint32_t bram_addr) { return phase_filter_bram[bram_addr]; }
 
 uint16_t bram_read_stm(uint32_t segment, uint32_t bram_addr) {
   switch (segment) {
@@ -149,7 +143,7 @@ int main(int argc, char** argv) {
   std::memset(stm_op_bram_0, 0, sizeof(uint64_t) * 1024 * 64);
   std::memset(stm_op_bram_1, 0, sizeof(uint64_t) * 1024 * 64);
 
-  controller_bram[BRAM_ADDR_VERSION_NUM_MAJOR] = 0x008F;
+  controller_bram[BRAM_ADDR_VERSION_NUM_MAJOR] = 0x0090;
   controller_bram[BRAM_ADDR_VERSION_NUM_MINOR] = 0x0000;
 
   testing::InitGoogleTest(&argc, argv);
