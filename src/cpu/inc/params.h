@@ -1,7 +1,7 @@
 #ifndef INC_PARAMS_H_
 #define INC_PARAMS_H_
 
-#define CPU_VERSION_MAJOR (0x90) /* v6.0 */
+#define CPU_VERSION_MAJOR (0x90) /* v6.1 */
 #define CPU_VERSION_MINOR (0x00)
 
 #define TRANS_NUM (249)
@@ -155,7 +155,5 @@
 #define ERR_INVALID_SEGMENT_TRANSITION (ERR_BIT | 0x08)
 #define ERR_INVALID_PWE_DATA_SIZE (ERR_BIT | 0x09)
 #define ERR_PWE_INCOMPLETE_DATA (ERR_BIT | 0x0A)
-
-typedef enum { DBG_NONE, DBG_BASE_SIG, DBG_PWM_OUT } debug_type_t;
 
 #endif  // INC_PARAMS_H_
