@@ -2,7 +2,7 @@ package params;
 
   localparam int NUM_TRANSDUCERS = 249;
 
-  localparam int GAIN_STM_SIZE = 2;
+  localparam int GAIN_STM_SIZE = 1024;
   localparam int STM_WR_ADDR_WIDTH = $clog2(GAIN_STM_SIZE * 256);
   localparam int STM_RD_ADDR_WIDTH = $clog2(GAIN_STM_SIZE * 64);
 
@@ -88,9 +88,9 @@ package params;
   localparam int CTL_FLAG_FORCE_FAN_BIT = 13;
 
   typedef enum logic [7:0] {
-    DBG_NONE,
-    DBG_BASE_SIG,
-    DBG_PWM_OUT
+    DBG_NONE = 0,
+    DBG_BASE_SIG = 1,
+    DBG_PWM_OUT = 2
   } debug_type_t;
 
 endpackage
