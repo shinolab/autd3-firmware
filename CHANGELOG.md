@@ -1,3 +1,7 @@
+# 6.1.0
+
+- Add new debug output settings
+
 # 6.0.1
 
 - Minor performance improvements
