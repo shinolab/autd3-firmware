@@ -5,6 +5,14 @@ module debug #(
     settings::debug_settings_t DEBUG_SETTINGS,
     input wire [8:0] TIME_CNT,
     input wire PWM_OUT[DEPTH],
+    input wire THERMO,
+    input wire FORCE_FAN,
+    input wire SYNC,
+    input wire STM_SEGMENT,
+    input wire MOD_SEGMENT,
+    input wire [15:0] STM_IDX,
+    input wire [14:0] MOD_IDX,
+    input wire [15:0] STM_CYCLE,
     output wire GPIO_OUT[4]
 );
 
@@ -16,23 +24,49 @@ module debug #(
   assign GPIO_OUT[3] = gpio_out[3];
 
   always_ff @(posedge CLK) begin
-    gpio_out[0] <= debug_signal(TIME_CNT, PWM_OUT, DEBUG_SETTINGS.TYPE[0], DEBUG_SETTINGS.VALUE[0]);
-    gpio_out[1] <= debug_signal(TIME_CNT, PWM_OUT, DEBUG_SETTINGS.TYPE[1], DEBUG_SETTINGS.VALUE[1]);
-    gpio_out[2] <= debug_signal(TIME_CNT, PWM_OUT, DEBUG_SETTINGS.TYPE[2], DEBUG_SETTINGS.VALUE[2]);
-    gpio_out[3] <= debug_signal(TIME_CNT, PWM_OUT, DEBUG_SETTINGS.TYPE[3], DEBUG_SETTINGS.VALUE[3]);
+    gpio_out[0] <= debug_signal(DEBUG_SETTINGS.TYPE[0], DEBUG_SETTINGS.VALUE[0]);
+    gpio_out[1] <= debug_signal(DEBUG_SETTINGS.TYPE[1], DEBUG_SETTINGS.VALUE[1]);
+    gpio_out[2] <= debug_signal(DEBUG_SETTINGS.TYPE[2], DEBUG_SETTINGS.VALUE[2]);
+    gpio_out[3] <= debug_signal(DEBUG_SETTINGS.TYPE[3], DEBUG_SETTINGS.VALUE[3]);
   end
 
-  function logic debug_signal(input [8:0] time_cnt, input pwm[DEPTH], input [7:0] dbg_type,
-                              input [15:0] value);
+  function automatic logic debug_signal(input logic [7:0] dbg_type, input logic [15:0] value);
     case (dbg_type)
       params::DBG_NONE: begin
         debug_signal = 1'b0;
       end
       params::DBG_BASE_SIG: begin
-        debug_signal = time_cnt[8] == 1'b0;
+        debug_signal = TIME_CNT[8] == 1'b0;
+      end
+      params::DBG_THERMO: begin
+        debug_signal = THERMO;
+      end
+      params::DBG_FORCE_FAN: begin
+        debug_signal = FORCE_FAN;
+      end
+      params::DBG_SYNC: begin
+        debug_signal = SYNC;
+      end
+      params::DBG_MOD_SEGMENT: begin
+        debug_signal = MOD_SEGMENT;
+      end
+      params::DBG_MOD_IDX: begin
+        debug_signal = MOD_IDX == value[14:0];
+      end
+      params::DBG_STM_SEGMENT: begin
+        debug_signal = STM_SEGMENT;
+      end
+      params::DBG_STM_IDX: begin
+        debug_signal = STM_IDX == value;
+      end
+      params::DBG_IS_STM_MODE: begin
+        debug_signal = STM_CYCLE != '0;
       end
       params::DBG_PWM_OUT: begin
-        debug_signal = pwm[value];
+        debug_signal = PWM_OUT[value];
+      end
+      params::DBG_DIRECT: begin
+        debug_signal = value[0];
       end
       default: begin
         debug_signal = 1'b0;

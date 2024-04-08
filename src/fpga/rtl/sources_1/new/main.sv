@@ -46,9 +46,11 @@ module main #(
   logic [7:0] phase_e;
   logic dout_valid_e;
 
+  logic [15:0] stm_idx;
   logic stm_segment;
-  logic mod_segment;
   logic [15:0] stm_cycle;
+  logic mod_segment;
+  logic [14:0] mod_idx;
 
   memory memory (
       .CLK(CLK),
@@ -81,7 +83,7 @@ module main #(
       .SYNC_SETTINGS(sync_settings),
       .ECAT_SYNC(CAT_SYNC0),
       .SYS_TIME(sys_time),
-      .SYNC(),
+      .SYNC(sync),
       .SKIP_ONE_ASSERT(skip_one_assert)
   );
 
@@ -108,7 +110,7 @@ module main #(
       .INTENSITY(intensity),
       .PHASE(phase),
       .DOUT_VALID(dout_valid),
-      .DEBUG_IDX(),
+      .DEBUG_IDX(stm_idx),
       .DEBUG_SEGMENT(stm_segment),
       .DEBUG_CYCLE(stm_cycle)
   );
@@ -127,7 +129,7 @@ module main #(
       .DOUT_VALID(dout_valid_m),
       .MOD_BUS(mod_bus.out_port),
       .FILTER_BUS(filter_bus.out_port),
-      .DEBUG_IDX(),
+      .DEBUG_IDX(mod_idx),
       .DEBUG_SEGMENT(mod_segment),
       .DEBUG_STOP()
   );
@@ -179,6 +181,14 @@ module main #(
       .DEBUG_SETTINGS(debug_settings),
       .TIME_CNT(time_cnt),
       .PWM_OUT(PWM_OUT),
+      .THERMO(THERMO),
+      .FORCE_FAN(FORCE_FAN),
+      .SYNC(sync),
+      .STM_SEGMENT(stm_segment),
+      .MOD_SEGMENT(mod_segment),
+      .STM_IDX(stm_idx),
+      .MOD_IDX(mod_idx),
+      .STM_CYCLE(stm_cycle),
       .GPIO_OUT(GPIO_OUT)
   );
 

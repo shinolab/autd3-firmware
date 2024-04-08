@@ -88,9 +88,18 @@ package params;
   localparam int CTL_FLAG_FORCE_FAN_BIT = 13;
 
   typedef enum logic [7:0] {
-    DBG_NONE = 0,
-    DBG_BASE_SIG = 1,
-    DBG_PWM_OUT = 2
+    DBG_NONE = 8'h00,
+    DBG_BASE_SIG = 8'h01,
+    DBG_THERMO = 8'h02,
+    DBG_FORCE_FAN = 8'h03,
+    DBG_SYNC = 8'h10,
+    DBG_MOD_SEGMENT = 8'h20,
+    DBG_MOD_IDX = 8'h21,
+    DBG_STM_SEGMENT = 8'h50,
+    DBG_STM_IDX = 8'h51,
+    DBG_IS_STM_MODE = 8'h52,
+    DBG_PWM_OUT = 8'hE0,
+    DBG_DIRECT = 8'hF0
   } debug_type_t;
 
 endpackage
