@@ -20,8 +20,8 @@ module silencer #(
   logic [15:0] phase;
   logic dout_valid;
 
-  assign update_rate_intensity = SILENCER_SETTINGS.MODE == params::SILNCER_MODE_FIXED_UPDATE_RATE ?  SILENCER_SETTINGS.UPDATE_RATE_INTENSITY : var_update_rate_intensity;
-  assign update_rate_phase = SILENCER_SETTINGS.MODE == params::SILNCER_MODE_FIXED_UPDATE_RATE ?  SILENCER_SETTINGS.UPDATE_RATE_PHASE : var_update_rate_phase;
+  assign update_rate_intensity = SILENCER_SETTINGS.MODE == params::SilencerModeFixedUpdateRate ?  SILENCER_SETTINGS.UPDATE_RATE_INTENSITY : var_update_rate_intensity;
+  assign update_rate_phase = SILENCER_SETTINGS.MODE == params::SilencerModeFixedUpdateRate ?  SILENCER_SETTINGS.UPDATE_RATE_PHASE : var_update_rate_phase;
 
   step_calculator #(
       .DEPTH(DEPTH)

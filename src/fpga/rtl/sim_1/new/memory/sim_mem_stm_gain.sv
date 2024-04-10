@@ -35,7 +35,7 @@ module sim_mem_stm_gain ();
   logic [63:0] value;
   logic segment;
 
-  assign stm_bus.STM_MODE = params::STM_MODE_GAIN;
+  assign stm_bus.STM_MODE = params::STMModeGain;
   assign stm_bus.out_gain_port.GAIN_IDX = idx;
   assign stm_bus.out_gain_port.GAIN_ADDR = addr;
   assign stm_bus.out_gain_port.SEGMENT = segment;

@@ -34,7 +34,7 @@ module sim_mem_stm_focus ();
   logic [63:0] value;
   logic segment;
 
-  assign stm_bus.STM_MODE = params::STM_MODE_FOCUS;
+  assign stm_bus.STM_MODE = params::STMModeFocus;
   assign stm_bus.out_focus_port.FOCUS_IDX = idx;
   assign stm_bus.out_focus_port.SEGMENT = segment;
   assign value = stm_bus.out_focus_port.VALUE;

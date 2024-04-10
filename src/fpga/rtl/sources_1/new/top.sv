@@ -19,11 +19,11 @@ module top (
   logic clk;
   logic reset;
 
-  logic PWM_OUT[params::NUM_TRANSDUCERS];
+  logic PWM_OUT[params::NumTransducers];
 
   assign reset = ~RESET_N;
 
-  for (genvar i = 0; i < params::NUM_TRANSDUCERS; i++) begin : gen_output
+  for (genvar i = 0; i < params::NumTransducers; i++) begin : gen_output
     assign XDCR_OUT[cvt_uid(i)+1] = PWM_OUT[i];
   end
 
@@ -45,7 +45,7 @@ module top (
   );
 
   main #(
-      .DEPTH(params::NUM_TRANSDUCERS)
+      .DEPTH(params::NumTransducers)
   ) main (
       .CLK(clk),
       .CAT_SYNC0(CAT_SYNC0),

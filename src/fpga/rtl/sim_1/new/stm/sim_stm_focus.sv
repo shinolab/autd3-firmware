@@ -160,7 +160,7 @@ module sim_stm_focus ();
     freq_div_buf[0] = 1;
     freq_div_buf[1] = 3;
 
-    stm_settings.MODE = params::STM_MODE_FOCUS;
+    stm_settings.MODE = params::STMModeFocus;
     stm_settings.SOUND_SPEED = 340 * 1024;
     stm_settings.CYCLE_0 = '0;
     stm_settings.FREQ_DIV_0 = '1;

@@ -97,7 +97,7 @@ module sim_silencer_fixed_update_rate ();
   endtask
 
   initial begin
-    silencer_settings.MODE = params::SILNCER_MODE_FIXED_UPDATE_RATE;
+    silencer_settings.MODE = params::SilencerModeFixedUpdateRate;
 
     din_valid = 0;
     silencer_settings.UPDATE_RATE_INTENSITY = 0;

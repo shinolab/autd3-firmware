@@ -104,8 +104,8 @@ module sim_controller ();
     sim_helper_bram.write_debug_settings(debug_settings_in);
     $display("memory initialized");
 
-    sim_helper_bram.bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_CTL_FLAG,
-                               (16'b1 << params::CTL_FLAG_MOD_SET_BIT) | (16'b1 << params::CTL_FLAG_STM_SET_BIT) | (16'b1 << params::CTL_FLAG_SILENCER_SET_BIT) | (16'b1 << params::CTL_FLAG_PULSE_WIDTH_ENCODER_SET_BIT) | (16'b1 << params::CTL_FLAG_DEBUG_SET_BIT) | (16'b1 << params::CTL_FLAG_SYNC_SET_BIT));
+    sim_helper_bram.bram_write(params::BramSelectController, params::AddrCtlFlag,
+                               (16'b1 << params::CtlFlagModSetBit) | (16'b1 << params::CtlFlagSTMSetBit) | (16'b1 << params::CtlFlagSilencerSetBit) | (16'b1 << params::CtlFlagPulseWidthEncoderSetBit) | (16'b1 << params::CtlFlagDebugSetBit) | (16'b1 << params::CtlFlagSyncSetBit));
     @(posedge mod_settings.UPDATE);
     if (mod_settings_in !== mod_settings) begin
       $error("MOD_SETTINGS mismatch");

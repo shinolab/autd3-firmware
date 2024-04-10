@@ -136,7 +136,7 @@ module sim_stm_gain ();
     freq_div_buf[0] = 1;
     freq_div_buf[1] = 3;
 
-    stm_settings.MODE = params::STM_MODE_GAIN;
+    stm_settings.MODE = params::STMModeGain;
     stm_settings.CYCLE_0 = '0;
     stm_settings.FREQ_DIV_0 = '1;
     stm_settings.CYCLE_1 = '0;

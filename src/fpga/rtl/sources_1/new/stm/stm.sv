@@ -17,7 +17,7 @@ module stm #(
     output wire [15:0] DEBUG_CYCLE
 );
 
-  logic mode = params::STM_MODE_GAIN;
+  logic mode = params::STMModeGain;
   logic start = 1'b0;
   logic segment = '0;
   logic [15:0] idx = '0;
@@ -34,9 +34,9 @@ module stm #(
   logic [7:0] phase_focus;
   logic dout_valid_gain, dout_valid_focus;
 
-  assign INTENSITY = mode == params::STM_MODE_GAIN ? intensity_gain : intensity_focus;
-  assign PHASE = mode == params::STM_MODE_GAIN ? phase_gain : phase_focus;
-  assign DOUT_VALID = mode == params::STM_MODE_GAIN ? dout_valid_gain : dout_valid_focus;
+  assign INTENSITY = mode == params::STMModeGain ? intensity_gain : intensity_focus;
+  assign PHASE = mode == params::STMModeGain ? phase_gain : phase_focus;
+  assign DOUT_VALID = mode == params::STMModeGain ? dout_valid_gain : dout_valid_focus;
 
   assign DEBUG_IDX = idx;
   assign DEBUG_SEGMENT = segment;
