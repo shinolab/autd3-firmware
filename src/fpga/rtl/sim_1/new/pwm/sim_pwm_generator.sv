@@ -45,7 +45,6 @@ module sim_pwm_generator ();
   endtask
 
   initial begin
-    time_cnt = 0;
     rise = 0;
     fall = 0;
     @(posedge locked);

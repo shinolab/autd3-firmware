@@ -18,6 +18,7 @@ module sim_controller ();
   modulation_bus_if mod_bus ();
   stm_bus_if stm_bus ();
   duty_table_bus_if duty_table_bus ();
+  filter_bus_if filter_bus ();
 
   memory memory (
       .CLK(CLK),
@@ -25,7 +26,8 @@ module sim_controller ();
       .CNT_BUS_IF(cnt_bus.in_port),
       .MOD_BUS(mod_bus.in_port),
       .STM_BUS(stm_bus.in_port),
-      .DUTY_TABLE_BUS(duty_table_bus.in_port)
+      .DUTY_TABLE_BUS(duty_table_bus.in_port),
+      .FILTER_BUS(filter_bus.in_port)
   );
 
   logic thermo;
@@ -62,21 +64,29 @@ module sim_controller ();
 
     mod_settings_in.UPDATE = 1'b1;
     mod_settings_in.REQ_RD_SEGMENT = sim_helper_random.range(1'b1, 0);
-    mod_settings_in.CYCLE_0 = sim_helper_random.range(15'h7FFF, 0);
-    mod_settings_in.FREQ_DIV_0 = sim_helper_random.range(32'hFFFFFFFF, 0);
-    mod_settings_in.CYCLE_1 = sim_helper_random.range(15'h7FFF, 0);
-    mod_settings_in.FREQ_DIV_1 = sim_helper_random.range(32'hFFFFFFFF, 0);
-    mod_settings_in.REP = sim_helper_random.range(32'hFFFFFFFF, 0);
+    mod_settings_in.TRANSITION_MODE = sim_helper_random.range(8'hFF, 0);
+    mod_settings_in.TRANSITION_TIME = sim_helper_random.range(64'hFFFFFFFFFFFFFFFF, 0);
+    mod_settings_in.CYCLE[0] = sim_helper_random.range(15'h7FFF, 0);
+    mod_settings_in.CYCLE[1] = sim_helper_random.range(15'h7FFF, 0);
+    mod_settings_in.FREQ_DIV[0] = sim_helper_random.range(32'hFFFFFFFF, 0);
+    mod_settings_in.FREQ_DIV[1] = sim_helper_random.range(32'hFFFFFFFF, 0);
+    mod_settings_in.REP[0] = sim_helper_random.range(32'hFFFFFFFF, 0);
+    mod_settings_in.REP[1] = sim_helper_random.range(32'hFFFFFFFF, 0);
 
     stm_settings_in.UPDATE = 1'b1;
-    stm_settings_in.MODE = sim_helper_random.range(1'b1, 0);
     stm_settings_in.REQ_RD_SEGMENT = sim_helper_random.range(1'b1, 0);
-    stm_settings_in.CYCLE_0 = sim_helper_random.range(16'hFFFF, 0);
-    stm_settings_in.FREQ_DIV_0 = sim_helper_random.range(32'hFFFFFFFF, 0);
-    stm_settings_in.CYCLE_1 = sim_helper_random.range(16'hFFFF, 0);
-    stm_settings_in.FREQ_DIV_1 = sim_helper_random.range(32'hFFFFFFFF, 0);
-    stm_settings_in.REP = sim_helper_random.range(32'hFFFFFFFF, 0);
-    stm_settings_in.SOUND_SPEED = sim_helper_random.range(32'hFFFFFFFF, 0);
+    stm_settings_in.TRANSITION_MODE = sim_helper_random.range(8'hFF, 0);
+    stm_settings_in.TRANSITION_TIME = sim_helper_random.range(64'hFFFFFFFFFFFFFFFF, 0);
+    stm_settings_in.MODE[0] = sim_helper_random.range(1'b1, 0);
+    stm_settings_in.MODE[1] = sim_helper_random.range(1'b1, 0);
+    stm_settings_in.CYCLE[0] = sim_helper_random.range(16'hFFFF, 0);
+    stm_settings_in.CYCLE[1] = sim_helper_random.range(16'hFFFF, 0);
+    stm_settings_in.FREQ_DIV[0] = sim_helper_random.range(32'hFFFFFFFF, 0);
+    stm_settings_in.FREQ_DIV[1] = sim_helper_random.range(32'hFFFFFFFF, 0);
+    stm_settings_in.REP[0] = sim_helper_random.range(32'hFFFFFFFF, 0);
+    stm_settings_in.REP[1] = sim_helper_random.range(32'hFFFFFFFF, 0);
+    stm_settings_in.SOUND_SPEED[0] = sim_helper_random.range(32'hFFFFFFFF, 0);
+    stm_settings_in.SOUND_SPEED[1] = sim_helper_random.range(32'hFFFFFFFF, 0);
 
     silencer_settings_in.UPDATE = 1'b1;
     silencer_settings_in.MODE = sim_helper_random.range(1'b1, 0);
@@ -92,7 +102,14 @@ module sim_controller ();
     pulse_width_encoder_settings_in.FULL_WIDTH_START = sim_helper_random.range(16'hFFFF, 0);
 
     debug_settings_in.UPDATE = 1'b1;
-    debug_settings_in.OUTPUT_IDX = sim_helper_random.range(8'hFF, 0);
+    debug_settings_in.TYPE[0] = sim_helper_random.range(8'hFF, 0);
+    debug_settings_in.TYPE[1] = sim_helper_random.range(8'hFF, 0);
+    debug_settings_in.TYPE[2] = sim_helper_random.range(8'hFF, 0);
+    debug_settings_in.TYPE[3] = sim_helper_random.range(8'hFF, 0);
+    debug_settings_in.VALUE[0] = sim_helper_random.range(16'hFFFF, 0);
+    debug_settings_in.VALUE[1] = sim_helper_random.range(16'hFFFF, 0);
+    debug_settings_in.VALUE[2] = sim_helper_random.range(16'hFFFF, 0);
+    debug_settings_in.VALUE[3] = sim_helper_random.range(16'hFFFF, 0);
 
     @(posedge locked);
 
@@ -104,8 +121,13 @@ module sim_controller ();
     sim_helper_bram.write_debug_settings(debug_settings_in);
     $display("memory initialized");
 
-    sim_helper_bram.bram_write(params::BramSelectController, params::AddrCtlFlag,
-                               (16'b1 << params::CtlFlagModSetBit) | (16'b1 << params::CtlFlagSTMSetBit) | (16'b1 << params::CtlFlagSilencerSetBit) | (16'b1 << params::CtlFlagPulseWidthEncoderSetBit) | (16'b1 << params::CtlFlagDebugSetBit) | (16'b1 << params::CtlFlagSyncSetBit));
+    sim_helper_bram.bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_CTL_FLAG,
+                               (16'd1 << params::CTL_FLAG_MOD_SET)
+                               | (16'd1 << params::CTL_FLAG_STM_SET)
+                               | (16'd1 << params::CTL_FLAG_SILENCER_SET)
+                               | (16'd1 << params::CTL_FLAG_PULSE_WIDTH_ENCODER_SET)
+                               | (16'd1 << params::CTL_FLAG_DEBUG_SET)
+                               | (16'd1 << params::CTL_FLAG_SYNC_SET));
     @(posedge mod_settings.UPDATE);
     if (mod_settings_in !== mod_settings) begin
       $error("MOD_SETTINGS mismatch");

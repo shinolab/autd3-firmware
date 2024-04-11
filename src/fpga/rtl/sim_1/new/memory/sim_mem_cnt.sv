@@ -19,6 +19,7 @@ module sim_mem_cnt ();
   modulation_bus_if mod_bus ();
   stm_bus_if stm_bus ();
   duty_table_bus_if duty_table_bus ();
+  filter_bus_if filter_bus ();
 
   memory memory (
       .CLK(CLK),
@@ -26,7 +27,8 @@ module sim_mem_cnt ();
       .CNT_BUS_IF(cnt_bus.in_port),
       .MOD_BUS(mod_bus.in_port),
       .STM_BUS(stm_bus.in_port),
-      .DUTY_TABLE_BUS(duty_table_bus.in_port)
+      .DUTY_TABLE_BUS(duty_table_bus.in_port),
+      .FILTER_BUS(filter_bus.in_port)
   );
 
   logic [ 7:0] addr;
@@ -70,7 +72,7 @@ module sim_mem_cnt ();
       buffer[i] = sim_helper_random.range(16'hFFFF, 0);
     end
     for (int i = 0; i < SIZE; i++) begin
-      sim_helper_bram.write_cnt(0, i, buffer[i]);
+      sim_helper_bram.write_cnt(i, buffer[i]);
     end
     $display("memory initialized");
 

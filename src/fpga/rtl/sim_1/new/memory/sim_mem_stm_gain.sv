@@ -20,6 +20,7 @@ module sim_mem_stm_gain ();
   modulation_bus_if mod_bus ();
   stm_bus_if stm_bus ();
   duty_table_bus_if duty_table_bus ();
+  filter_bus_if filter_bus ();
 
   memory memory (
       .CLK(CLK),
@@ -27,7 +28,8 @@ module sim_mem_stm_gain ();
       .CNT_BUS_IF(cnt_bus.in_port),
       .MOD_BUS(mod_bus.in_port),
       .STM_BUS(stm_bus.in_port),
-      .DUTY_TABLE_BUS(duty_table_bus.in_port)
+      .DUTY_TABLE_BUS(duty_table_bus.in_port),
+      .FILTER_BUS(filter_bus.in_port)
   );
 
   logic [9:0] idx;
@@ -35,10 +37,10 @@ module sim_mem_stm_gain ();
   logic [63:0] value;
   logic segment;
 
-  assign stm_bus.STM_MODE = params::STMModeGain;
+  assign stm_bus.stm_port.MODE = params::STM_MODE_GAIN;
+  assign stm_bus.stm_port.SEGMENT = segment;
   assign stm_bus.out_gain_port.GAIN_IDX = idx;
   assign stm_bus.out_gain_port.GAIN_ADDR = addr;
-  assign stm_bus.out_gain_port.SEGMENT = segment;
   assign value = stm_bus.out_gain_port.VALUE;
 
   logic [7:0] phase_buf_0[SIZE][DEPTH];

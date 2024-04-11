@@ -112,7 +112,7 @@ module sim_silencer_fixed_completion_steps ();
 
   int n_repeat;
   initial begin
-    silencer_settings.MODE = params::SilencerModeFixedCompletionSteps;
+    silencer_settings.MODE = params::SILENCER_MODE_FIXED_COMPLETION_STEPS;
 
     din_valid = 0;
     phase = 0;

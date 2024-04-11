@@ -97,7 +97,7 @@ module sim_silencer_fixed_update_rate ();
   endtask
 
   initial begin
-    silencer_settings.MODE = params::SilencerModeFixedUpdateRate;
+    silencer_settings.MODE = params::SILENCER_MODE_FIXED_UPDATE_RATE;
 
     din_valid = 0;
     silencer_settings.UPDATE_RATE_INTENSITY = 0;
@@ -177,7 +177,9 @@ module sim_silencer_fixed_update_rate ();
       $display("Random test %d/100", i);
       silencer_settings.UPDATE_RATE_INTENSITY = sim_helper_random.range(65535, 1);
       silencer_settings.UPDATE_RATE_PHASE = sim_helper_random.range(65535, 1);
-      n_repeat = silencer_settings.UPDATE_RATE_INTENSITY <silencer_settings.UPDATE_RATE_PHASE ? int'(65536 / silencer_settings.UPDATE_RATE_INTENSITY) + 1 : int'(65536 / silencer_settings.UPDATE_RATE_PHASE) + 1;
+      n_repeat = silencer_settings.UPDATE_RATE_INTENSITY < silencer_settings.UPDATE_RATE_PHASE ?
+                      int'(65536 / silencer_settings.UPDATE_RATE_INTENSITY) + 1 :
+                      int'(65536 / silencer_settings.UPDATE_RATE_PHASE) + 1;
       for (int i = 0; i < DEPTH; i++) begin
         intensity_buf[i] = sim_helper_random.range(255 * 255, 0);
         phase_buf[i] = sim_helper_random.range(255, 0);

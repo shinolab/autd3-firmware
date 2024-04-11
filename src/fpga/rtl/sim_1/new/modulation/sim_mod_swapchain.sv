@@ -18,7 +18,7 @@ module sim_mod_swapchain ();
 
   settings::mod_settings_t mod_settings;
   logic update_settings;
-  logic [14:0] idx_0, idx_1;
+  logic [14:0] idx[2];
   logic segment;
   logic stop;
 
@@ -26,12 +26,9 @@ module sim_mod_swapchain ();
       .CLK(CLK),
       .UPDATE_SETTINGS_IN(update_settings),
       .SYS_TIME(sys_time),
-      .CYCLE_0(mod_settings.CYCLE_0),
-      .FREQ_DIV_0(mod_settings.FREQ_DIV_0),
-      .CYCLE_1(mod_settings.CYCLE_1),
-      .FREQ_DIV_1(mod_settings.FREQ_DIV_1),
-      .IDX_0(idx_0),
-      .IDX_1(idx_1),
+      .CYCLE(mod_settings.CYCLE),
+      .FREQ_DIV(mod_settings.FREQ_DIV),
+      .IDX(idx),
       .UPDATE_SETTINGS_OUT(update_settings_t)
   );
 
@@ -40,8 +37,7 @@ module sim_mod_swapchain ();
       .UPDATE_SETTINGS(update_settings_t),
       .REQ_RD_SEGMENT(mod_settings.REQ_RD_SEGMENT),
       .REP(mod_settings.REP),
-      .IDX_0_IN(idx_0),
-      .IDX_1_IN(idx_1),
+      .IDX_IN(idx),
       .SEGMENT(segment),
       .STOP(stop)
   );
@@ -50,13 +46,13 @@ module sim_mod_swapchain ();
     @(posedge CLK);
     update_settings <= 1'b1;
     mod_settings.REQ_RD_SEGMENT <= req_segment;
-    mod_settings.REP <= rep;
+    mod_settings.REP[req_segment] <= rep;
     if (req_segment === 1'b0) begin
-      mod_settings.CYCLE_0 <= 20 - 1;
-      mod_settings.FREQ_DIV_0 <= 10;
+      mod_settings.CYCLE[0] <= 20 - 1;
+      mod_settings.FREQ_DIV[0] <= 10;
     end else begin
-      mod_settings.CYCLE_1 <= 10 - 1;
-      mod_settings.FREQ_DIV_1 <= 10 * 3;
+      mod_settings.CYCLE[1] <= 10 - 1;
+      mod_settings.FREQ_DIV[1] <= 10 * 3;
     end
     @(posedge CLK);
     update_settings <= 1'b0;

@@ -20,6 +20,7 @@ module sim_mem_stm_focus ();
   modulation_bus_if mod_bus ();
   stm_bus_if stm_bus ();
   duty_table_bus_if duty_table_bus ();
+  filter_bus_if filter_bus ();
 
   memory memory (
       .CLK(CLK),
@@ -27,16 +28,17 @@ module sim_mem_stm_focus ();
       .CNT_BUS_IF(cnt_bus.in_port),
       .MOD_BUS(mod_bus.in_port),
       .STM_BUS(stm_bus.in_port),
-      .DUTY_TABLE_BUS(duty_table_bus.in_port)
+      .DUTY_TABLE_BUS(duty_table_bus.in_port),
+      .FILTER_BUS(filter_bus.in_port)
   );
 
   logic [15:0] idx;
   logic [63:0] value;
   logic segment;
 
-  assign stm_bus.STM_MODE = params::STMModeFocus;
+  assign stm_bus.stm_port.MODE = params::STM_MODE_FOCUS;
+  assign stm_bus.stm_port.SEGMENT = segment;
   assign stm_bus.out_focus_port.FOCUS_IDX = idx;
-  assign stm_bus.out_focus_port.SEGMENT = segment;
   assign value = stm_bus.out_focus_port.VALUE;
 
   logic [17:0] x;
@@ -48,13 +50,13 @@ module sim_mem_stm_focus ();
   assign z = value[53:36];
   assign intensity = value[61:54];
 
-  logic [17:0] x_buf_0[SIZE];
-  logic [17:0] y_buf_0[SIZE];
-  logic [17:0] z_buf_0[SIZE];
+  logic signed [17:0] x_buf_0[SIZE];
+  logic signed [17:0] y_buf_0[SIZE];
+  logic signed [17:0] z_buf_0[SIZE];
   logic [7:0] intensity_buf_0[SIZE];
-  logic [17:0] x_buf_1[SIZE];
-  logic [17:0] y_buf_1[SIZE];
-  logic [17:0] z_buf_1[SIZE];
+  logic signed [17:0] x_buf_1[SIZE];
+  logic signed [17:0] y_buf_1[SIZE];
+  logic signed [17:0] z_buf_1[SIZE];
   logic [7:0] intensity_buf_1[SIZE];
 
   task automatic progress();

@@ -74,13 +74,13 @@ module sim_mod_modulation ();
     mod_settings.UPDATE <= 1'b1;
     mod_settings.REQ_RD_SEGMENT <= req_segment;
     if (req_segment === 1'b0) begin
-      mod_settings.CYCLE_0 = cycle_buf[req_segment] - 1;
-      mod_settings.FREQ_DIV_0 = 512 * freq_div_buf[req_segment];
-      mod_settings.REP_0 <= rep;
+      mod_settings.CYCLE[0] = cycle_buf[req_segment] - 1;
+      mod_settings.FREQ_DIV[0] = 512 * freq_div_buf[req_segment];
+      mod_settings.REP[0] <= rep;
     end else begin
-      mod_settings.CYCLE_1 = cycle_buf[req_segment] - 1;
-      mod_settings.FREQ_DIV_1 = 512 * freq_div_buf[req_segment];
-      mod_settings.REP_1 <= rep;
+      mod_settings.CYCLE[1] = cycle_buf[req_segment] - 1;
+      mod_settings.FREQ_DIV[1] = 512 * freq_div_buf[req_segment];
+      mod_settings.REP[1] <= rep;
     end
     @(posedge CLK);
     mod_settings.UPDATE <= 1'b0;
@@ -140,10 +140,10 @@ module sim_mod_modulation ();
     freq_div_buf[1] = 2;
 
     din_valid = 1'b0;
-    mod_settings.CYCLE_0 = '0;
-    mod_settings.FREQ_DIV_0 = '1;
-    mod_settings.CYCLE_1 = '0;
-    mod_settings.FREQ_DIV_1 = '1;
+    mod_settings.CYCLE[0] = '0;
+    mod_settings.FREQ_DIV[0] = '1;
+    mod_settings.CYCLE[1] = '0;
+    mod_settings.FREQ_DIV[1] = '1;
 
     mod_buf[0] = '{SIZE{'0}};
     mod_buf[1] = '{SIZE{'0}};

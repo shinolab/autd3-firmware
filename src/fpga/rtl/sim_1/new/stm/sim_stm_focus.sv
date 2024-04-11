@@ -18,7 +18,6 @@ module sim_stm_focus ();
   sim_helper_random sim_helper_random ();
 
   settings::stm_settings_t stm_settings;
-  logic update_settings;
 
   logic [15:0] cycle_buf[2];
   logic [31:0] freq_div_buf[2];
@@ -38,6 +37,7 @@ module sim_stm_focus ();
   modulation_bus_if mod_bus ();
   stm_bus_if stm_bus ();
   duty_table_bus_if duty_table_bus ();
+  filter_bus_if filter_bus ();
 
   memory memory (
       .CLK(CLK),
@@ -45,7 +45,8 @@ module sim_stm_focus ();
       .CNT_BUS_IF(cnt_bus.in_port),
       .MOD_BUS(mod_bus.in_port),
       .STM_BUS(stm_bus.in_port),
-      .DUTY_TABLE_BUS(duty_table_bus.in_port)
+      .DUTY_TABLE_BUS(duty_table_bus.in_port),
+      .FILTER_BUS(filter_bus.in_port)
   );
 
   time_cnt_generator #(
@@ -64,7 +65,6 @@ module sim_stm_focus ();
       .CLK(CLK),
       .SYS_TIME(SYS_TIME),
       .UPDATE(UPDATE),
-      .UPDATE_SETTINGS(update_settings),
       .STM_SETTINGS(stm_settings),
       .STM_BUS(stm_bus.stm_port),
       .STM_BUS_FOCUS(stm_bus.out_focus_port),
@@ -78,19 +78,19 @@ module sim_stm_focus ();
 
   task automatic update(input logic req_segment, input logic [31:0] rep);
     @(posedge CLK);
-    update_settings <= 1'b1;
+    stm_settings.UPDATE <= 1'b1;
     stm_settings.REQ_RD_SEGMENT <= req_segment;
-    stm_settings.REP <= rep;
+    stm_settings.REP[req_segment] <= rep;
     if (req_segment === 1'b0) begin
-      stm_settings.CYCLE_0 = cycle_buf[req_segment] - 1;
-      stm_settings.FREQ_DIV_0 = 512 * freq_div_buf[req_segment];
+      stm_settings.CYCLE[0] = cycle_buf[req_segment] - 1;
+      stm_settings.FREQ_DIV[0] = 512 * freq_div_buf[req_segment];
     end else begin
-      stm_settings.CYCLE_1 = cycle_buf[req_segment] - 1;
-      stm_settings.FREQ_DIV_1 = 512 * freq_div_buf[req_segment];
+      stm_settings.CYCLE[1] = cycle_buf[req_segment] - 1;
+      stm_settings.FREQ_DIV[1] = 512 * freq_div_buf[req_segment];
     end
 
     @(posedge CLK);
-    update_settings <= 1'b0;
+    stm_settings.UPDATE <= 1'b0;
   endtask
 
   task automatic wait_segment(input logic segment);
@@ -134,7 +134,7 @@ module sim_stm_focus ();
         y = focus_y[segment][debug_idx] - $rtoi(10.16 * iy / 0.025);  // [0.025mm]
         z = focus_z[segment][debug_idx];  // [0.025mm]
         r = $rtoi($sqrt($itor(x * x + y * y + z * z)));  // [0.025mm]
-        lambda = (r << 18) / stm_settings.SOUND_SPEED;
+        lambda = (r << 18) / stm_settings.SOUND_SPEED[segment];
         p = lambda % 256;
         if (intensity !== intensity_buf[segment][debug_idx]) begin
           $error("Failed at d_out=%d, d_in=%d @%d", intensity, intensity_buf[segment][debug_idx],
@@ -160,12 +160,14 @@ module sim_stm_focus ();
     freq_div_buf[0] = 1;
     freq_div_buf[1] = 3;
 
-    stm_settings.MODE = params::STMModeFocus;
-    stm_settings.SOUND_SPEED = 340 * 1024;
-    stm_settings.CYCLE_0 = '0;
-    stm_settings.FREQ_DIV_0 = '1;
-    stm_settings.CYCLE_1 = '0;
-    stm_settings.FREQ_DIV_1 = '1;
+    stm_settings.MODE[0] = params::STM_MODE_FOCUS;
+    stm_settings.MODE[1] = params::STM_MODE_FOCUS;
+    stm_settings.SOUND_SPEED[0] = 340 * 1024;
+    stm_settings.SOUND_SPEED[1] = 340 * 1024;
+    stm_settings.CYCLE[0] = '0;
+    stm_settings.FREQ_DIV[0] = '1;
+    stm_settings.CYCLE[1] = '0;
+    stm_settings.FREQ_DIV[1] = '1;
 
     @(posedge locked);
 
