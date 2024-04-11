@@ -18,33 +18,26 @@ module modulation #(
     output wire DEBUG_STOP
 );
 
-  logic [14:0] idx_0_timer, idx_1_timer;
+  logic [14:0] idx_timer[2];
   modulation_timer modulation_timer (
       .CLK(CLK),
       .UPDATE_SETTINGS_IN(MOD_SETTINGS.UPDATE),
       .SYS_TIME(SYS_TIME),
-      .CYCLE_0(MOD_SETTINGS.CYCLE_0),
-      .FREQ_DIV_0(MOD_SETTINGS.FREQ_DIV_0),
-      .CYCLE_1(MOD_SETTINGS.CYCLE_1),
-      .FREQ_DIV_1(MOD_SETTINGS.FREQ_DIV_1),
-      .IDX_0(idx_0_timer),
-      .IDX_1(idx_1_timer),
+      .CYCLE(MOD_SETTINGS.CYCLE),
+      .IDX(idx_timer),
       .UPDATE_SETTINGS_OUT(update_settings)
   );
 
-  logic [14:0] idx_0, idx_1;
+  logic [14:0] idx[2];
   modulation_swapchain modulation_swapchain (
       .CLK(CLK),
       .UPDATE_SETTINGS(update_settings),
       .REQ_RD_SEGMENT(MOD_SETTINGS.REQ_RD_SEGMENT),
-      .REP_0(MOD_SETTINGS.REP_0),
-      .REP_1(MOD_SETTINGS.REP_1),
-      .IDX_0_IN(idx_0_timer),
-      .IDX_1_IN(idx_1_timer),
+      .REP(MOD_SETTINGS.REP),
+      .IDX_IN(idx_timer),
       .SEGMENT(segment),
       .STOP(stop),
-      .IDX_0_OUT(idx_0),
-      .IDX_1_OUT(idx_1)
+      .IDX_OUT(idx)
   );
 
   modulation_multiplier #(
@@ -56,8 +49,7 @@ module modulation #(
       .INTENSITY_OUT(INTENSITY_OUT),
       .DOUT_VALID(DOUT_VALID),
       .MOD_BUS(MOD_BUS),
-      .IDX_0(idx_0),
-      .IDX_1(idx_1),
+      .IDX(idx),
       .SEGMENT(segment),
       .STOP(stop),
       .DEBUG_IDX(DEBUG_IDX),

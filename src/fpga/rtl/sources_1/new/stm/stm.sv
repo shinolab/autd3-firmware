@@ -17,7 +17,7 @@ module stm #(
     output wire [15:0] DEBUG_CYCLE
 );
 
-  logic mode = params::STMModeGain;
+  logic mode = params::STM_MODE_GAIN;
   logic start = 1'b0;
   logic segment = '0;
   logic [15:0] idx = '0;
@@ -34,43 +34,37 @@ module stm #(
   logic [7:0] phase_focus;
   logic dout_valid_gain, dout_valid_focus;
 
-  assign INTENSITY = mode == params::STMModeGain ? intensity_gain : intensity_focus;
-  assign PHASE = mode == params::STMModeGain ? phase_gain : phase_focus;
-  assign DOUT_VALID = mode == params::STMModeGain ? dout_valid_gain : dout_valid_focus;
+  assign INTENSITY = mode == params::STM_MODE_GAIN ? intensity_gain : intensity_focus;
+  assign PHASE = mode == params::STM_MODE_GAIN ? phase_gain : phase_focus;
+  assign DOUT_VALID = mode == params::STM_MODE_GAIN ? dout_valid_gain : dout_valid_focus;
 
   assign DEBUG_IDX = idx;
   assign DEBUG_SEGMENT = segment;
   assign DEBUG_CYCLE = cycle;
 
-  logic [15:0] timer_idx_0, timer_idx_1;
+  logic [15:0] timer_idx[2];
   stm_timer stm_timer (
       .CLK(CLK),
       .UPDATE_SETTINGS_IN(STM_SETTINGS.UPDATE),
       .SYS_TIME(SYS_TIME),
-      .CYCLE_0(STM_SETTINGS.CYCLE_0),
-      .FREQ_DIV_0(STM_SETTINGS.FREQ_DIV_0),
-      .CYCLE_1(STM_SETTINGS.CYCLE_1),
-      .FREQ_DIV_1(STM_SETTINGS.FREQ_DIV_1),
-      .IDX_0(timer_idx_0),
-      .IDX_1(timer_idx_1),
+      .CYCLE(STM_SETTINGS.CYCLE),
+      .FREQ_DIV(STM_SETTINGS.FREQ_DIV),
+      .IDX(timer_idx),
       .UPDATE_SETTINGS_OUT(update_settings)
   );
 
-  logic [15:0] swapchain_idx_0, swapchain_idx_1;
+  logic [15:0] swapchain_idx[2];
   logic swapchain_segment;
   logic swapchain_stop;
   stm_swapchain stm_swapchain (
       .CLK(CLK),
       .UPDATE_SETTINGS(update_settings),
       .REQ_RD_SEGMENT(STM_SETTINGS.REQ_RD_SEGMENT),
-      .REP_0(STM_SETTINGS.REP_0),
-      .REP_1(STM_SETTINGS.REP_1),
-      .IDX_0_IN(timer_idx_0),
-      .IDX_1_IN(timer_idx_1),
+      .REP(STM_SETTINGS.REP),
+      .IDX_IN(timer_idx),
       .STOP(swapchain_stop),
       .SEGMENT(swapchain_segment),
-      .IDX_0_OUT(swapchain_idx_0),
-      .IDX_1_OUT(swapchain_idx_1)
+      .IDX_OUT(swapchain_idx)
   );
 
   stm_gain #(
@@ -102,10 +96,10 @@ module stm #(
     if (UPDATE) begin
       if (swapchain_stop == 1'b0) begin
         segment <= swapchain_segment;
-        mode <= swapchain_segment == 1'b0 ? STM_SETTINGS.MODE_0 : STM_SETTINGS.MODE_1;
-        idx <= swapchain_segment == 1'b0 ? swapchain_idx_0 : swapchain_idx_1;
-        sound_speed <= swapchain_segment == 1'b0 ? STM_SETTINGS.SOUND_SPEED_0 : STM_SETTINGS.SOUND_SPEED_1;
-        cycle <= swapchain_segment == 1'b0 ? STM_SETTINGS.CYCLE_0 : STM_SETTINGS.CYCLE_1;
+        mode <= swapchain_segment == 1'b0 ? STM_SETTINGS.MODE[0] : STM_SETTINGS.MODE[1];
+        idx <= swapchain_segment == 1'b0 ? swapchain_idx[0] : swapchain_idx[1];
+        sound_speed <= swapchain_segment == 1'b0 ? STM_SETTINGS.SOUND_SPEED[0] : STM_SETTINGS.SOUND_SPEED[1];
+        cycle <= swapchain_segment == 1'b0 ? STM_SETTINGS.CYCLE[0] : STM_SETTINGS.CYCLE[1];
       end
       start <= 1'b1;
     end else begin

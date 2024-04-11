@@ -1,15 +1,9 @@
 import math
 import pathlib
-import re
 import subprocess
 from itertools import chain
 
 BRAM_DATA_WIDTH = 16
-
-
-def to_upper_snake(name: str) -> str:
-    name = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
-    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", name).upper()
 
 
 class Param:
@@ -39,73 +33,77 @@ class Params:
 
 
 mod_params = Params(
-    "Mod",
+    "MOD",
     [
-        Param("ModReqRdSegment", 1, "REQ_RD_SEGMENT", 0),
-        Param("ModCycle0", 15, "CYCLE_0", 1),
-        Param("ModFreqDiv0", 32, "FREQ_DIV_0", 5120),
-        Param("ModCycle1", 15, "CYCLE_1", 1),
-        Param("ModFreqDiv1", 32, "FREQ_DIV_1", 5120),
-        Param("ModRep0", 32, "REP_0", "32'hFFFFFFFF"),
-        Param("ModRep1", 32, "REP_1", "32'hFFFFFFFF"),
+        Param("MOD_REQ_RD_SEGMENT", 1, "REQ_RD_SEGMENT", 0),
+        Param("MOD_TRANSITION_MODE", 8, "TRANSITION_MODE", "params::TRANSITION_MODE_SYNC_IDX"),
+        Param("MOD_TRANSITION_TIME", 64, "TRANSITION_TIME", 0),
+        Param("MOD_CYCLE0", 15, "CYCLE[0]", 1),
+        Param("MOD_CYCLE1", 15, "CYCLE[1]", 1),
+        Param("MOD_FREQ_DIV0", 32, "FREQ_DIV[0]", 5120),
+        Param("MOD_FREQ_DIV1", 32, "FREQ_DIV[1]", 5120),
+        Param("MOD_REP0", 32, "REP[0]", "32'hFFFFFFFF"),
+        Param("MOD_REP1", 32, "REP[1]", "32'hFFFFFFFF"),
     ],
 )
 
 stm_params = Params(
     "STM",
     [
-        Param("STMMode0", 1, "MODE_0", "params::STMModeGain"),
-        Param("STMMode1", 1, "MODE_1", "params::STMModeGain"),
-        Param("STMReqRdSegment", 1, "REQ_RD_SEGMENT", 0),
-        Param("STMCycle0", 16, "CYCLE_0", 0),
-        Param("STMFreqDiv0", 32, "FREQ_DIV_0", "32'hFFFFFFFF"),
-        Param("STMCycle1", 16, "CYCLE_1", 0),
-        Param("STMFreqDiv1", 32, "FREQ_DIV_1", "32'hFFFFFFFF"),
-        Param("STMSoundSpeed0", 32, "SOUND_SPEED_0", 0),
-        Param("STMSoundSpeed1", 32, "SOUND_SPEED_1", 0),
-        Param("STMRep0", 32, "REP_0", "32'hFFFFFFFF"),
-        Param("STMRep1", 32, "REP_1", "32'hFFFFFFFF"),
+        Param("STM_REQ_RD_SEGMENT", 1, "REQ_RD_SEGMENT", 0),
+        Param("STM_TRANSITION_MODE", 8, "TRANSITION_MODE", "params::TRANSITION_MODE_SYNC_IDX"),
+        Param("STM_TRANSITION_TIME", 64, "TRANSITION_TIME", 0),
+        Param("STM_MODE0", 1, "MODE[0]", "params::STM_MODE_GAIN"),
+        Param("STM_MODE1", 1, "MODE[1]", "params::STM_MODE_GAIN"),
+        Param("STM_CYCLE0", 16, "CYCLE[0]", 0),
+        Param("STM_CYCLE1", 16, "CYCLE[1]", 0),
+        Param("STM_FREQ_DIV0", 32, "FREQ_DIV[0]", "32'hFFFFFFFF"),
+        Param("STM_FREQ_DIV1", 32, "FREQ_DIV[1]", "32'hFFFFFFFF"),
+        Param("STM_SOUND_SPEED0", 32, "SOUND_SPEED[0]", 0),
+        Param("STM_SOUND_SPEED1", 32, "SOUND_SPEED[1]", 0),
+        Param("STM_REP0", 32, "REP[0]", "32'hFFFFFFFF"),
+        Param("STM_REP1", 32, "REP[1]", "32'hFFFFFFFF"),
     ],
 )
 
 silencer_params = Params(
-    "Silencer",
+    "SILENCER",
     [
-        Param("SilencerMode", 1, "MODE", "params::SilencerModeFixedCompletionSteps"),
-        Param("SilencerUpdateRateIntensity", 16, "UPDATE_RATE_INTENSITY", 256),
-        Param("SilencerUpdateRatePhase", 16, "UPDATE_RATE_PHASE", 256),
-        Param("SilencerCompletionStepsIntensity", 16, "COMPLETION_STEPS_INTENSITY", 10),
-        Param("SilencerCompletionStepsPhase", 16, "COMPLETION_STEPS_PHASE", 40),
+        Param("SILENCER_MODE", 1, "MODE", "params::SILENCER_MODE_FIXED_COMPLETION_STEPS"),
+        Param("SILENCER_UPDATE_RATE_INTENSITY", 16, "UPDATE_RATE_INTENSITY", 256),
+        Param("SILENCER_UPDATE_RATE_PHASE", 16, "UPDATE_RATE_PHASE", 256),
+        Param("SILENCER_COMPLETION_STEPS_INTENSITY", 16, "COMPLETION_STEPS_INTENSITY", 10),
+        Param("SILENCER_COMPLETION_STEPS_PHASE", 16, "COMPLETION_STEPS_PHASE", 40),
     ],
 )
 
 pwe_params = Params(
-    "PulseWidthEncoder",
+    "PULSE_WIDTH_ENCODER",
     [
-        Param("PulseWidthEncoderFullWidthStart", 16, "FULL_WIDTH_START", 65025),
-        Param("PulseWidthEncoderDummy0", -1, "", 0),
-        Param("PulseWidthEncoderDummy1", -1, "", 0),
+        Param("PULSE_WIDTH_ENCODER_FULL_WIDTH_START", 16, "FULL_WIDTH_START", 65025),
+        Param("PULSE_WIDTH_ENCODER_DUMMY0", -1, "", 0),
+        Param("PULSE_WIDTH_ENCODER_DUMMY1", -1, "", 0),
     ],
 )
 
 debug_params = Params(
-    "Debug",
+    "DEBUG",
     [
-        Param("DebugType0", 8, "TYPE[0]", "params::DBG_NONE"),
-        Param("DebugValue0", 16, "VALUE[0]", 0),
-        Param("DebugType1", 8, "TYPE[1]", "params::DBG_NONE"),
-        Param("DebugValue1", 16, "VALUE[1]", 0),
-        Param("DebugType2", 8, "TYPE[2]", "params::DBG_NONE"),
-        Param("DebugValue2", 16, "VALUE[2]", 0),
-        Param("DebugType3", 8, "TYPE[3]", "params::DBG_NONE"),
-        Param("DebugValue3", 16, "VALUE[3]", 0),
+        Param("DEBUG_TYPE0", 8, "TYPE[0]", "params::DBG_NONE"),
+        Param("DEBUG_VALUE0", 16, "VALUE[0]", 0),
+        Param("DEBUG_TYPE1", 8, "TYPE[1]", "params::DBG_NONE"),
+        Param("DEBUG_VALUE1", 16, "VALUE[1]", 0),
+        Param("DEBUG_TYPE2", 8, "TYPE[2]", "params::DBG_NONE"),
+        Param("DEBUG_VALUE2", 16, "VALUE[2]", 0),
+        Param("DEBUG_TYPE3", 8, "TYPE[3]", "params::DBG_NONE"),
+        Param("DEBUG_VALUE3", 16, "VALUE[3]", 0),
     ],
 )
 
 sync_params = Params(
-    "Sync",
+    "SYNC",
     [
-        Param("ECATSyncTime", 64, "ECAT_SYNC_TIME", 0),
+        Param("ECAT_SYNC_TIME", 64, "ECAT_SYNC_TIME", 0),
     ],
 )
 
@@ -131,9 +129,9 @@ class State:
 
 def gen_states(params: Params) -> list[State]:
     def gen_state(req_param: Param, param: Param) -> State:
-        name = f"REQ_{to_upper_snake(req_param.addr)}" if req_param.addr != "" else ""
+        name = f"REQ_{req_param.addr}" if req_param.addr != "" else ""
         if param.addr != "":
-            name = f"{name}_RD_{to_upper_snake(param.addr)}" if name != "" else f"RD_{to_upper_snake(param.addr)}"
+            name = f"{name}_RD_{param.addr}" if name != "" else f"RD_{param.addr}"
         return State(name, req_param, param)
 
     sub_params: list[Param] = []
@@ -157,7 +155,7 @@ def gen_states(params: Params) -> list[State]:
     for req_param, param in zip(sub_params + [Param.null()] * 3, [Param.null()] * 3 + sub_params, strict=True):
         if param.width >= 0:
             states.append(gen_state(req_param, param))
-    states.append(State(f"{to_upper_snake(params.name)}_CLR_UPDATE_SETTINGS_BIT", Param.null(), Param.null()))
+    states.append(State(f"{params.name}_CLR_UPDATE_SETTINGS_BIT", Param.null(), Param.null()))
     return states
 
 
@@ -191,7 +189,7 @@ module controller (
   logic [15:0] ctl_flags;
 
   logic we;
-  logic [7:0] addr;
+  logic [7:0]  addr;
   logic [15:0] din;
   logic [15:0] dout;
 
@@ -200,7 +198,7 @@ module controller (
   assign cnt_bus.DIN = din;
   assign dout = cnt_bus.DOUT;
 
-  assign FORCE_FAN = ctl_flags[params::CtlFlagForceFanBit];
+  assign FORCE_FAN = ctl_flags[params::CTL_FLAG_FORCE_FAN];
 
   typedef enum logic [{int(math.ceil(math.log2(7 + len(list(chain.from_iterable(all_states.values()))))))-1}:0] {{
     REQ_WR_VER_MINOR,
@@ -225,19 +223,19 @@ module controller (
         we <= 1'b1;
 
         din <= {8'd0, params::VersionNumMinor};
-        addr <= params::AddrVersionNumMinor;
+        addr <= params::ADDR_VERSION_NUM_MINOR;
 
         state <= REQ_WR_VER;
       end
       REQ_WR_VER: begin
         din   <= {8'h00, params::VersionNumMajor};
-        addr  <= params::AddrVersionNumMajor;
+        addr  <= params::ADDR_VERSION_NUM_MAJOR;
 
         state <= WAIT_WR_VER_0_REQ_RD_CTL_FLAG;
       end
       WAIT_WR_VER_0_REQ_RD_CTL_FLAG: begin
         we <= 1'b0;
-        addr <= params::AddrCtlFlag;
+        addr <= params::ADDR_CTL_FLAG;
 
         state <= WR_VER_MINOR_WAIT_RD_CTL_FLAG_0;
       end
@@ -250,7 +248,7 @@ module controller (
 
       WAIT_0: begin
         we   <= 1'b1;
-        addr <= params::AddrFPGAState;
+        addr <= params::ADDR_FPGA_STATE;
         din  <= {8'h00, 1'h0 /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO};
 
        """,
@@ -258,8 +256,8 @@ module controller (
 
     for params in all_params:
         f.writelines(
-            f""" if (ctl_flags[params::CtlFlag{params.name}SetBit]) begin
-          ctl_flags <= ctl_flags & ~(1 << params::CtlFlag{params.name}SetBit);
+            f""" if (ctl_flags[params::CTL_FLAG_{params.name}_SET]) begin
+          ctl_flags <= ctl_flags & ~(1 << params::CTL_FLAG_{params.name}_SET);
           state <= {all_states[params.name][0].name};
         end else""",
         )
@@ -272,7 +270,7 @@ module controller (
       end
       WAIT_1: begin
         we <= 1'b0;
-        addr <= params::AddrCtlFlag;
+        addr <= params::ADDR_CTL_FLAG;
         state <= WAIT_0;
       end
 """,
@@ -296,7 +294,7 @@ module controller (
             if req_param.addr != "" and req_param.width != -1:
                 f.writelines(
                     f"""
-        addr <= params::Addr{req_param.addr};""",
+        addr <= params::ADDR_{req_param.addr};""",
                 )
 
             if param.addr != "":
@@ -309,14 +307,14 @@ module controller (
                     r = f"[{param.width-1}:0]"
                 f.writelines(
                     f"""
-        {to_upper_snake(name)}_SETTINGS.{param.name} <= dout{r};""",
+        {name}_SETTINGS.{param.name} <= dout{r};""",
                 )
 
             if i == len(states) - 4:
                 f.writelines(
                     """
         we <= 1'b1;
-        addr <= params::AddrCtlFlag;
+        addr <= params::ADDR_CTL_FLAG;
         din <= ctl_flags;""",
                 )
 
@@ -324,16 +322,16 @@ module controller (
                 f.writelines(
                     """
         we <= 1'b1;
-        addr <= params::AddrFPGAState;
+        addr <= params::ADDR_FPGA_STATE;
         din  <= {8'h00, 1'h0 /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO};""",
                 )
 
             if i == len(states) - 2:
                 f.writelines(
                     f"""
-        {to_upper_snake(name)}_SETTINGS.UPDATE <= 1'b1;
+        {name}_SETTINGS.UPDATE <= 1'b1;
         we <= 1'b0;
-        addr <= params::AddrCtlFlag;""",
+        addr <= params::ADDR_CTL_FLAG;""",
                 )
 
             if i + 1 < len(states):
@@ -346,10 +344,10 @@ module controller (
                 f.writelines(
                     f"""
         we <= 1'b1;
-        addr <= params::AddrFPGAState;
+        addr <= params::ADDR_FPGA_STATE;
         din  <= {{8'h00, 1'h0 /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO}};
         ctl_flags <= dout;
-        {to_upper_snake(name)}_SETTINGS.UPDATE <= 1'b0;
+        {name}_SETTINGS.UPDATE <= 1'b0;
         state <= WAIT_1;""",
                 )
 
@@ -374,7 +372,7 @@ module controller (
     for params in all_params:
         f.writelines(
             f"""
-    {to_upper_snake(params.name)}_SETTINGS.UPDATE = 1'b0;""",
+    {params.name}_SETTINGS.UPDATE = 1'b0;""",
         )
         for param in params.params:
             if param.name == "":
@@ -382,7 +380,7 @@ module controller (
             default_value = param.default if isinstance(param.default, str) else f"{param.width}'d{param.default}"
             f.writelines(
                 f"""
-    {to_upper_snake(params.name)}_SETTINGS.{param.name} = {default_value};""",
+    {params.name}_SETTINGS.{param.name} = {default_value};""",
             )
     f.writelines(
         """

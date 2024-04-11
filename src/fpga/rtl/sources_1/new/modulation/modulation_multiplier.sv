@@ -8,8 +8,7 @@ module modulation_multiplier #(
     output wire [15:0] INTENSITY_OUT,
     output wire DOUT_VALID,
     modulation_bus_if.out_port MOD_BUS,
-    input wire [14:0] IDX_0,
-    input wire [14:0] IDX_1,
+    input wire [14:0] IDX[2],
     input wire SEGMENT,
     input wire STOP,
     output wire [14:0] DEBUG_IDX,
@@ -98,7 +97,7 @@ module modulation_multiplier #(
           set_cnt <= 0;
           stop_buf <= stop;
           if (stop == 1'b0) begin
-            idx <= segment == 1'b0 ? IDX_0 : IDX_1;
+            idx <= segment == 1'b0 ? IDX[0] : IDX[1];
             segment_buf <= segment;
           end
           state <= WAIT_MOD_LOAD_0;

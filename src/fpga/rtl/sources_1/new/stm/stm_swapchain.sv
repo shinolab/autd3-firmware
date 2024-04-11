@@ -3,14 +3,11 @@ module stm_swapchain (
     input wire CLK,
     input wire UPDATE_SETTINGS,
     input wire REQ_RD_SEGMENT,
-    input wire [31:0] REP_0,
-    input wire [31:0] REP_1,
-    input wire [15:0] IDX_0_IN,
-    input wire [15:0] IDX_1_IN,
+    input wire [31:0] REP[2],
+    input wire [15:0] IDX_IN[2],
     output wire STOP,
     output wire SEGMENT,
-    output wire [15:0] IDX_0_OUT,
-    output wire [15:0] IDX_1_OUT
+    output wire [15:0] IDX_OUT[2]
 );
 
   logic segment = 1'b0;
@@ -18,18 +15,16 @@ module stm_swapchain (
   logic stop;
   logic [31:0] rep;
   logic [31:0] loop_cnt;
-  logic [15:0] idx_0, idx_1;
+  logic [15:0] idx[2];
 
-  logic idx_0_changed, idx_1_changed;
-  logic [15:0] idx_0_buf, idx_1_buf;
+  logic idx_changed[2];
+  logic [15:0] idx_buf[2];
 
-  assign idx_0 = IDX_0_IN;
-  assign idx_1 = IDX_1_IN;
+  assign idx = IDX_IN;
 
   assign SEGMENT = segment;
   assign STOP = stop;
-  assign IDX_0_OUT = idx_0_buf;
-  assign IDX_1_OUT = idx_1_buf;
+  assign IDX_OUT = idx_buf;
 
   typedef enum logic [1:0] {
     WAIT_START,
@@ -45,12 +40,12 @@ module stm_swapchain (
         stop  <= 1'b0;
         state <= INFINITE_LOOP;
       end else begin
-        if (((REQ_RD_SEGMENT == 1'b0) & (REP_0 == 32'hFFFFFFFF)) | ((REQ_RD_SEGMENT == 1'b1) & (REP_1 == 32'hFFFFFFFF))) begin
+        if (((REQ_RD_SEGMENT == 1'b0) & (REP[0] == 32'hFFFFFFFF)) | ((REQ_RD_SEGMENT == 1'b1) & (REP[1] == 32'hFFFFFFFF))) begin
           stop <= 1'b0;
           segment <= REQ_RD_SEGMENT;
           state <= INFINITE_LOOP;
         end else begin
-          rep <= REQ_RD_SEGMENT == 1'b0 ? REP_0 : REP_1;
+          rep <= REQ_RD_SEGMENT == 1'b0 ? REP[0] : REP[1];
           req_segment <= REQ_RD_SEGMENT;
           state <= WAIT_START;
         end
@@ -58,7 +53,7 @@ module stm_swapchain (
     end else begin
       case (state)
         WAIT_START: begin
-          if (((req_segment == 1'b0) & (idx_0 == '0)) | ((req_segment == 1'b1) & (idx_1 == '0))) begin
+          if (((req_segment == 1'b0) & (idx[0] == '0)) | ((req_segment == 1'b1) & (idx[1] == '0))) begin
             stop <= 1'b0;
             loop_cnt <= '0;
             segment <= req_segment;
@@ -72,7 +67,7 @@ module stm_swapchain (
         end
         FINITE_LOOP: begin
           if (segment == 1'b0) begin
-            if (idx_0_changed & (idx_0 == '0)) begin
+            if (idx_changed[0] & (idx[0] == '0)) begin
               if (loop_cnt == rep) begin
                 stop <= 1'b1;
               end else begin
@@ -80,7 +75,7 @@ module stm_swapchain (
               end
             end
           end else begin
-            if (idx_1_changed & (idx_1 == '0)) begin
+            if (idx_changed[1] & (idx[1] == '0)) begin
               if (loop_cnt == rep) begin
                 stop <= 1'b1;
               end else begin
@@ -97,11 +92,10 @@ module stm_swapchain (
   end
 
   always_ff @(posedge CLK) begin
-    idx_0_buf <= idx_0;
-    idx_1_buf <= idx_1;
+    idx_buf <= idx;
   end
 
-  assign idx_0_changed = idx_0_buf != idx_0;
-  assign idx_1_changed = idx_1_buf != idx_1;
+  assign idx_changed[0] = idx_buf[0] != idx[0];
+  assign idx_changed[1] = idx_buf[1] != idx[1];
 
 endmodule

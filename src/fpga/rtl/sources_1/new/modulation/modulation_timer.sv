@@ -3,12 +3,9 @@ module modulation_timer (
     input wire CLK,
     input wire UPDATE_SETTINGS_IN,
     input wire [63:0] SYS_TIME,
-    input wire [14:0] CYCLE_0,
-    input wire [31:0] FREQ_DIV_0,
-    input wire [14:0] CYCLE_1,
-    input wire [31:0] FREQ_DIV_1,
-    output wire [14:0] IDX_0,
-    output wire [14:0] IDX_1,
+    input wire [14:0] CYCLE[2],
+    input wire [31:0] FREQ_DIV[2],
+    output wire [14:0] IDX[2],
     output wire UPDATE_SETTINGS_OUT
 );
 
@@ -17,54 +14,54 @@ module modulation_timer (
   logic update_settings = 1'b0;
   logic [$clog2(DIV_LATENCY*2)-1:0] cnt = '0;
 
-  logic [31:0] freq_div_0, freq_div_1;
-  logic [63:0] quo_0, quo_1;
-  logic [31:0] _unused_rem_0, _unused_rem_1;
-  logic [63:0] _unused_quo_0, _unused_quo_1;
-  logic [31:0] cycle_0, cycle_1;
-  logic [31:0] rem_0, rem_1;
+  logic [31:0] freq_div[2];
+  logic [63:0] quo[2];
+  logic [31:0] _unused_rem[2];
+  logic [63:0] _unused_quo[2];
+  logic [31:0] cycle[2];
+  logic [31:0] rem[2];
 
-  assign IDX_0 = rem_0[14:0];
-  assign IDX_1 = rem_1[14:0];
+  assign IDX[0] = rem[0][14:0];
+  assign IDX[1] = rem[1][14:0];
   assign UPDATE_SETTINGS_OUT = update_settings;
 
   div_64_32 div_64_32_quo_0 (
       .s_axis_dividend_tdata(SYS_TIME),
       .s_axis_dividend_tvalid(1'b1),
-      .s_axis_divisor_tdata(freq_div_0),
+      .s_axis_divisor_tdata(freq_div[0]),
       .s_axis_divisor_tvalid(1'b1),
       .aclk(CLK),
-      .m_axis_dout_tdata({quo_0, _unused_rem_0}),
+      .m_axis_dout_tdata({quo[0], _unused_rem[0]}),
       .m_axis_dout_tvalid()
   );
 
   div_64_32 div_64_32_rem_0 (
-      .s_axis_dividend_tdata(quo_0),
+      .s_axis_dividend_tdata(quo[0]),
       .s_axis_dividend_tvalid(1'b1),
-      .s_axis_divisor_tdata(cycle_0),
+      .s_axis_divisor_tdata(cycle[0]),
       .s_axis_divisor_tvalid(1'b1),
       .aclk(CLK),
-      .m_axis_dout_tdata({_unused_quo_0, rem_0}),
+      .m_axis_dout_tdata({_unused_quo[0], rem[0]}),
       .m_axis_dout_tvalid()
   );
 
   div_64_32 div_64_32_quo_1 (
       .s_axis_dividend_tdata(SYS_TIME),
       .s_axis_dividend_tvalid(1'b1),
-      .s_axis_divisor_tdata(freq_div_1),
+      .s_axis_divisor_tdata(freq_div[1]),
       .s_axis_divisor_tvalid(1'b1),
       .aclk(CLK),
-      .m_axis_dout_tdata({quo_1, _unused_rem_1}),
+      .m_axis_dout_tdata({quo[1], _unused_rem[1]}),
       .m_axis_dout_tvalid()
   );
 
   div_64_32 div_64_32_rem_1 (
-      .s_axis_dividend_tdata(quo_1),
+      .s_axis_dividend_tdata(quo[1]),
       .s_axis_dividend_tvalid(1'b1),
-      .s_axis_divisor_tdata(cycle_1),
+      .s_axis_divisor_tdata(cycle[1]),
       .s_axis_divisor_tvalid(1'b1),
       .aclk(CLK),
-      .m_axis_dout_tdata({_unused_quo_1, rem_1}),
+      .m_axis_dout_tdata({_unused_quo[1], rem[1]}),
       .m_axis_dout_tvalid()
   );
 
@@ -80,11 +77,10 @@ module modulation_timer (
       WAIT: begin
         update_settings <= 1'b0;
         if (UPDATE_SETTINGS_IN) begin
-          freq_div_0 <= FREQ_DIV_0;
-          cycle_0 <= CYCLE_0 + 1;
-          freq_div_1 <= FREQ_DIV_1;
-          cycle_1 <= CYCLE_1 + 1;
-          cnt <= 0;
+          freq_div <= FREQ_DIV;
+          cycle[0] <= CYCLE[0] + 15'd1;
+          cycle[1] <= CYCLE[1] + 15'd1;
+          cnt <= '0;
           state <= LOAD;
         end
       end

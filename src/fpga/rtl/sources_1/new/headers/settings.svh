@@ -3,27 +3,23 @@ package settings;
   typedef struct {
     logic UPDATE;
     logic REQ_RD_SEGMENT;
-    logic [14:0] CYCLE_0;
-    logic [31:0] FREQ_DIV_0;
-    logic [31:0] REP_0;
-    logic [14:0] CYCLE_1;
-    logic [31:0] FREQ_DIV_1;
-    logic [31:0] REP_1;
+    logic [7:0] TRANSITION_MODE;
+    logic [63:0] TRANSITION_TIME;
+    logic [14:0] CYCLE[2];
+    logic [31:0] FREQ_DIV[2];
+    logic [31:0] REP[2];
   } mod_settings_t;
 
   typedef struct {
     logic UPDATE;
     logic REQ_RD_SEGMENT;
-    logic MODE_0;
-    logic MODE_1;
-    logic [15:0] CYCLE_0;
-    logic [31:0] FREQ_DIV_0;
-    logic [31:0] REP_0;
-    logic [31:0] SOUND_SPEED_0;
-    logic [15:0] CYCLE_1;
-    logic [31:0] FREQ_DIV_1;
-    logic [31:0] REP_1;
-    logic [31:0] SOUND_SPEED_1;
+    logic [7:0] TRANSITION_MODE;
+    logic [63:0] TRANSITION_TIME;
+    logic MODE[2];
+    logic [15:0] CYCLE[2];
+    logic [31:0] FREQ_DIV[2];
+    logic [31:0] REP[2];
+    logic [31:0] SOUND_SPEED[2];
   } stm_settings_t;
 
   typedef struct {
