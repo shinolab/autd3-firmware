@@ -12,7 +12,7 @@ module stm_swapchain (
 
   logic segment = 1'b0;
   logic req_segment;
-  logic stop;
+  logic stop = 1'b0;
   logic [31:0] rep;
   logic [31:0] loop_cnt;
   logic [15:0] idx[2];
