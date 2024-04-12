@@ -121,14 +121,14 @@ module sim_helper_bram #(
                settings.REQ_RD_SEGMENT);
     bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_TRANSITION_MODE,
                settings.TRANSITION_MODE);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_TRANSITION_TIME_0,
-               settings.TRANSITION_TIME[15:0]);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_TRANSITION_TIME_1,
-               settings.TRANSITION_TIME[31:16]);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_TRANSITION_TIME_2,
-               settings.TRANSITION_TIME[47:32]);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_TRANSITION_TIME_3,
-               settings.TRANSITION_TIME[63:48]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_TRANSITION_VALUE_0,
+               settings.TRANSITION_VALUE[15:0]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_TRANSITION_VALUE_1,
+               settings.TRANSITION_VALUE[31:16]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_TRANSITION_VALUE_2,
+               settings.TRANSITION_VALUE[47:32]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_TRANSITION_VALUE_3,
+               settings.TRANSITION_VALUE[63:48]);
     bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_CYCLE0, settings.CYCLE[0]);
     bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_FREQ_DIV0_0,
                settings.FREQ_DIV[0][15:0]);
@@ -152,14 +152,14 @@ module sim_helper_bram #(
                settings.REQ_RD_SEGMENT);
     bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_TRANSITION_MODE,
                settings.TRANSITION_MODE);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_TRANSITION_TIME_0,
-               settings.TRANSITION_TIME[15:0]);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_TRANSITION_TIME_1,
-               settings.TRANSITION_TIME[31:16]);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_TRANSITION_TIME_2,
-               settings.TRANSITION_TIME[47:32]);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_TRANSITION_TIME_3,
-               settings.TRANSITION_TIME[63:48]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_TRANSITION_VALUE_0,
+               settings.TRANSITION_VALUE[15:0]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_TRANSITION_VALUE_1,
+               settings.TRANSITION_VALUE[31:16]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_TRANSITION_VALUE_2,
+               settings.TRANSITION_VALUE[47:32]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_TRANSITION_VALUE_3,
+               settings.TRANSITION_VALUE[63:48]);
     bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_CYCLE0, settings.CYCLE[0]);
     bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_FREQ_DIV0_0,
                settings.FREQ_DIV[0][15:0]);
