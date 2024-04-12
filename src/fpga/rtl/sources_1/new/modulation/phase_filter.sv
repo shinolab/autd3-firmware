@@ -14,9 +14,7 @@ module phase_filter #(
   logic [7:0] phase_buf;
 
   logic signed [9:0] a_phase, b_phase, s_phase;
-  logic signed [9:0] a_phase_fold, b_phase_fold, s_phase_fold;
-  logic add_fold;
-  logic [$clog2(DEPTH+(AddSubLatency+1)*2)-1:0] calc_cnt, fold_cnt, set_cnt;
+  logic [$clog2(DEPTH+AddSubLatency+1)-1:0] calc_cnt, set_cnt;
 
   logic [7:0] phase_f;
 
@@ -59,23 +57,12 @@ module phase_filter #(
       .S  (s_phase)
   );
 
-  addsub #(
-      .WIDTH(10)
-  ) addsub_phase_fold (
-      .CLK(CLK),
-      .A  (a_phase_fold),
-      .B  (b_phase_fold),
-      .ADD(add_fold),
-      .S  (s_phase_fold)
-  );
-
   always_ff @(posedge CLK) begin
     case (state)
       WAITING: begin
         dout_valid <= 1'b0;
         if (DIN_VALID) begin
           calc_cnt <= '0;
-          fold_cnt <= '0;
           set_cnt <= '0;
           bus_addr <= '0;
 
@@ -93,31 +80,13 @@ module phase_filter #(
       RUN: begin
         bus_addr <= bus_addr + 1;
 
-        // step 1: calculate next pulse_width/phase
-        a_phase <= {1'b0, phase_buf};
-        b_phase <= phase_filter_value;
+        a_phase  <= {2'b00, phase_buf};
+        b_phase  <= {2'b00, phase_filter_value};
         calc_cnt <= calc_cnt + 1;
 
-        // step 2: make pulse_width/phase be in [0, T-1]
-        a_phase_fold <= s_phase;
-        if (s_phase >= 10'sd512) begin
-          b_phase_fold <= 10'sd512;
-          add_fold <= 1'b0;
-        end else if (s_phase < 10'sd0) begin
-          b_phase_fold <= 10'sd512;
-          add_fold <= 1'b1;
-        end else begin
-          b_phase_fold <= '0;
-          add_fold <= 1'b1;
-        end
-
         if (calc_cnt > AddSubLatency) begin
-          fold_cnt <= fold_cnt + 1;
-        end
-
-        if (fold_cnt > AddSubLatency) begin
           dout_valid <= 1'b1;
-          phase_f <= s_phase_fold[7:0];
+          phase_f <= s_phase[7:0];
           set_cnt <= set_cnt + 1;
           if (set_cnt == DEPTH - 1) begin
             state <= WAITING;

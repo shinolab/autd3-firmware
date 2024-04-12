@@ -52,7 +52,7 @@ module modulation_multiplier #(
 
   delay_fifo #(
       .WIDTH(16),
-      .DEPTH(4)
+      .DEPTH(1)
   ) delay_fifo_intensity_out (
       .CLK (CLK),
       .DIN (p[15:0]),
@@ -61,7 +61,7 @@ module modulation_multiplier #(
 
   delay_fifo #(
       .WIDTH(1),
-      .DEPTH(4)
+      .DEPTH(1)
   ) delay_fifo_dout_valid (
       .CLK (CLK),
       .DIN (dout_valid),

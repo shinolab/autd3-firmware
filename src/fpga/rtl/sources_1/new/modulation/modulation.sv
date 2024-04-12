@@ -24,6 +24,7 @@ module modulation #(
       .UPDATE_SETTINGS_IN(MOD_SETTINGS.UPDATE),
       .SYS_TIME(SYS_TIME),
       .CYCLE(MOD_SETTINGS.CYCLE),
+      .FREQ_DIV(MOD_SETTINGS.FREQ_DIV),
       .IDX(idx_timer),
       .UPDATE_SETTINGS_OUT(update_settings)
   );
