@@ -8,6 +8,7 @@ module main #(
     input wire THERMO,
     output wire FORCE_FAN,
     output wire PWM_OUT[DEPTH],
+    input wire GPIO_IN[4],
     output wire GPIO_OUT[4]
 );
 
@@ -109,6 +110,7 @@ module main #(
       .STM_BUS_GAIN(stm_bus.out_gain_port),
       .INTENSITY(intensity),
       .PHASE(phase),
+      .GPIO_IN(GPIO_IN),
       .DOUT_VALID(dout_valid),
       .DEBUG_IDX(stm_idx),
       .DEBUG_SEGMENT(stm_segment),

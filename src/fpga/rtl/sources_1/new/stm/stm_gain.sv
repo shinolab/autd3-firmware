@@ -30,7 +30,7 @@ module stm_gain #(
 
   state_t state = WAITING;
 
-  assign STM_BUS.GAIN_IDX = IDX;
+  assign STM_BUS.GAIN_IDX = IDX[9:0];
   assign STM_BUS.GAIN_ADDR = addr;
   assign data_out = STM_BUS.VALUE;
 

@@ -103,7 +103,7 @@ module stm_swapchain (
               end
             end
             params::TRANSITION_MODE_GPIO: begin
-              if (idx_changed[req_segment] && GPIO_IN[TRANSITION_VALUE]) begin
+              if (idx_changed[req_segment] && GPIO_IN[transition_value]) begin
                 stop <= 1'b0;
                 loop_cnt <= '0;
                 segment <= req_segment;

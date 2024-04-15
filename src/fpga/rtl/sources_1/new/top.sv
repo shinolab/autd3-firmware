@@ -13,6 +13,7 @@ module top (
     output wire FORCE_FAN,
     input wire THERMO,
     output wire [252:1] XDCR_OUT,
+    input wire GPIO_IN[4],
     output wire GPIO_OUT[4]
 );
 
@@ -53,6 +54,7 @@ module top (
       .THERMO(THERMO),
       .FORCE_FAN(FORCE_FAN),
       .PWM_OUT(PWM_OUT),
+      .GPIO_IN(GPIO_IN),
       .GPIO_OUT(GPIO_OUT)
   );
 

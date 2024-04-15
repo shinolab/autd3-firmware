@@ -12,6 +12,7 @@ module stm #(
     output wire [7:0] INTENSITY,
     output wire [7:0] PHASE,
     output wire DOUT_VALID,
+    input wire GPIO_IN[4],
     output wire [15:0] DEBUG_IDX,
     output wire DEBUG_SEGMENT,
     output wire [15:0] DEBUG_CYCLE
@@ -58,13 +59,18 @@ module stm #(
   logic swapchain_stop;
   stm_swapchain stm_swapchain (
       .CLK(CLK),
+      .SYS_TIME(SYS_TIME),
       .UPDATE_SETTINGS(update_settings),
       .REQ_RD_SEGMENT(STM_SETTINGS.REQ_RD_SEGMENT),
+      .TRANSITION_MODE(STM_SETTINGS.TRANSITION_MODE),
+      .TRANSITION_VALUE(STM_SETTINGS.TRANSITION_VALUE),
+      .CYCLE(STM_SETTINGS.CYCLE),
       .REP(STM_SETTINGS.REP),
-      .IDX_IN(timer_idx),
+      .SYNC_IDX(timer_idx),
+      .GPIO_IN(GPIO_IN),
       .STOP(swapchain_stop),
       .SEGMENT(swapchain_segment),
-      .IDX_OUT(swapchain_idx)
+      .IDX(swapchain_idx)
   );
 
   stm_gain #(
@@ -96,10 +102,10 @@ module stm #(
     if (UPDATE) begin
       if (swapchain_stop == 1'b0) begin
         segment <= swapchain_segment;
-        mode <= swapchain_segment == 1'b0 ? STM_SETTINGS.MODE[0] : STM_SETTINGS.MODE[1];
-        idx <= swapchain_segment == 1'b0 ? swapchain_idx[0] : swapchain_idx[1];
-        sound_speed <= swapchain_segment == 1'b0 ? STM_SETTINGS.SOUND_SPEED[0] : STM_SETTINGS.SOUND_SPEED[1];
-        cycle <= swapchain_segment == 1'b0 ? STM_SETTINGS.CYCLE[0] : STM_SETTINGS.CYCLE[1];
+        idx <= swapchain_idx[swapchain_segment];
+        mode <= STM_SETTINGS.MODE[swapchain_segment];
+        sound_speed <= STM_SETTINGS.SOUND_SPEED[swapchain_segment];
+        cycle <= STM_SETTINGS.CYCLE[swapchain_segment];
       end
       start <= 1'b1;
     end else begin
