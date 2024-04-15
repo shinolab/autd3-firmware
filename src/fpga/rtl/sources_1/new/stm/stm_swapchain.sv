@@ -12,8 +12,7 @@ module stm_swapchain (
     input wire GPIO_IN[4],
     output wire STOP,
     output wire SEGMENT,
-    output wire [15:0] IDX[2],
-    output wire ERR_MISS_TRANSITION_VALUE
+    output wire [15:0] IDX[2]
 );
 
   logic segment = 1'b0;
@@ -29,13 +28,11 @@ module stm_swapchain (
   logic [15:0] tic_idx[2];
 
   logic signed [64:0] time_diff;
-  logic miss_transition = 1'b0;
 
   assign idx_changed[0] = idx_old[0] != SYNC_IDX[0];
   assign idx_changed[1] = idx_old[1] != SYNC_IDX[1];
   assign SEGMENT = segment;
   assign STOP = stop;
-  assign ERR_MISS_TRANSITION_VALUE = miss_transition;
 
   typedef enum logic {
     IDX_MODE_SYNC_IDX,
@@ -66,14 +63,12 @@ module stm_swapchain (
     if (UPDATE_SETTINGS) begin
       if (REQ_RD_SEGMENT == segment) begin
         stop <= 1'b0;
-        miss_transition <= 1'b0;
         idx_mode <= IDX_MODE_SYNC_IDX;
         state <= INFINITE_LOOP;
       end else begin
         if (REP[REQ_RD_SEGMENT] == 32'hFFFFFFFF) begin
           stop <= 1'b0;
           segment <= REQ_RD_SEGMENT;
-          miss_transition <= 1'b0;
           idx_mode <= IDX_MODE_SYNC_IDX;
           state <= INFINITE_LOOP;
         end else begin
@@ -95,11 +90,17 @@ module stm_swapchain (
                 segment <= req_segment;
                 idx_mode <= IDX_MODE_SYNC_IDX;
                 state <= FINITE_LOOP;
-              end else begin
-                state <= WAIT_START;
               end
             end
             params::TRANSITION_MODE_SYS_TIME: begin
+              if (time_diff[64]) begin
+                stop <= 1'b0;
+                loop_cnt <= '0;
+                segment <= req_segment;
+                idx_mode <= IDX_MODE_TIC;
+                tic_idx[req_segment] <= '0;
+                state <= FINITE_LOOP;
+              end
             end
             params::TRANSITION_MODE_GPIO: begin
               if (idx_changed[req_segment] && GPIO_IN[TRANSITION_VALUE]) begin
@@ -109,8 +110,6 @@ module stm_swapchain (
                 idx_mode <= IDX_MODE_TIC;
                 tic_idx[req_segment] <= '0;
                 state <= FINITE_LOOP;
-              end else begin
-                state <= WAIT_START;
               end
             end
           endcase

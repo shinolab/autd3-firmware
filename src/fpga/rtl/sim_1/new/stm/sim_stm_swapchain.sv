@@ -7,7 +7,7 @@ module sim_stm_swapchain ();
     $finish();\
   end
 
-  localparam int DivLatency = 66;
+  localparam int AddSubLatency = 6;
   localparam int DEPTH = 249;
 
   logic CLK;
@@ -44,14 +44,17 @@ module sim_stm_swapchain ();
       .GPIO_IN(gpio_in),
       .SEGMENT(segment),
       .STOP(stop),
-      .IDX(idx),
-      .ERR_MISS_TRANSITION_VALUE(miss_transition)
+      .IDX(idx)
   );
 
   task automatic reset();
     @(posedge CLK);
+    sync_idx[0] <= 0;
+    sync_idx[1] <= 0;
     rep[0] <= 32'hFFFFFFFF;
     rep[1] <= 32'hFFFFFFFF;
+    transition_mode <= params::TRANSITION_MODE_SYNC_IDX;
+    transition_value <= 0;
     req_rd_segment <= 0;
     update_settings <= 1;
     @(posedge CLK);
@@ -61,7 +64,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(0, stop);
     `ASSERT_EQ(0, idx[0]);
     `ASSERT_EQ(0, idx[1]);
-    `ASSERT_EQ(0, miss_transition);
   endtask
 
   task automatic test_sync_idx();
@@ -76,7 +78,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(0, stop);
     `ASSERT_EQ(0, idx[0]);
     `ASSERT_EQ(0, idx[1]);
-    `ASSERT_EQ(0, miss_transition);
 
     // Index change
     @(posedge CLK);
@@ -87,7 +88,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(0, stop);
     `ASSERT_EQ(1, idx[0]);
     `ASSERT_EQ(0, idx[1]);
-    `ASSERT_EQ(0, miss_transition);
 
     // segment change to 1, immidiate
     @(posedge CLK);
@@ -102,7 +102,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(0, stop);
     `ASSERT_EQ(1, idx[0]);
     `ASSERT_EQ(1, idx[1]);
-    `ASSERT_EQ(0, miss_transition);
 
     // segment change to 0, wait for idx[0] == 0, repeat one time
     @(posedge CLK);
@@ -117,7 +116,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(0, stop);
     `ASSERT_EQ(1, idx[0]);
     `ASSERT_EQ(1, idx[1]);
-    `ASSERT_EQ(0, miss_transition);
 
     // Index change
     @(posedge CLK);
@@ -129,7 +127,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(0, stop);
     `ASSERT_EQ(2, idx[0]);
     `ASSERT_EQ(2, idx[1]);
-    `ASSERT_EQ(0, miss_transition);
 
     // Index change to 0, change segment
     @(posedge CLK);
@@ -140,7 +137,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(0, stop);
     `ASSERT_EQ(0, idx[0]);
     `ASSERT_EQ(2, idx[1]);
-    `ASSERT_EQ(0, miss_transition);
 
     // Index change
     @(posedge CLK);
@@ -151,7 +147,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(0, stop);
     `ASSERT_EQ(1, idx[0]);
     `ASSERT_EQ(2, idx[1]);
-    `ASSERT_EQ(0, miss_transition);
 
     // Index change, first loop done
     @(posedge CLK);
@@ -162,7 +157,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(1, stop);
     `ASSERT_EQ(0, idx[0]);
     `ASSERT_EQ(2, idx[1]);
-    `ASSERT_EQ(0, miss_transition);
 
     // segment change to 1, wait for idx[1] == 0, repeat 2 times
     @(posedge CLK);
@@ -176,7 +170,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(1, stop);
     `ASSERT_EQ(0, idx[0]);
     `ASSERT_EQ(2, idx[1]);
-    `ASSERT_EQ(0, miss_transition);
 
     // Index change to 0, change segment
     @(posedge CLK);
@@ -187,7 +180,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(0, stop);
     `ASSERT_EQ(0, idx[0]);
     `ASSERT_EQ(0, idx[1]);
-    `ASSERT_EQ(0, miss_transition);
 
     // Index change
     @(posedge CLK);
@@ -198,7 +190,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(0, stop);
     `ASSERT_EQ(0, idx[0]);
     `ASSERT_EQ(1, idx[1]);
-    `ASSERT_EQ(0, miss_transition);
 
     // Index change, first loop done
     @(posedge CLK);
@@ -209,7 +200,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(0, stop);
     `ASSERT_EQ(0, idx[0]);
     `ASSERT_EQ(0, idx[1]);
-    `ASSERT_EQ(0, miss_transition);
 
     // Index change
     @(posedge CLK);
@@ -220,7 +210,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(0, stop);
     `ASSERT_EQ(0, idx[0]);
     `ASSERT_EQ(1, idx[1]);
-    `ASSERT_EQ(0, miss_transition);
 
     // Index change, second loop done, assert stop
     @(posedge CLK);
@@ -231,7 +220,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(1, stop);
     `ASSERT_EQ(0, idx[0]);
     `ASSERT_EQ(0, idx[1]);
-    `ASSERT_EQ(0, miss_transition);
 
     // segment change to 1, immidiate
     @(posedge CLK);
@@ -245,7 +233,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(0, stop);
     `ASSERT_EQ(0, idx[0]);
     `ASSERT_EQ(0, idx[1]);
-    `ASSERT_EQ(0, miss_transition);
   endtask
 
   task automatic test_gpio();
@@ -260,7 +247,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(0, stop);
     `ASSERT_EQ(0, idx[0]);
     `ASSERT_EQ(0, idx[1]);
-    `ASSERT_EQ(0, miss_transition);
 
     // Index change
     @(posedge CLK);
@@ -271,7 +257,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(0, stop);
     `ASSERT_EQ(1, idx[0]);
     `ASSERT_EQ(0, idx[1]);
-    `ASSERT_EQ(0, miss_transition);
 
     // segment change to 1, immidiate
     @(posedge CLK);
@@ -286,7 +271,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(0, stop);
     `ASSERT_EQ(1, idx[0]);
     `ASSERT_EQ(1, idx[1]);
-    `ASSERT_EQ(0, miss_transition);
 
     // segment change to 0, wait for GPIO[0] and idx[0] changed, repeat one time
     @(posedge CLK);
@@ -302,7 +286,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(0, stop);
     `ASSERT_EQ(1, idx[0]);
     `ASSERT_EQ(1, idx[1]);
-    `ASSERT_EQ(0, miss_transition);
 
     // Index change, change segment
     @(posedge CLK);
@@ -312,7 +295,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(0, segment);
     `ASSERT_EQ(0, stop);
     `ASSERT_EQ(0, idx[0]);
-    `ASSERT_EQ(0, miss_transition);
 
     // Index change
     @(posedge CLK);
@@ -323,7 +305,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(0, segment);
     `ASSERT_EQ(0, stop);
     `ASSERT_EQ(1, idx[0]);
-    `ASSERT_EQ(0, miss_transition);
 
     // Index change
     @(posedge CLK);
@@ -333,7 +314,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(0, segment);
     `ASSERT_EQ(0, stop);
     `ASSERT_EQ(2, idx[0]);
-    `ASSERT_EQ(0, miss_transition);
 
     // Index change, first loop done
     @(posedge CLK);
@@ -343,7 +323,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(0, segment);
     `ASSERT_EQ(1, stop);
     `ASSERT_EQ(0, idx[0]);
-    `ASSERT_EQ(0, miss_transition);
 
     // segment change to 1, wait for idx[1] changed, repeat 2 times
     @(posedge CLK);
@@ -357,7 +336,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(0, segment);
     `ASSERT_EQ(1, stop);
     `ASSERT_EQ(0, idx[0]);
-    `ASSERT_EQ(0, miss_transition);
 
     // Index change, change segment
     @(posedge CLK);
@@ -367,7 +345,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(1, segment);
     `ASSERT_EQ(0, stop);
     `ASSERT_EQ(0, idx[1]);
-    `ASSERT_EQ(0, miss_transition);
 
     // Index change
     @(posedge CLK);
@@ -377,7 +354,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(1, segment);
     `ASSERT_EQ(0, stop);
     `ASSERT_EQ(1, idx[1]);
-    `ASSERT_EQ(0, miss_transition);
 
     // Index change
     @(posedge CLK);
@@ -387,7 +363,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(1, segment);
     `ASSERT_EQ(0, stop);
     `ASSERT_EQ(2, idx[1]);
-    `ASSERT_EQ(0, miss_transition);
 
     // Index change, first loop done
     @(posedge CLK);
@@ -397,7 +372,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(1, segment);
     `ASSERT_EQ(0, stop);
     `ASSERT_EQ(0, idx[1]);
-    `ASSERT_EQ(0, miss_transition);
 
     // Index change
     @(posedge CLK);
@@ -407,7 +381,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(1, segment);
     `ASSERT_EQ(0, stop);
     `ASSERT_EQ(1, idx[1]);
-    `ASSERT_EQ(0, miss_transition);
 
     // Index change
     @(posedge CLK);
@@ -417,7 +390,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(1, segment);
     `ASSERT_EQ(0, stop);
     `ASSERT_EQ(2, idx[1]);
-    `ASSERT_EQ(0, miss_transition);
 
     // Index change, second loop done, assert stop
     @(posedge CLK);
@@ -427,7 +399,6 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(1, segment);
     `ASSERT_EQ(1, stop);
     `ASSERT_EQ(0, idx[1]);
-    `ASSERT_EQ(0, miss_transition);
 
     // segment change to 1, immidiate
     @(posedge CLK);
@@ -443,7 +414,203 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(0, stop);
     `ASSERT_EQ(0, idx[0]);
     `ASSERT_EQ(0, idx[1]);
-    `ASSERT_EQ(0, miss_transition);
+  endtask
+
+  task automatic test_sys_time();
+    @(posedge CLK);
+    sync_idx[0] <= 0;
+    sync_idx[1] <= 0;
+    transition_mode <= params::TRANSITION_MODE_SYS_TIME;
+    transition_value <= 0;
+    @(posedge CLK);
+    @(negedge CLK);
+    `ASSERT_EQ(0, segment);
+    `ASSERT_EQ(0, stop);
+    `ASSERT_EQ(0, idx[0]);
+    `ASSERT_EQ(0, idx[1]);
+
+    // Index change
+    @(posedge CLK);
+    sync_idx[0] <= 1;
+    @(posedge CLK);
+    @(negedge CLK);
+    `ASSERT_EQ(0, segment);
+    `ASSERT_EQ(0, stop);
+    `ASSERT_EQ(1, idx[0]);
+    `ASSERT_EQ(0, idx[1]);
+
+    // segment change to 1, immidiate
+    @(posedge CLK);
+    sync_idx[1] <= 1;
+    rep[1] <= 32'hFFFFFFFF;
+    req_rd_segment <= 1;
+    update_settings <= 1;
+    @(posedge CLK);
+    update_settings <= 0;
+    @(negedge CLK);
+    `ASSERT_EQ(1, segment);
+    `ASSERT_EQ(0, stop);
+    `ASSERT_EQ(1, idx[0]);
+    `ASSERT_EQ(1, idx[1]);
+
+    @(posedge CLK);
+    transition_value <= SYS_TIME + 5;
+    repeat (AddSubLatency) @(posedge CLK);
+
+    // segment change to 0, wait for 5 clocks, repeat one time
+    @(posedge CLK);
+    sync_idx[1] <= sync_idx[1] + 1;
+    rep[0] <= 32'h0;
+    req_rd_segment <= 0;
+    update_settings <= 1;
+    @(posedge CLK);
+    update_settings <= 0;
+    @(negedge CLK);
+    `ASSERT_EQ(1, segment);
+    `ASSERT_EQ(0, stop);
+    `ASSERT_EQ(sync_idx[1], idx[1]);
+
+    // wait for 3 clocks
+    for (int i = 0; i < 3; i++) begin
+      @(posedge CLK);
+      @(negedge CLK);
+      `ASSERT_EQ(1, segment);
+      `ASSERT_EQ(0, stop);
+    end
+
+    // change segment
+    @(posedge CLK);
+    @(negedge CLK);
+    `ASSERT_EQ(0, segment);
+    `ASSERT_EQ(0, stop);
+    `ASSERT_EQ(0, idx[0]);
+
+    // Index change
+    @(posedge CLK);
+    sync_idx[0] <= sync_idx[0] + 100;
+    @(posedge CLK);
+    @(negedge CLK);
+    `ASSERT_EQ(0, segment);
+    `ASSERT_EQ(0, stop);
+    `ASSERT_EQ(1, idx[0]);
+
+    // Index change
+    @(posedge CLK);
+    sync_idx[0] <= sync_idx[0] + 1;
+    @(posedge CLK);
+    @(negedge CLK);
+    `ASSERT_EQ(0, segment);
+    `ASSERT_EQ(0, stop);
+    `ASSERT_EQ(2, idx[0]);
+
+    // Index change, first loop done
+    @(posedge CLK);
+    sync_idx[0] <= sync_idx[0] + 1;
+    @(posedge CLK);
+    @(negedge CLK);
+    `ASSERT_EQ(0, segment);
+    `ASSERT_EQ(1, stop);
+    `ASSERT_EQ(0, idx[0]);
+
+    @(posedge CLK);
+    transition_value <= SYS_TIME + 5;
+    repeat (AddSubLatency) @(posedge CLK);
+
+    // segment change to 1, wait for for 5 clocks, repeat 2 times
+    @(posedge CLK);
+    rep[1] <= 32'h1;
+    req_rd_segment <= 1;
+    update_settings <= 1;
+    @(posedge CLK);
+    update_settings <= 0;
+    @(negedge CLK);
+    `ASSERT_EQ(0, segment);
+    `ASSERT_EQ(1, stop);
+    `ASSERT_EQ(0, idx[0]);
+
+    // wait for 3 clocks
+    for (int i = 0; i < 3; i++) begin
+      @(posedge CLK);
+      @(negedge CLK);
+      `ASSERT_EQ(0, segment);
+      `ASSERT_EQ(1, stop);
+    end
+
+    // change segment
+    @(posedge CLK);
+    @(negedge CLK);
+    `ASSERT_EQ(1, segment);
+    `ASSERT_EQ(0, stop);
+    `ASSERT_EQ(0, idx[1]);
+
+    // Index change
+    @(posedge CLK);
+    sync_idx[1] <= sync_idx[1] + 1;
+    @(posedge CLK);
+    @(negedge CLK);
+    `ASSERT_EQ(1, segment);
+    `ASSERT_EQ(0, stop);
+    `ASSERT_EQ(1, idx[1]);
+
+    // Index change
+    @(posedge CLK);
+    sync_idx[1] <= sync_idx[1] + 1;
+    @(posedge CLK);
+    @(negedge CLK);
+    `ASSERT_EQ(1, segment);
+    `ASSERT_EQ(0, stop);
+    `ASSERT_EQ(2, idx[1]);
+
+    // Index change, first loop done
+    @(posedge CLK);
+    sync_idx[1] <= sync_idx[1] + 1;
+    @(posedge CLK);
+    @(negedge CLK);
+    `ASSERT_EQ(1, segment);
+    `ASSERT_EQ(0, stop);
+    `ASSERT_EQ(0, idx[1]);
+
+    // Index change
+    @(posedge CLK);
+    sync_idx[1] <= sync_idx[1] + 1;
+    @(posedge CLK);
+    @(negedge CLK);
+    `ASSERT_EQ(1, segment);
+    `ASSERT_EQ(0, stop);
+    `ASSERT_EQ(1, idx[1]);
+
+    // Index change
+    @(posedge CLK);
+    sync_idx[1] <= sync_idx[1] + 1;
+    @(posedge CLK);
+    @(negedge CLK);
+    `ASSERT_EQ(1, segment);
+    `ASSERT_EQ(0, stop);
+    `ASSERT_EQ(2, idx[1]);
+
+    // Index change, second loop done, assert stop
+    @(posedge CLK);
+    sync_idx[1] <= sync_idx[1] + 1;
+    @(posedge CLK);
+    @(negedge CLK);
+    `ASSERT_EQ(1, segment);
+    `ASSERT_EQ(1, stop);
+    `ASSERT_EQ(0, idx[1]);
+
+    // segment change to 1, immidiate
+    @(posedge CLK);
+    sync_idx[0] <= 0;
+    sync_idx[1] <= 0;
+    rep[1] <= 32'hFFFFFFFF;
+    req_rd_segment <= 1;
+    update_settings <= 1;
+    @(posedge CLK);
+    update_settings <= 0;
+    @(negedge CLK);
+    `ASSERT_EQ(1, segment);
+    `ASSERT_EQ(0, stop);
+    `ASSERT_EQ(0, idx[0]);
+    `ASSERT_EQ(0, idx[1]);
   endtask
 
   initial begin
@@ -466,6 +633,9 @@ module sim_stm_swapchain ();
 
     reset();
     test_gpio();
+
+    reset();
+    test_sys_time();
 
     $display("OK! sim_stm_swapchain");
     $finish();
