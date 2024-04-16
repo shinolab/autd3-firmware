@@ -2,6 +2,8 @@ package params;
 
   localparam int NumTransducers = 249;
 
+  localparam int NumSegment = 2;
+
   localparam int GainSTMSize = 1024;
   localparam int STMWrAddrWidth = $clog2(GainSTMSize * 256);
   localparam int STMRdAddrWidth = $clog2(GainSTMSize * 64);

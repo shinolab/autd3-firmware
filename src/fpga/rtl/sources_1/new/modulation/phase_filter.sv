@@ -9,14 +9,13 @@ module phase_filter #(
     output var DOUT_VALID
 );
 
-  localparam int AddSubLatency = 2;
+  localparam int AddSubLatency = 1;
 
   logic [7:0] phase_buf;
-
-  logic signed [9:0] a_phase, b_phase, s_phase;
-  logic [$clog2(DEPTH+AddSubLatency+1)-1:0] calc_cnt, set_cnt;
-
   logic [7:0] phase_f;
+
+  logic [8:0] s_phase;
+  logic [$clog2(DEPTH+AddSubLatency)-1:0] cnt;
 
   logic dout_valid = 0;
 
@@ -48,11 +47,11 @@ module phase_filter #(
   );
 
   addsub #(
-      .WIDTH(10)
+      .WIDTH(9)
   ) addsub_phase (
       .CLK(CLK),
-      .A  (a_phase),
-      .B  (b_phase),
+      .A  ({1'b0, phase_buf}),
+      .B  ({1'b0, phase_filter_value}),
       .ADD(1'b1),
       .S  (s_phase)
   );
@@ -60,12 +59,10 @@ module phase_filter #(
   always_ff @(posedge CLK) begin
     case (state)
       WAITING: begin
+        bus_addr   <= '0;
         dout_valid <= 1'b0;
         if (DIN_VALID) begin
-          calc_cnt <= '0;
-          set_cnt <= '0;
-          bus_addr <= '0;
-
+          cnt   <= '0;
           state <= WAITING_BRAM_0;
         end
       end
@@ -78,22 +75,11 @@ module phase_filter #(
         state <= RUN;
       end
       RUN: begin
-        bus_addr <= bus_addr + 1;
-
-        a_phase  <= {2'b00, phase_buf};
-        b_phase  <= {2'b00, phase_filter_value};
-        calc_cnt <= calc_cnt + 1;
-
-        if (calc_cnt > AddSubLatency) begin
-          dout_valid <= 1'b1;
-          phase_f <= s_phase[7:0];
-          set_cnt <= set_cnt + 1;
-          if (set_cnt == DEPTH - 1) begin
-            state <= WAITING;
-          end
-        end
-      end
-      default: begin
+        bus_addr   <= bus_addr + 1;
+        cnt        <= cnt + 1;
+        phase_f    <= s_phase[7:0];
+        dout_valid <= cnt > AddSubLatency;
+        state      <= (cnt == AddSubLatency + DEPTH) ? WAITING : state;
       end
     endcase
   end

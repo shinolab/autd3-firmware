@@ -8,7 +8,7 @@ module modulation_multiplier #(
     output wire [15:0] INTENSITY_OUT,
     output wire DOUT_VALID,
     modulation_bus_if.out_port MOD_BUS,
-    input wire [14:0] IDX[2],
+    input wire [14:0] IDX[params::NumSegment],
     input wire SEGMENT,
     input wire STOP,
     output wire [14:0] DEBUG_IDX,
@@ -26,9 +26,9 @@ module modulation_multiplier #(
   logic [7:0] mod;
   logic [14:0] idx = '0;
   logic stop_buf = 1'b0, segment_buf = 1'b0;
-  logic [$clog2(DEPTH+(Latency+1))-1:0] cnt, set_cnt;
+  logic [$clog2(DEPTH+(Latency+1))-1:0] cnt;
   logic [7:0] intensity_buf;
-  logic signed [17:0] p;
+  logic [15:0] p;
 
   assign segment = SEGMENT;
   assign stop = STOP;
@@ -36,6 +36,9 @@ module modulation_multiplier #(
   assign MOD_BUS.IDX = idx;
   assign mod = MOD_BUS.VALUE;
   assign MOD_BUS.SEGMENT = segment_buf;
+
+  assign INTENSITY_OUT = p;
+  assign DOUT_VALID = dout_valid;
 
   assign DEBUG_IDX = idx;
   assign DEBUG_SEGMENT = segment_buf;
@@ -50,39 +53,20 @@ module modulation_multiplier #(
       .DOUT(intensity_buf)
   );
 
-  delay_fifo #(
-      .WIDTH(16),
-      .DEPTH(1)
-  ) delay_fifo_intensity_out (
-      .CLK (CLK),
-      .DIN (p[15:0]),
-      .DOUT(INTENSITY_OUT)
-  );
-
-  delay_fifo #(
-      .WIDTH(1),
-      .DEPTH(1)
-  ) delay_fifo_dout_valid (
-      .CLK (CLK),
-      .DIN (dout_valid),
-      .DOUT(DOUT_VALID)
-  );
-
-  mult #(
-      .WIDTH_A(9),
-      .WIDTH_B(9)
+  mult_8x8 #(
+      .WIDTH_A(8),
+      .WIDTH_B(8)
   ) mult (
       .CLK(CLK),
-      .A  ({1'b0, intensity_buf}),
-      .B  ({1'b0, mod}),
+      .A  (intensity_buf),
+      .B  (mod),
       .P  (p)
   );
 
-  typedef enum logic [2:0] {
+  typedef enum logic [1:0] {
     WAITING,
     WAIT_MOD_LOAD_0,
     WAIT_MOD_LOAD_1,
-    MOD_LOAD,
     RUN
   } state_t;
 
@@ -94,10 +78,9 @@ module modulation_multiplier #(
         dout_valid <= 1'b0;
         if (DIN_VALID) begin
           cnt <= 0;
-          set_cnt <= 0;
           stop_buf <= stop;
           if (stop == 1'b0) begin
-            idx <= segment == 1'b0 ? IDX[0] : IDX[1];
+            idx <=    IDX[segment];
             segment_buf <= segment;
           end
           state <= WAIT_MOD_LOAD_0;
@@ -111,15 +94,8 @@ module modulation_multiplier #(
       end
       RUN: begin
         cnt <= cnt + 1;
-        if (cnt > Latency) begin
-          dout_valid <= 1'b1;
-          set_cnt <= set_cnt + 1;
-          if (set_cnt == DEPTH - 1) begin
-            state <= WAITING;
-          end
-        end
-      end
-      default: begin
+        dout_valid <= cnt > Latency;
+        state <= (cnt == Latency + DEPTH - 1) ? WAITING : state;
       end
     endcase
   end

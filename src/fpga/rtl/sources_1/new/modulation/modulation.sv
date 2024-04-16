@@ -13,32 +13,38 @@ module modulation #(
     output wire DOUT_VALID,
     modulation_bus_if.out_port MOD_BUS,
     filter_bus_if.out_port FILTER_BUS,
+    input wire GPIO_IN[4],
     output wire [14:0] DEBUG_IDX,
     output wire DEBUG_SEGMENT,
     output wire DEBUG_STOP
 );
 
-  logic [14:0] idx_timer[2];
+  logic [14:0] sync_idx[params::NumSegment];
   modulation_timer modulation_timer (
       .CLK(CLK),
       .UPDATE_SETTINGS_IN(MOD_SETTINGS.UPDATE),
       .SYS_TIME(SYS_TIME),
       .CYCLE(MOD_SETTINGS.CYCLE),
       .FREQ_DIV(MOD_SETTINGS.FREQ_DIV),
-      .IDX(idx_timer),
+      .IDX(sync_idx),
       .UPDATE_SETTINGS_OUT(update_settings)
   );
 
-  logic [14:0] idx[2];
+  logic [14:0] idx[params::NumSegment];
   modulation_swapchain modulation_swapchain (
       .CLK(CLK),
+      .SYS_TIME(SYS_TIME),
       .UPDATE_SETTINGS(update_settings),
       .REQ_RD_SEGMENT(MOD_SETTINGS.REQ_RD_SEGMENT),
+      .TRANSITION_MODE(MOD_SETTINGS.TRANSITION_MODE),
+      .TRANSITION_VALUE(MOD_SETTINGS.TRANSITION_VALUE),
+      .CYCLE(MOD_SETTINGS.CYCLE),
       .REP(MOD_SETTINGS.REP),
-      .IDX_IN(idx_timer),
-      .SEGMENT(segment),
+      .SYNC_IDX(sync_idx),
+      .GPIO_IN(GPIO_IN),
       .STOP(stop),
-      .IDX_OUT(idx)
+      .SEGMENT(segment),
+      .IDX(idx)
   );
 
   modulation_multiplier #(

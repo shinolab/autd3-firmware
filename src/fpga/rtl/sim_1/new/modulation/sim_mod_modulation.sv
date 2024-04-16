@@ -140,6 +140,10 @@ module sim_mod_modulation ();
     freq_div_buf[1] = 2;
 
     din_valid = 1'b0;
+
+    mod_settings.TRANSITION_MODE = params::TRANSITION_MODE_SYNC_IDX;
+    mod_settings.TRANSITION_VALUE = '0;
+
     mod_settings.CYCLE[0] = '0;
     mod_settings.FREQ_DIV[0] = '1;
     mod_settings.CYCLE[1] = '0;
