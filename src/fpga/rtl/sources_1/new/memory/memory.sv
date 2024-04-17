@@ -8,6 +8,8 @@ module memory (
     filter_bus_if.in_port FILTER_BUS
 );
 
+  import params::*;
+
   logic bus_clk;
   logic en;
   logic we;
@@ -30,7 +32,7 @@ module memory (
   ///////////////////////////// Controller ////////////////////////////
   logic ctl_en;
 
-  assign ctl_en = (cnt_sel == params::BRAM_CNT_SELECT_MAIN) & (select == params::BRAM_SELECT_CONTROLLER) & en;
+  assign ctl_en = (cnt_sel == BRAM_CNT_SELECT_MAIN) & (select == BRAM_SELECT_CONTROLLER) & en;
 
   BRAM_CONTROLLER ctl_bram (
       .clka (bus_clk),
@@ -50,7 +52,7 @@ module memory (
   /////////////////////////////// Filter //////////////////////////////
   logic filter_en;
 
-  assign filter_en = (cnt_sel == params::BRAM_CNT_SELECT_FILTER) & (select == params::BRAM_SELECT_CONTROLLER) & en;
+  assign filter_en = (cnt_sel == BRAM_CNT_SELECT_FILTER) & (select == BRAM_SELECT_CONTROLLER) & en;
 
   BRAM_FILTER filter_bram (
       .clka (bus_clk),
@@ -74,7 +76,7 @@ module memory (
   logic [15:0] duty_table_idx;
   logic [7:0] duty_table_dout;
 
-  assign duty_table_en = (select == params::BRAM_SELECT_DUTY_TABLE) & en;
+  assign duty_table_en = (select == BRAM_SELECT_DUTY_TABLE) & en;
   assign duty_table_idx = DUTY_TABLE_BUS.IDX;
   assign DUTY_TABLE_BUS.VALUE = duty_table_dout;
 
@@ -94,83 +96,57 @@ module memory (
   ///////////////////////////// Duty table ////////////////////////////
 
   ///////////////////////////// Modulator /////////////////////////////
-  logic mod_en_0, mod_en_1;
+  logic mod_en[NumSegment];
 
   logic [14:0] mod_idx;
-  logic [7:0] mod_value_0, mod_value_1;
+  logic [7:0] mod_value[NumSegment];
 
   logic mod_mem_wr_segment;
 
-  assign mod_en_0 = (select == params::BRAM_SELECT_MOD) & en & (mod_mem_wr_segment == 1'b0);
-  assign mod_en_1 = (select == params::BRAM_SELECT_MOD) & en & (mod_mem_wr_segment == 1'b1);
   assign mod_idx = MOD_BUS.IDX;
-  assign MOD_BUS.VALUE = (MOD_BUS.SEGMENT == 1'b0) ? mod_value_0 : mod_value_1;
-
-  BRAM_MOD mod_bram_0 (
-      .clka (bus_clk),
-      .ena  (mod_en_0),
-      .wea  (we),
-      .addra(addr),
-      .dina (data_in),
-      .douta(),
-      .clkb (CLK),
-      .web  ('0),
-      .addrb(mod_idx),
-      .dinb ('0),
-      .doutb(mod_value_0)
-  );
-
-  BRAM_MOD mod_bram_1 (
-      .clka (bus_clk),
-      .ena  (mod_en_1),
-      .wea  (we),
-      .addra(addr),
-      .dina (data_in),
-      .douta(),
-      .clkb (CLK),
-      .web  ('0),
-      .addrb(mod_idx),
-      .dinb ('0),
-      .doutb(mod_value_1)
-  );
+  assign MOD_BUS.VALUE = mod_value[MOD_BUS.SEGMENT];
+  for (genvar i = 0; i < NumSegment; i++) begin : gen_mod_bram
+    assign mod_en[i] = (select == BRAM_SELECT_MOD) & en & (mod_mem_wr_segment == i);
+    BRAM_MOD mod_bram (
+        .clka (bus_clk),
+        .ena  (mod_en[i]),
+        .wea  (we),
+        .addra(addr),
+        .dina (data_in),
+        .douta(),
+        .clkb (CLK),
+        .web  ('0),
+        .addrb(mod_idx),
+        .dinb ('0),
+        .doutb(mod_value[i])
+    );
+  end
   ///////////////////////////// Modulator /////////////////////////////
 
   /////////////////////////////    STM   /////////////////////////////
-  logic stm_en_0, stm_en_1;
+  logic stm_en[NumSegment];
 
   logic [15:0] stm_idx;
-  logic [63:0] stm_value_0, stm_value_1;
+  logic [63:0] stm_value[NumSegment];
 
   logic stm_mem_wr_segment;
   logic [3:0] stm_mem_wr_page;
 
-  assign stm_en_0 = (select == params::BRAM_SELECT_STM) & en & (stm_mem_wr_segment == 1'b0);
-  assign stm_en_1 = (select == params::BRAM_SELECT_STM) & en & (stm_mem_wr_segment == 1'b1);
   assign stm_idx = STM_BUS.ADDR;
-  assign STM_BUS.VALUE = (STM_BUS.SEGMENT == 1'b0) ? stm_value_0 : stm_value_1;
-
-  bram_stm stm_bram_0 (
-      .clka (bus_clk),
-      .ena  (stm_en_0),
-      .wea  (we),
-      .addra({stm_mem_wr_page, addr}),
-      .dina (data_in),
-      .clkb (CLK),
-      .addrb(stm_idx),
-      .doutb(stm_value_0)
-  );
-
-  bram_stm stm_bram_1 (
-      .clka (bus_clk),
-      .ena  (stm_en_1),
-      .wea  (we),
-      .addra({stm_mem_wr_page, addr}),
-      .dina (data_in),
-      .clkb (CLK),
-      .addrb(stm_idx),
-      .doutb(stm_value_1)
-  );
-
+  assign STM_BUS.VALUE = stm_value[STM_BUS.SEGMENT];
+  for (genvar i = 0; i < NumSegment; i++) begin : gen_stm_bram
+    assign stm_en[i] = (select == BRAM_SELECT_STM) & en & (stm_mem_wr_segment == i);
+    bram_stm stm_bram (
+        .clka (bus_clk),
+        .ena  (stm_en[i]),
+        .wea  (we),
+        .addra({stm_mem_wr_page, addr}),
+        .dina (data_in),
+        .clkb (CLK),
+        .addrb(stm_idx),
+        .doutb(stm_value[i])
+    );
+  end
   /////////////////////////////    STM   /////////////////////////////
 
   logic [2:0] ctl_we_edge = 3'b000;
@@ -178,10 +154,10 @@ module memory (
     ctl_we_edge <= {ctl_we_edge[1:0], we & ctl_en};
     if (ctl_we_edge == 3'b011) begin
       case (addr)
-        params::ADDR_MOD_MEM_WR_SEGMENT: mod_mem_wr_segment <= data_in[0];
-        params::ADDR_STM_MEM_WR_SEGMENT: stm_mem_wr_segment <= data_in[0];
-        params::ADDR_STM_MEM_WR_PAGE: stm_mem_wr_page <= data_in[3:0];
-        params::ADDR_PULSE_WIDTH_ENCODER_TABLE_WR_PAGE: duty_table_wr_page <= data_in[0];
+        ADDR_MOD_MEM_WR_SEGMENT: mod_mem_wr_segment <= data_in[0];
+        ADDR_STM_MEM_WR_SEGMENT: stm_mem_wr_segment <= data_in[0];
+        ADDR_STM_MEM_WR_PAGE: stm_mem_wr_page <= data_in[3:0];
+        ADDR_PULSE_WIDTH_ENCODER_TABLE_WR_PAGE: duty_table_wr_page <= data_in[0];
         default: begin
         end
       endcase
