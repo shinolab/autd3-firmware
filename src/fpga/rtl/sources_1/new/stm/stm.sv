@@ -43,7 +43,7 @@ module stm #(
   assign DEBUG_SEGMENT = segment;
   assign DEBUG_CYCLE = cycle;
 
-  logic [15:0] timer_idx[2];
+  logic [15:0] timer_idx[params::NumSegment];
   stm_timer stm_timer (
       .CLK(CLK),
       .UPDATE_SETTINGS_IN(STM_SETTINGS.UPDATE),
@@ -54,7 +54,7 @@ module stm #(
       .UPDATE_SETTINGS_OUT(update_settings)
   );
 
-  logic [15:0] swapchain_idx[2];
+  logic [15:0] swapchain_idx[params::NumSegment];
   logic swapchain_segment;
   logic swapchain_stop;
   stm_swapchain stm_swapchain (

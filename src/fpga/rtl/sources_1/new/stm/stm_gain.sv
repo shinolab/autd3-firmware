@@ -18,7 +18,6 @@ module stm_gain #(
   logic [63:0] data_out;
 
   logic [7:0] addr;
-  logic [1:0] set_cnt;
   logic [$clog2(DEPTH)-1:0] cnt;
 
   typedef enum logic [1:0] {
@@ -52,42 +51,37 @@ module stm_gain #(
         state <= BRAM_WAIT_1;
       end
       BRAM_WAIT_1: begin
-        cnt <= '0;
-        addr <= addr + 1;
-        set_cnt <= '0;
+        cnt   <= '0;
+        addr  <= addr + 1;
         state <= RUN;
       end
       RUN: begin
         addr <= addr + 1;
         dout_valid <= 1;
-        case (set_cnt)
-          0: begin
+        cnt <= cnt + 1;
+        case (cnt[1:0])
+          2'h0: begin
             phase <= data_out[7:0];
             intensity <= data_out[15:8];
           end
-          1: begin
+          2'h1: begin
             phase <= data_out[23:16];
             intensity <= data_out[31:24];
           end
-          2: begin
+          2'h2: begin
             phase <= data_out[39:32];
             intensity <= data_out[47:40];
           end
-          3: begin
+          2'h3: begin
             phase <= data_out[55:48];
             intensity <= data_out[63:56];
           end
           default: begin
           end
         endcase
-        set_cnt <= set_cnt + 1;
-        cnt <= cnt + 1;
-        if (cnt == DEPTH - 1) begin
-          state <= WAITING;
-        end
+        state <= (cnt == DEPTH - 1) ? WAITING : state;
       end
-      default: begin
-      end
+      default: state <= WAITING;
     endcase
   end
 

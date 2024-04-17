@@ -6,31 +6,27 @@ module stm_swapchain (
     input wire REQ_RD_SEGMENT,
     input wire [7:0] TRANSITION_MODE,
     input wire [63:0] TRANSITION_VALUE,
-    input wire [15:0] CYCLE[2],
-    input wire [31:0] REP[2],
-    input wire [15:0] SYNC_IDX[2],
+    input wire [15:0] CYCLE[params::NumSegment],
+    input wire [31:0] REP[params::NumSegment],
+    input wire [15:0] SYNC_IDX[params::NumSegment],
     input wire GPIO_IN[4],
     output wire STOP,
     output wire SEGMENT,
-    output wire [15:0] IDX[2]
+    output wire [15:0] IDX[params::NumSegment]
 );
 
   logic segment = 1'b0;
   logic req_segment;
   logic stop = 1'b0;
-  logic [7:0] transition_mode;
-  logic [63:0] transition_value;
   logic [31:0] rep;
   logic [31:0] loop_cnt;
 
-  logic idx_changed[2];
-  logic [15:0] idx_old[2];
-  logic [15:0] tic_idx[2];
+  logic idx_changed[params::NumSegment];
+  logic [15:0] idx_old[params::NumSegment];
+  logic [15:0] tic_idx[params::NumSegment];
 
   logic signed [64:0] time_diff;
 
-  assign idx_changed[0] = idx_old[0] != SYNC_IDX[0];
-  assign idx_changed[1] = idx_old[1] != SYNC_IDX[1];
   assign SEGMENT = segment;
   assign STOP = stop;
 
@@ -48,9 +44,6 @@ module stm_swapchain (
   idx_mode_t idx_mode = IDX_MODE_SYNC_IDX;
   state_t state = INFINITE_LOOP;
 
-  assign IDX[0] = (idx_mode == IDX_MODE_SYNC_IDX) ? idx_old[0] : tic_idx[0];
-  assign IDX[1] = (idx_mode == IDX_MODE_SYNC_IDX) ? idx_old[1] : tic_idx[1];
-
   addsub_64_64 addsub_diff_time (
       .CLK(CLK),
       .A  ({1'b0, TRANSITION_VALUE}),
@@ -58,6 +51,11 @@ module stm_swapchain (
       .ADD(1'b0),
       .S  (time_diff)
   );
+
+  for (genvar i = 0; i < params::NumSegment; i++) begin : gen_stm_swapchain
+    assign idx_changed[i] = idx_old[i] != SYNC_IDX[i];
+    assign IDX[i] = (idx_mode == IDX_MODE_SYNC_IDX) ? idx_old[i] : tic_idx[i];
+  end
 
   always_ff @(posedge CLK) begin
     if (UPDATE_SETTINGS) begin
@@ -73,8 +71,6 @@ module stm_swapchain (
           state <= INFINITE_LOOP;
         end else begin
           rep <= REP[REQ_RD_SEGMENT];
-          transition_mode <= TRANSITION_MODE;
-          transition_value <= TRANSITION_VALUE;
           req_segment <= REQ_RD_SEGMENT;
           state <= WAIT_START;
         end
@@ -82,7 +78,7 @@ module stm_swapchain (
     end else begin
       case (state)
         WAIT_START: begin
-          case (transition_mode)
+          case (TRANSITION_MODE)
             params::TRANSITION_MODE_SYNC_IDX: begin
               if (idx_changed[req_segment] && (SYNC_IDX[req_segment] == '0)) begin
                 stop <= 1'b0;
@@ -103,7 +99,7 @@ module stm_swapchain (
               end
             end
             params::TRANSITION_MODE_GPIO: begin
-              if (idx_changed[req_segment] && GPIO_IN[transition_value]) begin
+              if (idx_changed[req_segment] && GPIO_IN[TRANSITION_VALUE]) begin
                 stop <= 1'b0;
                 loop_cnt <= '0;
                 segment <= req_segment;
@@ -112,6 +108,7 @@ module stm_swapchain (
                 state <= FINITE_LOOP;
               end
             end
+            default: ;
           endcase
         end
         INFINITE_LOOP: begin
@@ -138,21 +135,18 @@ module stm_swapchain (
                     loop_cnt <= loop_cnt + 1;
                   end
                 end else begin
-                  tic_idx[segment] <= tic_idx[segment] + 16'd1;
+                  tic_idx[segment] <= tic_idx[segment] + 1;
                 end
               end
             end
+            default: ;
           endcase
         end
-        default: begin
-          state <= INFINITE_LOOP;
-        end
+        default: state <= INFINITE_LOOP;
       endcase
     end
   end
 
-  always_ff @(posedge CLK) begin
-    idx_old <= SYNC_IDX;
-  end
+  always_ff @(posedge CLK) idx_old <= SYNC_IDX;
 
 endmodule

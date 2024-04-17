@@ -12,45 +12,36 @@ module stm_focus #(
     output wire DOUT_VALID
 );
 
-  localparam int DivLatency = 2 + 2 + 2 + 2 + 10 + 66 + 1;
-  localparam int Latency = DivLatency + DEPTH;
-
-  logic [7:0] intensity = '0;
-  logic [7:0] phase = '0;
+  localparam int CalcLatency = 2 + 2 + 2 + 10 + 66 + 1;
 
   logic [15:0] addr = '0;
   logic [63:0] data_out;
   logic dout_valid = 1'b0;
 
-  logic [7:0] intensity_buf = '0;
-  logic signed [17:0] focus_x = '0, focus_y = '0, focus_z = '0;
+  wire signed [17:0] focus_x = data_out[17:0];
+  wire signed [17:0] focus_y = data_out[35:18];
+  wire signed [17:0] focus_z = data_out[53:36];
   logic signed [15:0] trans_x, trans_y;
   logic signed [17:0] dx, dy;
-  logic [35:0] dx2, dy2, dz2;
-  logic [36:0] dxy2;
-  logic [37:0] d2;
+  logic [35:0] dx2, dy2, dz2, dxy2, d2;
   logic [23:0] sqrt_dout;
 
   logic [63:0] quo;
   logic [31:0] _unused_rem;
 
-  logic [$clog2(Latency)-1:0] cnt = '0;
-  logic [$clog2(DEPTH)-1:0] set_cnt = '0;
+  logic [$clog2(CalcLatency + DEPTH)-1:0] cnt = '0;
 
-  logic [7:0] tr_idx = '0;
-
-  typedef enum logic [2:0] {
+  typedef enum logic [1:0] {
     WAITING,
     BRAM_WAIT_0,
     BRAM_WAIT_1,
-    LOAD,
     CALC
   } state_t;
 
   state_t state = WAITING;
 
   dist_mem_tr dist_mem_tr (
-      .a  (tr_idx),
+      .a  (cnt[7:0]),
       .spo({trans_x, trans_y})
   );
 
@@ -105,21 +96,21 @@ module stm_focus #(
   );
 
   addsub #(
-      .WIDTH(37)
+      .WIDTH(36)
   ) addsub_xy2 (
       .CLK(CLK),
-      .A  ({1'b0, dx2}),
-      .B  ({1'b0, dy2}),
+      .A  (dx2),
+      .B  (dy2),
       .ADD(1'b1),
       .S  (dxy2)
   );
 
   addsub #(
-      .WIDTH(38)
+      .WIDTH(36)
   ) addsub_xyz2 (
       .CLK(CLK),
-      .A  ({1'b0, dxy2}),
-      .B  ({2'b00, dz2}),
+      .A  (dxy2),
+      .B  (dz2),
       .ADD(1'b1),
       .S  (d2)
   );
@@ -145,53 +136,29 @@ module stm_focus #(
   assign STM_BUS.FOCUS_IDX = IDX;
   assign data_out = STM_BUS.VALUE;
 
-  assign INTENSITY = intensity;
-  assign PHASE = phase;
+  assign INTENSITY = data_out[61:54];
+  assign PHASE = quo[7:0];
   assign DOUT_VALID = dout_valid;
 
   always_ff @(posedge CLK) begin
     case (state)
       WAITING: begin
+        cnt <= 0;
         dout_valid <= 1'b0;
-        if (START) begin
-          state <= BRAM_WAIT_0;
-        end
+        state <= START ? BRAM_WAIT_0 : state;
       end
       BRAM_WAIT_0: begin
         state <= BRAM_WAIT_1;
       end
       BRAM_WAIT_1: begin
-        state <= LOAD;
-      end
-      LOAD: begin
-        focus_x <= data_out[17:0];
-        focus_y <= data_out[35:18];
-        focus_z <= data_out[53:36];
-        intensity_buf <= data_out[61:54];
-        tr_idx <= 0;
-        cnt <= 0;
-        set_cnt <= 0;
-
         state <= CALC;
       end
       CALC: begin
-        tr_idx <= tr_idx + 1;
         cnt <= cnt + 1;
-
-        if (cnt >= DivLatency) begin
-          dout_valid <= 1'b1;
-          set_cnt <= set_cnt + 1;
-
-          phase <= quo[7:0];
-          intensity <= intensity_buf;
-        end
-
-        if (set_cnt == DEPTH - 1) begin
-          state <= WAITING;
-        end
+        dout_valid <= cnt > CalcLatency;
+        state <= (cnt == CalcLatency + DEPTH - 1) ? WAITING : state;
       end
-      default: begin
-      end
+      default: state <= WAITING;
     endcase
   end
 
