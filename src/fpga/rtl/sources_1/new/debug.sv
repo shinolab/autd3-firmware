@@ -18,10 +18,7 @@ module debug #(
 
   logic gpio_out[4];
 
-  assign GPIO_OUT[0] = gpio_out[0];
-  assign GPIO_OUT[1] = gpio_out[1];
-  assign GPIO_OUT[2] = gpio_out[2];
-  assign GPIO_OUT[3] = gpio_out[3];
+  assign GPIO_OUT = gpio_out;
 
   always_ff @(posedge CLK) begin
     gpio_out[0] <= debug_signal(DEBUG_SETTINGS.TYPE[0], DEBUG_SETTINGS.VALUE[0]);
@@ -72,7 +69,6 @@ module debug #(
         debug_signal = 1'b0;
       end
     endcase
-
   endfunction
 
 endmodule
