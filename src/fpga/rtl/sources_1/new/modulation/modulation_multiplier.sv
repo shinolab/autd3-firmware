@@ -53,10 +53,7 @@ module modulation_multiplier #(
       .DOUT(intensity_buf)
   );
 
-  mult_8x8 #(
-      .WIDTH_A(8),
-      .WIDTH_B(8)
-  ) mult (
+  mult_8x8 mult (
       .CLK(CLK),
       .A  (intensity_buf),
       .B  (mod),
@@ -97,6 +94,7 @@ module modulation_multiplier #(
         dout_valid <= cnt > Latency;
         state <= (cnt == Latency + DEPTH - 1) ? WAITING : state;
       end
+      default: state <= WAITING;
     endcase
   end
 
