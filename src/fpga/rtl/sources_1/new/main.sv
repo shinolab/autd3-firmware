@@ -131,6 +131,7 @@ module main #(
       .DOUT_VALID(dout_valid_m),
       .MOD_BUS(mod_bus.out_port),
       .FILTER_BUS(filter_bus.out_port),
+      .GPIO_IN(GPIO_IN),
       .DEBUG_IDX(mod_idx),
       .DEBUG_SEGMENT(mod_segment),
       .DEBUG_STOP()
