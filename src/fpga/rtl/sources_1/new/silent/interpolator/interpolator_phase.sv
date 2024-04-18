@@ -4,7 +4,7 @@ module interpolator_phase #(
     input var CLK,
     input var DIN_VALID,
     input var [15:0] UPDATE_RATE,
-    input var [15:0] PHASE_IN,
+    input var [7:0] PHASE_IN,
     output var [7:0] PHASE_OUT,
     output var DOUT_VALID
 );
@@ -12,7 +12,7 @@ module interpolator_phase #(
   localparam int AddSubLatency = 2;
   localparam int TotalLatency = 2 + AddSubLatency + AddSubLatency + AddSubLatency;
 
-  logic [15:0] phase_in;
+  logic [ 7:0] phase_in;
   logic [15:0] current;
 
   logic [15:0] update_rate;
@@ -56,7 +56,7 @@ module interpolator_phase #(
   );
 
   delay_fifo #(
-      .WIDTH(16),
+      .WIDTH(8),
       .DEPTH(2)
   ) fifo_phase_in (
       .CLK (CLK),
@@ -77,7 +77,7 @@ module interpolator_phase #(
       .WIDTH(17)
   ) sub_step (
       .CLK(CLK),
-      .A  ({1'b0, phase_in}),
+      .A  ({1'b0, phase_in, 8'h00}),
       .B  ({1'b0, current}),
       .ADD(1'b0),
       .S  (step)

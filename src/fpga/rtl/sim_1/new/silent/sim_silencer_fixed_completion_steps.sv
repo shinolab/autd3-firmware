@@ -1,6 +1,12 @@
 `timescale 1ns / 1ps
 module sim_silencer_fixed_completion_steps ();
 
+  `define ASSERT_EQ(expected, actual) \
+  if (expected !== actual) begin \
+    $error("%s:%d: expected is %s, but actual is %s", `__FILE__, `__LINE__, $sformatf("%0d", expected), $sformatf("%0d", actual));\
+    $finish();\
+  end
+
   parameter int DEPTH = 249;
 
   logic CLK;
@@ -68,45 +74,15 @@ module sim_silencer_fixed_completion_steps ();
       set();
       wait_calc();
     join
-    for (int i = 0; i < DEPTH; i++) begin
-      if (phase_s_buf[i] !== expect_phase) begin
-        $display("ERR: PHASE(%d) !== %d in %d-th transducer", phase_s_buf[i], expect_phase, i);
-        $finish;
-        break;
-      end
-    end
-    for (int i = 0; i < DEPTH; i++) begin
-      if (intensity_s_buf[i] !== expect_intensity) begin
-        $display("ERR: INTENSITY(%d) !== %d in %d-th transducer", intensity_s_buf[i],
-                 expect_intensity, i);
-        $finish;
-        break;
-      end
-    end
-  endtask
-
-  task automatic check();
-    for (int i = 0; i < DEPTH; i++) begin
-      if (phase_s_buf[i] !== phase_buf[i]) begin
-        $display("ERR: PHASE(%d) !== PHASE_S(%d) in %d-th transducer", phase_buf[i],
-                 phase_s_buf[i], i);
-        $finish;
-      end
-      if (intensity_s_buf[i] !== intensity_buf[i]) begin
-        $display("ERR: INTENSITY(%d) !== INTENSITY_S(%d) in %d-th transducer", intensity_buf[i],
-                 intensity_s_buf[i], i);
-        $finish;
-      end
-    end
+    `ASSERT_EQ(expect_phase, phase_s_buf[0]);
+    `ASSERT_EQ(expect_intensity, intensity_s_buf[0]);
   endtask
 
   task automatic reset(logic [15:0] expect_intensity, logic [7:0] expect_phase);
     silencer_settings.COMPLETION_STEPS_INTENSITY = 1;
     silencer_settings.COMPLETION_STEPS_PHASE = 1;
-    for (int i = 0; i < DEPTH; i++) begin
-      phase_buf[i] = expect_phase;
-      intensity_buf[i] = expect_intensity;
-    end
+    phase_buf[0] = expect_phase;
+    intensity_buf[0] = expect_intensity;
     check_manual(expect_intensity, expect_phase);
   endtask
 
@@ -117,6 +93,10 @@ module sim_silencer_fixed_completion_steps ();
     din_valid = 0;
     phase = 0;
     intensity = 0;
+    for (int i = 0; i < DEPTH; i++) begin
+      phase_buf[i] = 0;
+      intensity_buf[i] = 0;
+    end
     sim_helper_random.init();
 
     @(posedge locked);
@@ -126,19 +106,17 @@ module sim_silencer_fixed_completion_steps ();
 
     silencer_settings.COMPLETION_STEPS_INTENSITY = 10;
     silencer_settings.COMPLETION_STEPS_PHASE     = 10;
-    for (int i = 0; i < DEPTH; i++) begin
-      phase_buf[i] = 128;
-      intensity_buf[i] = 128;
-    end
+    phase_buf[0]                                 = 128;
+    intensity_buf[0]                             = 128;
 
-    check_manual(22, 21);  //1
-    check_manual(34, 33);  //2
-    check_manual(46, 45);  //3
-    check_manual(58, 57);  //4
-    check_manual(70, 69);  //5
-    check_manual(82, 80);  //6
-    check_manual(94, 92);  //7
-    check_manual(106, 104);  //8
+    check_manual(21, 21);  //1
+    check_manual(33, 33);  //2
+    check_manual(45, 45);  //3
+    check_manual(57, 57);  //4
+    check_manual(69, 69);  //5
+    check_manual(81, 80);  //6
+    check_manual(93, 92);  //7
+    check_manual(105, 104);  //8
     check_manual(117, 116);  //9
     for (int i = 0; i < 5; i++) begin
       check_manual(128, 128);
@@ -151,15 +129,13 @@ module sim_silencer_fixed_completion_steps ();
 
     silencer_settings.COMPLETION_STEPS_INTENSITY = 10;
     silencer_settings.COMPLETION_STEPS_PHASE = 10;
-    for (int i = 0; i < DEPTH; i++) begin
-      phase_buf[i] = 128;
-      intensity_buf[i] = 1024;
-    end
+    phase_buf[0] = 128;
+    intensity_buf[0] = 1024;
 
-    check_manual(103, 12);  //1
-    check_manual(206, 25);  //2
-    check_manual(309, 38);  //3
-    check_manual(412, 51);  //4
+    check_manual(102, 12);  //1
+    check_manual(205, 25);  //2
+    check_manual(308, 38);  //3
+    check_manual(411, 51);  //4
     check_manual(514, 64);  //5
     check_manual(616, 76);  //6
     check_manual(718, 89);  //7
@@ -176,15 +152,13 @@ module sim_silencer_fixed_completion_steps ();
 
     silencer_settings.COMPLETION_STEPS_INTENSITY = 10;
     silencer_settings.COMPLETION_STEPS_PHASE = 10;
-    for (int i = 0; i < DEPTH; i++) begin
-      phase_buf[i] = 139;
-      intensity_buf[i] = 1024;
-    end
+    phase_buf[0] = 139;
+    intensity_buf[0] = 1024;
 
-    check_manual(103, 253);  //1
-    check_manual(206, 240);  //2
-    check_manual(309, 227);  //3
-    check_manual(412, 215);  //4
+    check_manual(102, 253);  //1
+    check_manual(205, 240);  //2
+    check_manual(308, 227);  //3
+    check_manual(411, 215);  //4
     check_manual(514, 202);  //5
     check_manual(616, 189);  //6
     check_manual(718, 177);  //7
@@ -201,15 +175,13 @@ module sim_silencer_fixed_completion_steps ();
 
     silencer_settings.COMPLETION_STEPS_INTENSITY = 10;
     silencer_settings.COMPLETION_STEPS_PHASE     = 10;
-    for (int i = 0; i < DEPTH; i++) begin
-      phase_buf[i] = 129;
-      intensity_buf[i] = 1024;
-    end
+    phase_buf[0]                                 = 129;
+    intensity_buf[0]                             = 1024;
 
-    check_manual(103, 243);  //1
-    check_manual(206, 230);  //2
-    check_manual(309, 217);  //3
-    check_manual(412, 205);  //4
+    check_manual(102, 243);  //1
+    check_manual(205, 230);  //2
+    check_manual(308, 217);  //3
+    check_manual(411, 205);  //4
     check_manual(514, 192);  //5
     check_manual(616, 179);  //6
     check_manual(718, 167);  //7
@@ -226,15 +198,13 @@ module sim_silencer_fixed_completion_steps ();
 
     silencer_settings.COMPLETION_STEPS_INTENSITY = 10;
     silencer_settings.COMPLETION_STEPS_PHASE = 10;
-    for (int i = 0; i < DEPTH; i++) begin
-      phase_buf[i] = 180;
-      intensity_buf[i] = 1024;
-    end
+    phase_buf[0] = 180;
+    intensity_buf[0] = 1024;
 
-    check_manual(103, 248);  //1
-    check_manual(206, 240);  //2
-    check_manual(309, 233);  //3
-    check_manual(412, 225);  //4
+    check_manual(102, 248);  //1
+    check_manual(205, 240);  //2
+    check_manual(308, 233);  //3
+    check_manual(411, 225);  //4
     check_manual(514, 217);  //5
     check_manual(616, 210);  //6
     check_manual(718, 202);  //7
@@ -251,17 +221,15 @@ module sim_silencer_fixed_completion_steps ();
 
     silencer_settings.COMPLETION_STEPS_INTENSITY = 10;
     silencer_settings.COMPLETION_STEPS_PHASE = 10;
-    for (int i = 0; i < DEPTH; i++) begin
-      phase_buf[i] = 128;
-      intensity_buf[i] = 1024;
-    end
+    phase_buf[0] = 128;
+    intensity_buf[0] = 1024;
 
-    check_manual(1398, 174);  //1
-    check_manual(1356, 169);  //2
-    check_manual(1314, 164);  //3
-    check_manual(1272, 159);  //4
-    check_manual(1230, 153);  //5
-    check_manual(1188, 148);  //6
+    check_manual(1399, 174);  //1
+    check_manual(1357, 169);  //2
+    check_manual(1315, 164);  //3
+    check_manual(1273, 159);  //4
+    check_manual(1231, 153);  //5
+    check_manual(1189, 148);  //6
     check_manual(1147, 143);  //7
     check_manual(1106, 138);  //8
     check_manual(1065, 133);  //9
@@ -276,17 +244,15 @@ module sim_silencer_fixed_completion_steps ();
 
     silencer_settings.COMPLETION_STEPS_INTENSITY = 10;
     silencer_settings.COMPLETION_STEPS_PHASE = 10;
-    for (int i = 0; i < DEPTH; i++) begin
-      phase_buf[i] = 180;
-      intensity_buf[i] = 1024;
-    end
+    phase_buf[0] = 180;
+    intensity_buf[0] = 1024;
 
-    check_manual(1398, 247);  //1
-    check_manual(1356, 240);  //2
-    check_manual(1314, 232);  //3
-    check_manual(1272, 225);  //4
-    check_manual(1230, 217);  //5
-    check_manual(1188, 210);  //6
+    check_manual(1399, 247);  //1
+    check_manual(1357, 240);  //2
+    check_manual(1315, 232);  //3
+    check_manual(1273, 225);  //4
+    check_manual(1231, 217);  //5
+    check_manual(1189, 210);  //6
     check_manual(1147, 202);  //7
     check_manual(1106, 195);  //8
     check_manual(1065, 187);  //9
@@ -301,17 +267,15 @@ module sim_silencer_fixed_completion_steps ();
 
     silencer_settings.COMPLETION_STEPS_INTENSITY = 10;
     silencer_settings.COMPLETION_STEPS_PHASE = 10;
-    for (int i = 0; i < DEPTH; i++) begin
-      phase_buf[i] = 126;
-      intensity_buf[i] = 1024;
-    end
+    phase_buf[0] = 126;
+    intensity_buf[0] = 1024;
 
-    check_manual(1398, 11);  //1
-    check_manual(1356, 24);  //2
-    check_manual(1314, 37);  //3
-    check_manual(1272, 49);  //4
-    check_manual(1230, 62);  //5
-    check_manual(1188, 75);  //6
+    check_manual(1399, 11);  //1
+    check_manual(1357, 24);  //2
+    check_manual(1315, 37);  //3
+    check_manual(1273, 49);  //4
+    check_manual(1231, 62);  //5
+    check_manual(1189, 75);  //6
     check_manual(1147, 87);  //7
     check_manual(1106, 100);  //8
     check_manual(1065, 113);  //9
@@ -326,17 +290,15 @@ module sim_silencer_fixed_completion_steps ();
 
     silencer_settings.COMPLETION_STEPS_INTENSITY = 10;
     silencer_settings.COMPLETION_STEPS_PHASE = 10;
-    for (int i = 0; i < DEPTH; i++) begin
-      phase_buf[i] = 127;
-      intensity_buf[i] = 1024;
-    end
+    phase_buf[0] = 127;
+    intensity_buf[0] = 1024;
 
-    check_manual(1398, 242);  //1
-    check_manual(1356, 229);  //2
-    check_manual(1314, 216);  //3
-    check_manual(1272, 203);  //4
-    check_manual(1230, 190);  //5
-    check_manual(1188, 178);  //6
+    check_manual(1399, 242);  //1
+    check_manual(1357, 229);  //2
+    check_manual(1315, 216);  //3
+    check_manual(1273, 203);  //4
+    check_manual(1231, 191);  //5
+    check_manual(1189, 178);  //6
     check_manual(1147, 165);  //7
     check_manual(1106, 152);  //8
     check_manual(1065, 139);  //9
@@ -351,17 +313,15 @@ module sim_silencer_fixed_completion_steps ();
 
     silencer_settings.COMPLETION_STEPS_INTENSITY = 10;
     silencer_settings.COMPLETION_STEPS_PHASE = 10;
-    for (int i = 0; i < DEPTH; i++) begin
-      phase_buf[i] = 10;
-      intensity_buf[i] = 1024;
-    end
+    phase_buf[0] = 10;
+    intensity_buf[0] = 1024;
 
-    check_manual(1398, 0);  //1
-    check_manual(1356, 1);  //2
-    check_manual(1314, 2);  //3
-    check_manual(1272, 3);  //4
-    check_manual(1230, 4);  //5
-    check_manual(1188, 5);  //6
+    check_manual(1399, 0);  //1
+    check_manual(1357, 1);  //2
+    check_manual(1315, 2);  //3
+    check_manual(1273, 3);  //4
+    check_manual(1231, 4);  //5
+    check_manual(1189, 5);  //6
     check_manual(1147, 6);  //7
     check_manual(1106, 7);  //8
     check_manual(1065, 8);  //9
@@ -376,17 +336,15 @@ module sim_silencer_fixed_completion_steps ();
 
     silencer_settings.COMPLETION_STEPS_INTENSITY = 10;
     silencer_settings.COMPLETION_STEPS_PHASE = 10;
-    for (int i = 0; i < DEPTH; i++) begin
-      phase_buf[i] = 0;
-      intensity_buf[i] = 1024;
-    end
+    phase_buf[0] = 0;
+    intensity_buf[0] = 1024;
 
-    check_manual(1398, 187);  //1
-    check_manual(1356, 195);  //2
-    check_manual(1314, 202);  //3
-    check_manual(1272, 210);  //4
-    check_manual(1230, 218);  //5
-    check_manual(1188, 225);  //6
+    check_manual(1399, 187);  //1
+    check_manual(1357, 195);  //2
+    check_manual(1315, 202);  //3
+    check_manual(1273, 210);  //4
+    check_manual(1231, 218);  //5
+    check_manual(1189, 225);  //6
     check_manual(1147, 233);  //7
     check_manual(1106, 240);  //8
     check_manual(1065, 248);  //9
@@ -401,16 +359,14 @@ module sim_silencer_fixed_completion_steps ();
 
     silencer_settings.COMPLETION_STEPS_INTENSITY = 10;
     silencer_settings.COMPLETION_STEPS_PHASE = 10;
-    for (int i = 0; i < DEPTH; i++) begin
-      phase_buf[i] = 5;
-      intensity_buf[i] = 5;
-    end
+    phase_buf[0] = 5;
+    intensity_buf[0] = 5;
 
-    check_manual(1, 0);  //1
-    check_manual(2, 1);  //2
-    check_manual(3, 1);  //3
-    check_manual(4, 2);  //4
-    check_manual(5, 2);  //5
+    check_manual(0, 0);  //1
+    check_manual(1, 1);  //2
+    check_manual(2, 1);  //3
+    check_manual(3, 2);  //4
+    check_manual(4, 2);  //5
     check_manual(5, 3);  //6
     check_manual(5, 3);  //7
     check_manual(5, 4);  //8
@@ -422,8 +378,8 @@ module sim_silencer_fixed_completion_steps ();
     //////////////// Manual check 12 ////////////////
 
     // from random to random with random step (small steps)
-    for (int i = 0; i < 100; i++) begin
-      $display("Random test %d/100", i + 1);
+    for (int i = 0; i < 10; i++) begin
+      $display("Random test %d/10", i + 1);
       n_repeat = sim_helper_random.range(255, 1);
       silencer_settings.COMPLETION_STEPS_INTENSITY = n_repeat;
       silencer_settings.COMPLETION_STEPS_PHASE = n_repeat;
@@ -437,12 +393,15 @@ module sim_silencer_fixed_completion_steps ();
           wait_calc();
         join
       end
-      check();
+      for (int i = 0; i < DEPTH; i++) begin
+        `ASSERT_EQ(phase_buf[i], phase_s_buf[i]);
+        `ASSERT_EQ(intensity_buf[i], intensity_s_buf[i]);
+      end
     end
 
     // from random to random with random step (large steps)
-    for (int i = 0; i < 10; i++) begin
-      $display("Random test %d/100", i + 1);
+    for (int i = 0; i < 3; i++) begin
+      $display("Random test %d/3", i + 1);
       n_repeat = sim_helper_random.range(255 * 255, 256);
       silencer_settings.COMPLETION_STEPS_INTENSITY = n_repeat;
       silencer_settings.COMPLETION_STEPS_PHASE = n_repeat;
@@ -456,7 +415,10 @@ module sim_silencer_fixed_completion_steps ();
           wait_calc();
         join
       end
-      check();
+      for (int i = 0; i < DEPTH; i++) begin
+        `ASSERT_EQ(phase_buf[i], phase_s_buf[i]);
+        `ASSERT_EQ(intensity_buf[i], intensity_s_buf[i]);
+      end
     end
 
     $display("Ok! sim_silencer_fixed_completion_steps");

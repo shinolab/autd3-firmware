@@ -6,7 +6,7 @@ module interpolator #(
     input var [15:0] UPDATE_RATE_INTENSITY,
     input var [15:0] UPDATE_RATE_PHASE,
     input var [15:0] INTENSITY_IN,
-    input var [15:0] PHASE_IN,
+    input var [7:0] PHASE_IN,
     output var [15:0] INTENSITY_OUT,
     output var [7:0] PHASE_OUT,
     output var DOUT_VALID
