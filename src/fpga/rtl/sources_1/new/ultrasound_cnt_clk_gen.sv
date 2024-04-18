@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 module ultrasound_cnt_clk_gen (
     input  wire clk_in1,
     input  wire reset,
@@ -22,14 +23,14 @@ module ultrasound_cnt_clk_gen (
       .COMPENSATION        ("ZHOLD"),
       .STARTUP_WAIT        ("FALSE"),
       .DIVCLK_DIVIDE       (1),
-      .CLKFBOUT_MULT_F     (39.000),
+      .CLKFBOUT_MULT_F     (23.500),
       .CLKFBOUT_PHASE      (0.000),
       .CLKFBOUT_USE_FINE_PS("FALSE"),
-      .CLKOUT0_DIVIDE_F    (48.750),
+      .CLKOUT0_DIVIDE_F    (29.375),
       .CLKOUT0_PHASE       (0.000),
       .CLKOUT0_DUTY_CYCLE  (0.500),
       .CLKOUT0_USE_FINE_PS ("FALSE"),
-      .CLKIN1_PERIOD       (39.063)
+      .CLKIN1_PERIOD       (39.062)
   ) MMCME2_ADV_inst (
       .CLKOUT0(CLKOUT),
       .CLKOUT0B(),

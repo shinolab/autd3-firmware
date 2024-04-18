@@ -8,19 +8,15 @@ module synchronizer (
     output var SKIP_ONE_ASSERT
 );
 
-  localparam int ADDSUB_LATENCY = 6;
+  localparam int AddSubLatency = 6;
 
-  localparam logic [31:0] ECAT_SYNC_BASE = 32'd500000;  // ns
-  localparam logic [17:0] ECAT_SYNC_BASE_CNT = 18'd10240;  // 20.48MHz * 500000ns
+  localparam logic [31:0] ECatSyncBase = 32'd500000;  // ns
+  localparam int ECatSyncBaseCnt = int'(params::UltrasoundFrequency * 512.0 * 0.0005);
 
   logic [63:0] ecat_sync_time;
   logic [63:0] lap;
   logic [31:0] lap_rem_unused;
-  logic [63:0] sync_time_raw;
-  logic [13:0] sync_time_raw_unused;
   logic [63:0] sync_time;
-
-  assign sync_time = sync_time_raw;
 
   logic [2:0] sync_tri = 0;
   logic sync;
@@ -29,8 +25,8 @@ module synchronizer (
   logic [63:0] sys_time = 0;
   logic [63:0] next_sync_time = 0;
   logic signed [64:0] sync_time_diff = 0;
-  logic [$clog2(ADDSUB_LATENCY+1+1)-1:0] addsub_cnt = ADDSUB_LATENCY + 1;
-  logic [$clog2(ADDSUB_LATENCY+1+1)-1:0] addsub_next_cnt = ADDSUB_LATENCY + 1;
+  logic [$clog2(AddSubLatency+1+1)-1:0] addsub_cnt = AddSubLatency + 1;
+  logic [$clog2(AddSubLatency+1+1)-1:0] addsub_next_cnt = AddSubLatency + 1;
   logic set;
   logic [17:0] next_sync_cnt = 0;
 
@@ -43,7 +39,7 @@ module synchronizer (
   div_64_32 div_64_32_lap (
       .s_axis_dividend_tdata(ecat_sync_time),
       .s_axis_dividend_tvalid(1'b1),
-      .s_axis_divisor_tdata(ECAT_SYNC_BASE),
+      .s_axis_divisor_tdata(ECatSyncBase),
       .s_axis_divisor_tvalid(1'b1),
       .aclk(CLK),
       .m_axis_dout_tdata({lap, lap_rem_unused}),
@@ -53,7 +49,8 @@ module synchronizer (
   mult_sync_base mult_sync_base_time (
       .CLK(CLK),
       .A  (lap),
-      .P  ({sync_time_raw_unused, sync_time_raw})
+      .B  (ECatSyncBaseCnt[17:0]),
+      .P  (sync_time)
   );
 
   addsub_64_64 addsub_diff (
@@ -98,10 +95,10 @@ module synchronizer (
         sys_time <= sys_time + 1;
       end
       addsub_cnt <= 0;
-      next_sync_cnt <= ECAT_SYNC_BASE_CNT >> 1;
+      next_sync_cnt <= {1'b0, ECatSyncBaseCnt[17:1]};
       skip_one_assert <= 1'b0;
     end else begin
-      if (addsub_cnt == ADDSUB_LATENCY + 1) begin
+      if (addsub_cnt == AddSubLatency + 1) begin
         if (sync_time_diff == 65'd0) begin
           sys_time <= sys_time + 1;
           skip_one_assert <= 1'b0;
@@ -114,7 +111,7 @@ module synchronizer (
           skip_one_assert <= 1'b1;
           sync_time_diff <= sync_time_diff - 1;
         end
-      end else if (addsub_cnt == ADDSUB_LATENCY) begin
+      end else if (addsub_cnt == AddSubLatency) begin
         sync_time_diff <= s_diff;
         addsub_cnt <= addsub_cnt + 1;
         sys_time <= sys_time + 1;
@@ -125,15 +122,15 @@ module synchronizer (
         skip_one_assert <= 1'b0;
       end
 
-      if (next_sync_cnt == ECAT_SYNC_BASE_CNT - 1) begin
+      if (next_sync_cnt == ECatSyncBaseCnt[17:0] - 1) begin
         next_sync_cnt <= 0;
         a_next <= {1'b0, next_sync_time};
-        b_next <= {47'd0, ECAT_SYNC_BASE_CNT};
+        b_next <= {47'd0, ECatSyncBaseCnt[17:0]};
         addsub_next_cnt <= 0;
       end else begin
-        if (addsub_next_cnt == ADDSUB_LATENCY + 1) begin
+        if (addsub_next_cnt == AddSubLatency + 1) begin
           addsub_next_cnt <= addsub_next_cnt;
-        end else if (addsub_next_cnt == ADDSUB_LATENCY) begin
+        end else if (addsub_next_cnt == AddSubLatency) begin
           next_sync_time  <= s_next[63:0];
           addsub_next_cnt <= addsub_next_cnt + 1;
         end else begin
@@ -144,8 +141,7 @@ module synchronizer (
     end
   end
 
-  always_ff @(posedge CLK) begin
-    sync_tri <= {sync_tri[1:0], ECAT_SYNC};
-  end
+  always_ff @(posedge CLK) sync_tri <= {sync_tri[1:0], ECAT_SYNC};
+
 
 endmodule
