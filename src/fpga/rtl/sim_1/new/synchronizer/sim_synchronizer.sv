@@ -2,7 +2,7 @@
 module sim_synchronizer ();
 
   localparam int ECAT_SYNC_BASE = 500000;  // 500 us
-  localparam logic [15:0] ECAT_SYNC_CYCLE_TICKS = 1;
+  localparam logic [15:0] ECAT_SYNC_CYCLE_TICKS = 4;
 
   logic CLK_20P48M, CLK_20P48M_p50, CLK_20P48M_m50;
   logic [63:0] SYS_TIME, SYS_TIME_p50, SYS_TIME_m50;

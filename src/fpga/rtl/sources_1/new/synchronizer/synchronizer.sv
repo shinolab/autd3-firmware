@@ -24,14 +24,15 @@ module synchronizer (
 
   logic [63:0] sys_time = 0;
   logic [63:0] next_sync_time = 0;
-  logic signed [64:0] sync_time_diff = 0;
-  logic [$clog2(AddSubLatency+1+1)-1:0] addsub_cnt = AddSubLatency + 1;
-  logic [$clog2(AddSubLatency+1+1)-1:0] addsub_next_cnt = AddSubLatency + 1;
+  logic signed [18:0] sync_time_diff = 0;
+  logic [$clog2(AddSubLatency+1+1)-1:0] diff_cnt = AddSubLatency + 1;
+  logic [$clog2(AddSubLatency+1+1)-1:0] next_cnt = AddSubLatency + 1;
   logic set;
   logic [17:0] next_sync_cnt = 0;
 
-  logic signed [64:0] a_diff, b_diff, s_diff;
-  logic signed [64:0] a_next, b_next, s_next;
+  logic [63:0] a_diff, b_diff;
+  logic signed [63:0] s_diff;
+  logic [63:0] a_next, b_next, s_next;
 
   logic skip_one_assert;
   assign SKIP_ONE_ASSERT = skip_one_assert;
@@ -53,19 +54,17 @@ module synchronizer (
       .P  (sync_time)
   );
 
-  addsub_64_64 addsub_diff (
+  sub64_64 sub_diff (
       .CLK(CLK),
       .A  (a_diff),
       .B  (b_diff),
-      .ADD(1'b0),
       .S  (s_diff)
   );
 
-  addsub_64_64 addsub_next (
+  add64_64 addsub_next (
       .CLK(CLK),
       .A  (a_next),
       .B  (b_next),
-      .ADD(1'b1),
       .S  (s_next)
   );
 
@@ -85,24 +84,24 @@ module synchronizer (
     if (sync) begin
       if (set) begin
         sys_time <= sync_time;
-        a_diff <= {1'b0, sync_time};
-        b_diff <= {1'b0, sync_time};
+        a_diff <= 1;
+        b_diff <= 0;
         next_sync_time <= sync_time;
         sync_time_diff <= 65'd0;
       end else begin
-        a_diff   <= {1'b0, next_sync_time};
-        b_diff   <= {1'b0, sys_time + 1};
+        a_diff   <= next_sync_time;
+        b_diff   <= sys_time;
         sys_time <= sys_time + 1;
       end
-      addsub_cnt <= 0;
+      diff_cnt <= 0;
       next_sync_cnt <= {1'b0, ECatSyncBaseCnt[17:1]};
       skip_one_assert <= 1'b0;
     end else begin
-      if (addsub_cnt == AddSubLatency + 1) begin
-        if (sync_time_diff == 65'd0) begin
+      if (diff_cnt == AddSubLatency + 1) begin
+        if (sync_time_diff == '0) begin
           sys_time <= sys_time + 1;
           skip_one_assert <= 1'b0;
-        end else if (sync_time_diff[64] == 1'b1) begin
+        end else if (sync_time_diff[18]) begin
           sys_time <= sys_time;
           skip_one_assert <= 1'b0;
           sync_time_diff <= sync_time_diff + 1;
@@ -111,30 +110,30 @@ module synchronizer (
           skip_one_assert <= 1'b1;
           sync_time_diff <= sync_time_diff - 1;
         end
-      end else if (addsub_cnt == AddSubLatency) begin
-        sync_time_diff <= s_diff;
-        addsub_cnt <= addsub_cnt + 1;
+      end else if (diff_cnt == AddSubLatency) begin
+        sync_time_diff <= {s_diff[63], s_diff[17:0]} - 19'd1;
+        diff_cnt <= diff_cnt + 1;
         sys_time <= sys_time + 1;
         skip_one_assert <= 1'b0;
       end else begin
-        addsub_cnt <= addsub_cnt + 1;
+        diff_cnt <= diff_cnt + 1;
         sys_time <= sys_time + 1;
         skip_one_assert <= 1'b0;
       end
 
       if (next_sync_cnt == ECatSyncBaseCnt[17:0] - 1) begin
         next_sync_cnt <= 0;
-        a_next <= {1'b0, next_sync_time};
-        b_next <= {47'd0, ECatSyncBaseCnt[17:0]};
-        addsub_next_cnt <= 0;
+        a_next <= next_sync_time;
+        b_next <= {46'd0, ECatSyncBaseCnt[17:0]};
+        next_cnt <= 0;
       end else begin
-        if (addsub_next_cnt == AddSubLatency + 1) begin
-          addsub_next_cnt <= addsub_next_cnt;
-        end else if (addsub_next_cnt == AddSubLatency) begin
-          next_sync_time  <= s_next[63:0];
-          addsub_next_cnt <= addsub_next_cnt + 1;
+        if (next_cnt == AddSubLatency + 1) begin
+          next_cnt <= next_cnt;
+        end else if (next_cnt == AddSubLatency) begin
+          next_sync_time <= s_next;
+          next_cnt <= next_cnt + 1;
         end else begin
-          addsub_next_cnt <= addsub_next_cnt + 1;
+          next_cnt <= next_cnt + 1;
         end
         next_sync_cnt <= next_sync_cnt + 1;
       end
