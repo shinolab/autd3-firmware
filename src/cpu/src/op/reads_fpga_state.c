@@ -33,10 +33,10 @@ uint8_t configure_reads_fpga_state(const volatile uint8_t* p_data) {
 void read_fpga_state(void) {
   if (_is_rx_data_used) return;
   if (_read_fpga_state)
-    _rx_data = READS_FPGA_STATE_ENABLED |
-               (uint8_t)bram_read(BRAM_SELECT_CONTROLLER, BRAM_ADDR_FPGA_STATE);
+    _rx_data = FPGA_STATE_READS_FPGA_STATE_ENABLED |
+               (uint8_t)bram_read(BRAM_SELECT_CONTROLLER, ADDR_FPGA_STATE);
   else
-    _rx_data &= ~READS_FPGA_STATE_ENABLED;
+    _rx_data &= ~FPGA_STATE_READS_FPGA_STATE_ENABLED;
 }
 
 #ifdef __cplusplus

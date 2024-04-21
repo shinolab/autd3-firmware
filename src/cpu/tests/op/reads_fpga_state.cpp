@@ -34,7 +34,7 @@ TEST(Op, ReadsFPGAState) {
     ASSERT_EQ(0x00, _sTx.ack & 0xFF);
 
     update();
-    ASSERT_EQ(READS_FPGA_STATE_ENABLED, _sTx.ack & 0xFF);
+    ASSERT_EQ(FPGA_STATE_READS_FPGA_STATE_ENABLED, _sTx.ack & 0xFF);
   }
 
   {
@@ -52,7 +52,7 @@ TEST(Op, ReadsFPGAState) {
 
     const auto ack = _sTx.ack >> 8;
     ASSERT_EQ(ack, header->msg_id);
-    ASSERT_EQ(READS_FPGA_STATE_ENABLED, _sTx.ack & 0xFF);
+    ASSERT_EQ(FPGA_STATE_READS_FPGA_STATE_ENABLED, _sTx.ack & 0xFF);
 
     update();
     ASSERT_EQ(0x00, _sTx.ack & 0xFF);

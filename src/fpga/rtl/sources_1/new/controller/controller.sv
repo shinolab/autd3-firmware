@@ -27,14 +27,14 @@ module controller (
   assign cnt_bus.DIN = din;
   assign dout = cnt_bus.DOUT;
 
-  assign FORCE_FAN = ctl_flags[params::CTL_FLAG_FORCE_FAN];
+  assign FORCE_FAN = ctl_flags[params::CTL_FLAG_BIT_FORCE_FAN];
 
   typedef enum logic [6:0] {
     REQ_WR_VER_MINOR,
     REQ_WR_VER,
     WAIT_WR_VER_0_REQ_RD_CTL_FLAG,
-    WR_VER_MINOR_WAIT_RD_CTL_FLAG_0,
-    WR_VER_WAIT_RD_CTL_FLAG_1,
+    WR_VER_MINOR_WAIT_RD_CTL_FLAG_BIT_0,
+    WR_VER_WAIT_RD_CTL_FLAG_BIT_1,
     WAIT_0,
     WAIT_1,
     REQ_MOD_REQ_RD_SEGMENT,
@@ -141,12 +141,12 @@ module controller (
         we <= 1'b0;
         addr <= params::ADDR_CTL_FLAG;
 
-        state <= WR_VER_MINOR_WAIT_RD_CTL_FLAG_0;
+        state <= WR_VER_MINOR_WAIT_RD_CTL_FLAG_BIT_0;
       end
-      WR_VER_MINOR_WAIT_RD_CTL_FLAG_0: begin
-        state <= WR_VER_WAIT_RD_CTL_FLAG_1;
+      WR_VER_MINOR_WAIT_RD_CTL_FLAG_BIT_0: begin
+        state <= WR_VER_WAIT_RD_CTL_FLAG_BIT_1;
       end
-      WR_VER_WAIT_RD_CTL_FLAG_1: begin
+      WR_VER_WAIT_RD_CTL_FLAG_BIT_1: begin
         state <= WAIT_0;
       end
 
@@ -157,23 +157,23 @@ module controller (
           8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO
         };
 
-        if (ctl_flags[params::CTL_FLAG_MOD_SET]) begin
-          ctl_flags <= ctl_flags & ~(1 << params::CTL_FLAG_MOD_SET);
+        if (ctl_flags[params::CTL_FLAG_BIT_MOD_SET]) begin
+          ctl_flags <= ctl_flags & ~(1 << params::CTL_FLAG_BIT_MOD_SET);
           state <= REQ_MOD_REQ_RD_SEGMENT;
-        end else if (ctl_flags[params::CTL_FLAG_STM_SET]) begin
-          ctl_flags <= ctl_flags & ~(1 << params::CTL_FLAG_STM_SET);
+        end else if (ctl_flags[params::CTL_FLAG_BIT_STM_SET]) begin
+          ctl_flags <= ctl_flags & ~(1 << params::CTL_FLAG_BIT_STM_SET);
           state <= REQ_STM_REQ_RD_SEGMENT;
-        end else if (ctl_flags[params::CTL_FLAG_SILENCER_SET]) begin
-          ctl_flags <= ctl_flags & ~(1 << params::CTL_FLAG_SILENCER_SET);
+        end else if (ctl_flags[params::CTL_FLAG_BIT_SILENCER_SET]) begin
+          ctl_flags <= ctl_flags & ~(1 << params::CTL_FLAG_BIT_SILENCER_SET);
           state <= REQ_SILENCER_MODE;
-        end else if (ctl_flags[params::CTL_FLAG_PULSE_WIDTH_ENCODER_SET]) begin
-          ctl_flags <= ctl_flags & ~(1 << params::CTL_FLAG_PULSE_WIDTH_ENCODER_SET);
+        end else if (ctl_flags[params::CTL_FLAG_BIT_PULSE_WIDTH_ENCODER_SET]) begin
+          ctl_flags <= ctl_flags & ~(1 << params::CTL_FLAG_BIT_PULSE_WIDTH_ENCODER_SET);
           state <= REQ_PULSE_WIDTH_ENCODER_FULL_WIDTH_START;
-        end else if (ctl_flags[params::CTL_FLAG_DEBUG_SET]) begin
-          ctl_flags <= ctl_flags & ~(1 << params::CTL_FLAG_DEBUG_SET);
+        end else if (ctl_flags[params::CTL_FLAG_BIT_DEBUG_SET]) begin
+          ctl_flags <= ctl_flags & ~(1 << params::CTL_FLAG_BIT_DEBUG_SET);
           state <= REQ_DEBUG_TYPE0;
-        end else if (ctl_flags[params::CTL_FLAG_SYNC_SET]) begin
-          ctl_flags <= ctl_flags & ~(1 << params::CTL_FLAG_SYNC_SET);
+        end else if (ctl_flags[params::CTL_FLAG_BIT_SYNC_SET]) begin
+          ctl_flags <= ctl_flags & ~(1 << params::CTL_FLAG_BIT_SYNC_SET);
           state <= REQ_ECAT_SYNC_TIME_0;
         end else begin
           ctl_flags <= dout;

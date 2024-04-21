@@ -88,15 +88,15 @@ uint8_t write_mod(const volatile uint8_t* p_data) {
 
     switch (segment) {
       case 0:
-        bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_FREQ_DIV_0_0,
+        bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_MOD_FREQ_DIV0_0,
                  (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
-        bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_REP_0_0, (uint16_t*)&rep,
+        bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_MOD_REP0_0, (uint16_t*)&rep,
                  sizeof(uint32_t) >> 1);
         break;
       case 1:
-        bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_FREQ_DIV_1_0,
+        bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_MOD_FREQ_DIV1_0,
                  (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
-        bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_REP_1_0, (uint16_t*)&rep,
+        bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_MOD_REP1_0, (uint16_t*)&rep,
                  sizeof(uint32_t) >> 1);
         break;
       default:
@@ -117,11 +117,11 @@ uint8_t write_mod(const volatile uint8_t* p_data) {
   if ((p->subseq.flag & MODULATION_FLAG_END) == MODULATION_FLAG_END) {
     switch (_mod_segment) {
       case 0:
-        bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_CYCLE_0,
+        bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_CYCLE0,
                    max(1, _mod_cycle) - 1);
         break;
       case 1:
-        bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_CYCLE_1,
+        bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_CYCLE1,
                    max(1, _mod_cycle) - 1);
         break;
       default:  // LCOV_EXCL_LINE
@@ -129,8 +129,7 @@ uint8_t write_mod(const volatile uint8_t* p_data) {
     }
 
     if ((p->subseq.flag & MODULATION_FLAG_UPDATE) != 0) {
-      bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_REQ_RD_SEGMENT,
-                 _mod_segment);
+      bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_REQ_RD_SEGMENT, _mod_segment);
       set_and_wait_update(CTL_FLAG_MOD_SET);
     }
   }
@@ -147,7 +146,7 @@ uint8_t change_mod_segment(const volatile uint8_t* p_data) {
 
   const ModulationUpdate* p = (const ModulationUpdate*)p_data;
 
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_REQ_RD_SEGMENT, p->segment);
+  bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_REQ_RD_SEGMENT, p->segment);
   set_and_wait_update(CTL_FLAG_MOD_SET);
 
   return NO_ERR;

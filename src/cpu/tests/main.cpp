@@ -34,7 +34,9 @@ uint32_t stm_wr_segment = 0;
 uint32_t stm_wr_page = 0;
 uint32_t pulse_width_encoder_table_wr_page = 0;
 
-uint16_t bram_read_controller(uint32_t bram_addr) { return controller_bram[bram_addr]; }
+uint16_t bram_read_controller(uint32_t bram_addr) {
+  return controller_bram[bram_addr];
+}
 
 uint16_t bram_read_mod(uint32_t segment, uint32_t bram_addr) {
   switch (segment) {
@@ -47,9 +49,13 @@ uint16_t bram_read_mod(uint32_t segment, uint32_t bram_addr) {
   }
 }
 
-uint16_t bram_read_duty_table(uint32_t bram_addr) { return duty_table_bram[bram_addr]; }
+uint16_t bram_read_duty_table(uint32_t bram_addr) {
+  return duty_table_bram[bram_addr];
+}
 
-uint16_t bram_read_phase_filter(uint32_t bram_addr) { return phase_filter_bram[bram_addr]; }
+uint16_t bram_read_phase_filter(uint32_t bram_addr) {
+  return phase_filter_bram[bram_addr];
+}
 
 uint16_t bram_read_stm(uint32_t segment, uint32_t bram_addr) {
   switch (segment) {
@@ -79,20 +85,20 @@ void fpga_write(uint16_t bram_addr, uint16_t value) {
   switch (select) {
     case BRAM_SELECT_CONTROLLER:
       switch (addr >> 8) {
-        case BRAM_CNT_SEL_MAIN:
-          if (addr == BRAM_ADDR_MOD_MEM_WR_SEGMENT) {
+        case BRAM_CNT_SELECT_MAIN:
+          if (addr == ADDR_MOD_MEM_WR_SEGMENT) {
             mod_wr_segment = value;
-          } else if (addr == BRAM_ADDR_STM_MEM_WR_SEGMENT) {
+          } else if (addr == ADDR_STM_MEM_WR_SEGMENT) {
             stm_wr_segment = value;
-          } else if (addr == BRAM_ADDR_STM_MEM_WR_PAGE) {
+          } else if (addr == ADDR_STM_MEM_WR_PAGE) {
             stm_wr_page = value;
-          } else if (addr == BRAM_ADDR_PULSE_WIDTH_ENCODER_TABLE_WR_PAGE) {
+          } else if (addr == ADDR_PULSE_WIDTH_ENCODER_TABLE_WR_PAGE) {
             pulse_width_encoder_table_wr_page = value;
           } else {
             controller_bram[addr] = value;
           }
           break;
-        case BRAM_CNT_SEL_FILTER:
+        case BRAM_CNT_SELECT_FILTER:
           phase_filter_bram[addr & 0xFF] = value;
           break;
         default:
@@ -143,8 +149,8 @@ int main(int argc, char** argv) {
   std::memset(stm_op_bram_0, 0, sizeof(uint64_t) * 1024 * 64);
   std::memset(stm_op_bram_1, 0, sizeof(uint64_t) * 1024 * 64);
 
-  controller_bram[BRAM_ADDR_VERSION_NUM_MAJOR] = 0x0090;
-  controller_bram[BRAM_ADDR_VERSION_NUM_MINOR] = 0x0000;
+  controller_bram[ADDR_VERSION_NUM_MAJOR] = 0x0090;
+  controller_bram[ADDR_VERSION_NUM_MINOR] = 0x0000;
 
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

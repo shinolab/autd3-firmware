@@ -6,13 +6,13 @@
 
 inline static void change_stm_wr_segment(uint16_t segment) {
   asm("dmb");
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_MEM_WR_SEGMENT, segment);
+  bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MEM_WR_SEGMENT, segment);
   asm("dmb");
 }
 
 inline static void change_stm_wr_page(uint16_t page) {
   asm("dmb");
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_MEM_WR_PAGE, page);
+  bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MEM_WR_PAGE, page);
   asm("dmb");
 }
 

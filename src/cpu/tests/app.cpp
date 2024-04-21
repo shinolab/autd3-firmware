@@ -74,7 +74,8 @@ TEST(Op, Slot2) {
     std::memcpy(&data_body[6], value, 8);
   }
   {
-    auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header) + 14;
+    auto* data_body =
+        reinterpret_cast<uint8_t*>(data.data) + sizeof(Header) + 14;
     data_body[0] = TAG_FORCE_FAN;
     data_body[1] = 0x01;
   }
@@ -87,15 +88,16 @@ TEST(Op, Slot2) {
   const auto ack = _sTx.ack >> 8;
   ASSERT_EQ(ack, header->msg_id);
 
-  ASSERT_EQ(bram_read_controller(BRAM_ADDR_DEBUG_TYPE_0), ty[0]);
-  ASSERT_EQ(bram_read_controller(BRAM_ADDR_DEBUG_TYPE_1), ty[1]);
-  ASSERT_EQ(bram_read_controller(BRAM_ADDR_DEBUG_TYPE_2), ty[2]);
-  ASSERT_EQ(bram_read_controller(BRAM_ADDR_DEBUG_TYPE_3), ty[3]);
-  ASSERT_EQ(bram_read_controller(BRAM_ADDR_DEBUG_VALUE_0), value[0]);
-  ASSERT_EQ(bram_read_controller(BRAM_ADDR_DEBUG_VALUE_1), value[1]);
-  ASSERT_EQ(bram_read_controller(BRAM_ADDR_DEBUG_VALUE_2), value[2]);
-  ASSERT_EQ(bram_read_controller(BRAM_ADDR_DEBUG_VALUE_3), value[3]);
-  ASSERT_TRUE((bram_read_controller(BRAM_ADDR_CTL_FLAG) & CTL_FLAG_FORCE_FAN) == CTL_FLAG_FORCE_FAN);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_TYPE0), ty[0]);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_TYPE1), ty[1]);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_TYPE2), ty[2]);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_TYPE3), ty[3]);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE0), value[0]);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE1), value[1]);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE2), value[2]);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE3), value[3]);
+  ASSERT_TRUE((bram_read_controller(ADDR_CTL_FLAG) & CTL_FLAG_FORCE_FAN) ==
+              CTL_FLAG_FORCE_FAN);
 }
 
 TEST(Op, WDT) {

@@ -12,14 +12,19 @@ package params;
   localparam bit [7:0] VersionNumMinor = 8'h00;
 
   typedef enum int {
-    CTL_FLAG_MOD_SET = 0,
-    CTL_FLAG_STM_SET = 1,
-    CTL_FLAG_SILENCER_SET = 2,
-    CTL_FLAG_PULSE_WIDTH_ENCODER_SET = 3,
-    CTL_FLAG_DEBUG_SET = 4,
-    CTL_FLAG_SYNC_SET = 5,
-    CTL_FLAG_FORCE_FAN = 13
+    CTL_FLAG_BIT_MOD_SET = 0,
+    CTL_FLAG_BIT_STM_SET = 1,
+    CTL_FLAG_BIT_SILENCER_SET = 2,
+    CTL_FLAG_BIT_PULSE_WIDTH_ENCODER_SET = 3,
+    CTL_FLAG_BIT_DEBUG_SET = 4,
+    CTL_FLAG_BIT_SYNC_SET = 5,
+    CTL_FLAG_BIT_FORCE_FAN = 13
   } ctl_flag_bit_t;
+
+  typedef enum int {
+    //
+    FPGA_STATE_BIT_READS_FPGA_STATE_ENABLED = 7
+  } fpga_state_bit_t;
 
   typedef enum logic [1:0] {
     BRAM_SELECT_CONTROLLER = 2'h0,

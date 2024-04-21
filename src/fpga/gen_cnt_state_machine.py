@@ -12,7 +12,9 @@ class Param:
     name: str
     default: int | str
 
-    def __init__(self: "Param", addr: str, width: int, name: str, default: int | str) -> None:
+    def __init__(
+        self: "Param", addr: str, width: int, name: str, default: int | str
+    ) -> None:
         self.addr = addr
         self.width = width
         self.name = name
@@ -36,7 +38,12 @@ mod_params = Params(
     "MOD",
     [
         Param("MOD_REQ_RD_SEGMENT", 1, "REQ_RD_SEGMENT", 0),
-        Param("MOD_TRANSITION_MODE", 8, "TRANSITION_MODE", "params::TRANSITION_MODE_SYNC_IDX"),
+        Param(
+            "MOD_TRANSITION_MODE",
+            8,
+            "TRANSITION_MODE",
+            "params::TRANSITION_MODE_SYNC_IDX",
+        ),
         Param("MOD_TRANSITION_VALUE", 64, "TRANSITION_VALUE", 0),
         Param("MOD_CYCLE0", 15, "CYCLE[0]", 1),
         Param("MOD_CYCLE1", 15, "CYCLE[1]", 1),
@@ -51,7 +58,12 @@ stm_params = Params(
     "STM",
     [
         Param("STM_REQ_RD_SEGMENT", 1, "REQ_RD_SEGMENT", 0),
-        Param("STM_TRANSITION_MODE", 8, "TRANSITION_MODE", "params::TRANSITION_MODE_SYNC_IDX"),
+        Param(
+            "STM_TRANSITION_MODE",
+            8,
+            "TRANSITION_MODE",
+            "params::TRANSITION_MODE_SYNC_IDX",
+        ),
         Param("STM_TRANSITION_VALUE", 64, "TRANSITION_VALUE", 0),
         Param("STM_MODE0", 1, "MODE[0]", "params::STM_MODE_GAIN"),
         Param("STM_MODE1", 1, "MODE[1]", "params::STM_MODE_GAIN"),
@@ -69,10 +81,14 @@ stm_params = Params(
 silencer_params = Params(
     "SILENCER",
     [
-        Param("SILENCER_MODE", 1, "MODE", "params::SILENCER_MODE_FIXED_COMPLETION_STEPS"),
+        Param(
+            "SILENCER_MODE", 1, "MODE", "params::SILENCER_MODE_FIXED_COMPLETION_STEPS"
+        ),
         Param("SILENCER_UPDATE_RATE_INTENSITY", 16, "UPDATE_RATE_INTENSITY", 256),
         Param("SILENCER_UPDATE_RATE_PHASE", 16, "UPDATE_RATE_PHASE", 256),
-        Param("SILENCER_COMPLETION_STEPS_INTENSITY", 16, "COMPLETION_STEPS_INTENSITY", 10),
+        Param(
+            "SILENCER_COMPLETION_STEPS_INTENSITY", 16, "COMPLETION_STEPS_INTENSITY", 10
+        ),
         Param("SILENCER_COMPLETION_STEPS_PHASE", 16, "COMPLETION_STEPS_PHASE", 40),
     ],
 )
@@ -117,7 +133,14 @@ all_params: list[Params] = [
 ]
 
 
-path = pathlib.Path(__file__).parent / "rtl" / "sources_1" / "new" / "controller" / "controller.sv"
+path = (
+    pathlib.Path(__file__).parent
+    / "rtl"
+    / "sources_1"
+    / "new"
+    / "controller"
+    / "controller.sv"
+)
 
 
 class State:
@@ -152,10 +175,14 @@ def gen_states(params: Params) -> list[State]:
                 ],
             )
     states: list[State] = []
-    for req_param, param in zip(sub_params + [Param.null()] * 3, [Param.null()] * 3 + sub_params, strict=True):
+    for req_param, param in zip(
+        sub_params + [Param.null()] * 3, [Param.null()] * 3 + sub_params, strict=True
+    ):
         if param.width >= 0:
             states.append(gen_state(req_param, param))
-    states.append(State(f"{params.name}_CLR_UPDATE_SETTINGS_BIT", Param.null(), Param.null()))
+    states.append(
+        State(f"{params.name}_CLR_UPDATE_SETTINGS_BIT", Param.null(), Param.null())
+    )
     return states
 
 
@@ -198,14 +225,14 @@ module controller (
   assign cnt_bus.DIN = din;
   assign dout = cnt_bus.DOUT;
 
-  assign FORCE_FAN = ctl_flags[params::CTL_FLAG_FORCE_FAN];
+  assign FORCE_FAN = ctl_flags[params::CTL_FLAG_BIT_FORCE_FAN];
 
   typedef enum logic [{int(math.ceil(math.log2(7 + len(list(chain.from_iterable(all_states.values()))))))-1}:0] {{
     REQ_WR_VER_MINOR,
     REQ_WR_VER,
     WAIT_WR_VER_0_REQ_RD_CTL_FLAG,
-    WR_VER_MINOR_WAIT_RD_CTL_FLAG_0,
-    WR_VER_WAIT_RD_CTL_FLAG_1,
+    WR_VER_MINOR_WAIT_RD_CTL_FLAG_BIT_0,
+    WR_VER_WAIT_RD_CTL_FLAG_BIT_1,
     WAIT_0,
     WAIT_1,
 {",\n".join([f"    {state.name}" for state in chain.from_iterable(all_states.values())])}
@@ -237,12 +264,12 @@ module controller (
         we <= 1'b0;
         addr <= params::ADDR_CTL_FLAG;
 
-        state <= WR_VER_MINOR_WAIT_RD_CTL_FLAG_0;
+        state <= WR_VER_MINOR_WAIT_RD_CTL_FLAG_BIT_0;
       end
-      WR_VER_MINOR_WAIT_RD_CTL_FLAG_0: begin
-        state <= WR_VER_WAIT_RD_CTL_FLAG_1;
+      WR_VER_MINOR_WAIT_RD_CTL_FLAG_BIT_0: begin
+        state <= WR_VER_WAIT_RD_CTL_FLAG_BIT_1;
       end
-      WR_VER_WAIT_RD_CTL_FLAG_1: begin
+      WR_VER_WAIT_RD_CTL_FLAG_BIT_1: begin
         state <= WAIT_0;
       end
 
@@ -256,8 +283,8 @@ module controller (
 
     for params in all_params:
         f.writelines(
-            f""" if (ctl_flags[params::CTL_FLAG_{params.name}_SET]) begin
-          ctl_flags <= ctl_flags & ~(1 << params::CTL_FLAG_{params.name}_SET);
+            f""" if (ctl_flags[params::CTL_FLAG_BIT_{params.name}_SET]) begin
+          ctl_flags <= ctl_flags & ~(1 << params::CTL_FLAG_BIT_{params.name}_SET);
           state <= {all_states[params.name][0].name};
         end else""",
         )
@@ -377,7 +404,11 @@ module controller (
         for param in params.params:
             if param.name == "":
                 continue
-            default_value = param.default if isinstance(param.default, str) else f"{param.width}'d{param.default}"
+            default_value = (
+                param.default
+                if isinstance(param.default, str)
+                else f"{param.width}'d{param.default}"
+            )
             f.writelines(
                 f"""
     {params.name}_SETTINGS.{param.name} = {default_value};""",

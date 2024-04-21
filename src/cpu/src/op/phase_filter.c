@@ -17,9 +17,9 @@ uint8_t write_phase_filter(const volatile uint8_t* p_data) {
   static_assert(sizeof(PhaseFilter) == 2, "PhaseFilter is not valid.");
   static_assert(offsetof(PhaseFilter, tag) == 0, "PhaseFilter is not valid.");
 
-  bram_cpy_volatile(BRAM_SELECT_CONTROLLER, BRAM_CNT_SEL_FILTER << 8,
+  bram_cpy_volatile(BRAM_SELECT_CONTROLLER, BRAM_CNT_SELECT_FILTER << 8,
                     (volatile const uint16_t*)(&p_data[sizeof(PhaseFilter)]),
-                    ((TRANS_NUM + 1) >> 1));
+                    ((NUM_TRANSDUCERS + 1) >> 1));
 
   return NO_ERR;
 }

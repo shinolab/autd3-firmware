@@ -36,8 +36,8 @@ typedef ALIGN2 union {
 
 inline static void change_pwe_wr_page(uint16_t page) {
   asm("dmb");
-  bram_write(BRAM_SELECT_CONTROLLER,
-             BRAM_ADDR_PULSE_WIDTH_ENCODER_TABLE_WR_PAGE, page);
+  bram_write(BRAM_SELECT_CONTROLLER, ADDR_PULSE_WIDTH_ENCODER_TABLE_WR_PAGE,
+             page);
   asm("dmb");
 }
 
@@ -66,7 +66,7 @@ uint8_t config_pwe(const volatile uint8_t* p_data) {
     _pwe_write = 0;
 
     bram_write(BRAM_SELECT_CONTROLLER,
-               BRAM_ADDR_PULSE_WIDTH_ENCODER_FULL_WIDTH_START,
+               ADDR_PULSE_WIDTH_ENCODER_FULL_WIDTH_START,
                p->head.full_width_start);
 
     change_pwe_wr_page(0);

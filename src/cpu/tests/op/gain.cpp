@@ -25,7 +25,7 @@ TEST(Op, Gain) {
     data_body[0] = TAG_GAIN;
     data_body[1] = 0;
     *reinterpret_cast<uint16_t*>((data_body + 2)) = GAIN_FLAG_UPDATE;
-    for (uint8_t i = 0; i < TRANS_NUM; i++)
+    for (uint8_t i = 0; i < NUM_TRANSDUCERS; i++)
       *reinterpret_cast<uint16_t*>((data_body + 4 + i * 2)) = (i << 8) | i;
 
     auto frame = to_frame_data(data);
@@ -36,9 +36,9 @@ TEST(Op, Gain) {
     const auto ack = _sTx.ack >> 8;
     ASSERT_EQ(ack, header->msg_id);
 
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_MODE_0), STM_MODE_GAIN);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REQ_RD_SEGMENT), 0);
-    for (uint8_t i = 0; i < TRANS_NUM; i++)
+    ASSERT_EQ(bram_read_controller(ADDR_STM_MODE0), STM_MODE_GAIN);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_REQ_RD_SEGMENT), 0);
+    for (uint8_t i = 0; i < NUM_TRANSDUCERS; i++)
       ASSERT_EQ(bram_read_stm(0, i), (i << 8) | i);
   }
 
@@ -52,7 +52,7 @@ TEST(Op, Gain) {
     data_body[0] = TAG_GAIN;
     data_body[1] = 1;
     *reinterpret_cast<uint16_t*>((data_body + 2)) = 0;
-    for (uint8_t i = 0; i < TRANS_NUM; i++)
+    for (uint8_t i = 0; i < NUM_TRANSDUCERS; i++)
       *reinterpret_cast<uint16_t*>((data_body + 4 + i * 2)) =
           ((i + 1) << 8) | (i + 1);
 
@@ -64,9 +64,9 @@ TEST(Op, Gain) {
     const auto ack = _sTx.ack >> 8;
     ASSERT_EQ(ack, header->msg_id);
 
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_MODE_1), STM_MODE_GAIN);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REQ_RD_SEGMENT), 0);
-    for (uint8_t i = 0; i < TRANS_NUM; i++)
+    ASSERT_EQ(bram_read_controller(ADDR_STM_MODE1), STM_MODE_GAIN);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_REQ_RD_SEGMENT), 0);
+    for (uint8_t i = 0; i < NUM_TRANSDUCERS; i++)
       ASSERT_EQ(bram_read_stm(1, i), ((i + 1) << 8) | (i + 1));
   }
 
@@ -88,7 +88,7 @@ TEST(Op, Gain) {
     const auto ack = _sTx.ack >> 8;
     ASSERT_EQ(ack, header->msg_id);
 
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REQ_RD_SEGMENT), 1);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_REQ_RD_SEGMENT), 1);
   }
 }
 

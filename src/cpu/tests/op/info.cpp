@@ -32,7 +32,7 @@ TEST(Op, Info) {
     const auto ack = _sTx.ack >> 8;
     ASSERT_EQ(ack, header->msg_id);
 
-    ASSERT_EQ(_sTx.ack & 0xFF, 0x90);
+    ASSERT_EQ(_sTx.ack & 0xFF, 0x91);
   }
 
   {

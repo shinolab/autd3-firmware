@@ -38,9 +38,9 @@ uint8_t config_silencer(const volatile uint8_t* p_data) {
   const uint16_t value_phase = p->value_phase;
   const uint8_t flag = p->flag;
 
-  switch (flag & SILNCER_FLAG_MODE) {
-    case SILNCER_MODE_FIXED_COMPLETION_STEPS:
-      _silencer_strict_mode = (flag & SILNCER_FLAG_STRICT_MODE) != 0;
+  switch (flag & SILENCER_FLAG_MODE) {
+    case SILENCER_MODE_FIXED_COMPLETION_STEPS:
+      _silencer_strict_mode = (flag & SILENCER_FLAG_STRICT_MODE) != 0;
       _min_freq_div_intensity = (uint32_t)value_intensity << 9;
       _min_freq_div_phase = (uint32_t)value_phase << 9;
       if (_silencer_strict_mode) {
@@ -54,20 +54,19 @@ uint8_t config_silencer(const volatile uint8_t* p_data) {
           return ERR_COMPLETION_STEPS_TOO_LARGE;
       }
       bram_write(BRAM_SELECT_CONTROLLER,
-                 BRAM_ADDR_SILENCER_COMPLETION_STEPS_INTENSITY,
-                 value_intensity);
-      bram_write(BRAM_SELECT_CONTROLLER,
-                 BRAM_ADDR_SILENCER_COMPLETION_STEPS_PHASE, value_phase);
-      bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_MODE,
-                 SILNCER_MODE_FIXED_COMPLETION_STEPS);
-      break;
-    case SILNCER_MODE_FIXED_UPDATE_RATE:
-      bram_write(BRAM_SELECT_CONTROLLER,
-                 BRAM_ADDR_SILENCER_UPDATE_RATE_INTENSITY, value_intensity);
-      bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_UPDATE_RATE_PHASE,
+                 ADDR_SILENCER_COMPLETION_STEPS_INTENSITY, value_intensity);
+      bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_COMPLETION_STEPS_PHASE,
                  value_phase);
-      bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENCER_MODE,
-                 SILNCER_MODE_FIXED_UPDATE_RATE);
+      bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_MODE,
+                 SILENCER_MODE_FIXED_COMPLETION_STEPS);
+      break;
+    case SILENCER_MODE_FIXED_UPDATE_RATE:
+      bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_UPDATE_RATE_INTENSITY,
+                 value_intensity);
+      bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_UPDATE_RATE_PHASE,
+                 value_phase);
+      bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_MODE,
+                 SILENCER_MODE_FIXED_UPDATE_RATE);
       _silencer_strict_mode = false;
       break;
     default:                    // LCOV_EXCL_LINE

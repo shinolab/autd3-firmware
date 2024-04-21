@@ -62,12 +62,12 @@ TEST(Op, Mod) {
       ASSERT_EQ(ack, header->msg_id);
     }
 
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_MOD_REQ_RD_SEGMENT), 0);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_MOD_CYCLE_0), size - 1);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_MOD_FREQ_DIV_0_0), 0x5678);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_MOD_FREQ_DIV_0_1), 0x1234);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_MOD_REP_0_0), 0xDEF0);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_MOD_REP_0_1), 0x9ABC);
+    ASSERT_EQ(bram_read_controller(ADDR_MOD_REQ_RD_SEGMENT), 0);
+    ASSERT_EQ(bram_read_controller(ADDR_MOD_CYCLE0), size - 1);
+    ASSERT_EQ(bram_read_controller(ADDR_MOD_FREQ_DIV0_0), 0x5678);
+    ASSERT_EQ(bram_read_controller(ADDR_MOD_FREQ_DIV0_1), 0x1234);
+    ASSERT_EQ(bram_read_controller(ADDR_MOD_REP0_0), 0xDEF0);
+    ASSERT_EQ(bram_read_controller(ADDR_MOD_REP0_1), 0x9ABC);
     for (size_t i = 0; i < size >> 1; i++) {
       ASSERT_EQ(bram_read_mod(0, i),
                 ((static_cast<uint8_t>((i << 1) + 1)) << 8) |
@@ -115,12 +115,12 @@ TEST(Op, Mod) {
       ASSERT_EQ(ack, header->msg_id);
     }
 
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_MOD_REQ_RD_SEGMENT), 0);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_MOD_CYCLE_1), size - 1);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_MOD_FREQ_DIV_1_0), 0xDEF0);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_MOD_FREQ_DIV_1_1), 0x9ABC);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_MOD_REP_1_0), 0x5678);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_MOD_REP_1_1), 0x1234);
+    ASSERT_EQ(bram_read_controller(ADDR_MOD_REQ_RD_SEGMENT), 0);
+    ASSERT_EQ(bram_read_controller(ADDR_MOD_CYCLE1), size - 1);
+    ASSERT_EQ(bram_read_controller(ADDR_MOD_FREQ_DIV1_0), 0xDEF0);
+    ASSERT_EQ(bram_read_controller(ADDR_MOD_FREQ_DIV1_1), 0x9ABC);
+    ASSERT_EQ(bram_read_controller(ADDR_MOD_REP1_0), 0x5678);
+    ASSERT_EQ(bram_read_controller(ADDR_MOD_REP1_1), 0x1234);
     for (size_t i = 0; i < size >> 1; i++) {
       ASSERT_EQ(bram_read_mod(1, i),
                 ((static_cast<uint8_t>((i << 1) + 1)) << 8) |
@@ -146,7 +146,7 @@ TEST(Op, Mod) {
     const auto ack = _sTx.ack >> 8;
     ASSERT_EQ(ack, header->msg_id);
 
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_MOD_REQ_RD_SEGMENT), 1);
+    ASSERT_EQ(bram_read_controller(ADDR_MOD_REQ_RD_SEGMENT), 1);
   }
 }
 
@@ -191,7 +191,7 @@ TEST(Op, InvalidCompletionStepsMod) {
     const uint16_t intensity = 10;  // 25us * 10 = 250us
     const uint16_t phase = 0xFF;
     const uint8_t flag =
-        SILNCER_MODE_FIXED_COMPLETION_STEPS | SILNCER_FLAG_STRICT_MODE;
+        SILENCER_MODE_FIXED_COMPLETION_STEPS | SILENCER_FLAG_STRICT_MODE;
 
     auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     data_body[0] = TAG_SILENCER;
@@ -276,7 +276,7 @@ TEST(Op, InvalidCompletionStepsWithPermisiveModeMod) {
 
     const auto intensity = 10;  // 25us * 10 = 250us
     const auto phase = 0xFF;
-    const auto flag = SILNCER_MODE_FIXED_COMPLETION_STEPS;
+    const auto flag = SILENCER_MODE_FIXED_COMPLETION_STEPS;
 
     auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     data_body[0] = TAG_SILENCER;

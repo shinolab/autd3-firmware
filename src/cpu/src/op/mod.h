@@ -6,7 +6,7 @@
 
 inline static void change_mod_wr_segment(uint16_t segment) {
   asm("dmb");
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_MEM_WR_SEGMENT, segment);
+  bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_MEM_WR_SEGMENT, segment);
   asm("dmb");
 }
 

@@ -67,15 +67,15 @@ TEST(Op, FocusSTM) {
       ASSERT_EQ(ack, header->msg_id);
     }
 
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_MODE_0), STM_MODE_FOCUS);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REQ_RD_SEGMENT), 0);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_CYCLE_0), size - 1);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_FREQ_DIV_0_0), 0x5678);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_FREQ_DIV_0_1), 0x1234);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_SOUND_SPEED_0_0), 0xDEF0);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_SOUND_SPEED_0_1), 0x9ABC);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REP_0_0), 0x4321);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REP_0_1), 0x8765);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_MODE0), STM_MODE_FOCUS);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_REQ_RD_SEGMENT), 0);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_CYCLE0), size - 1);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_FREQ_DIV0_0), 0x5678);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_FREQ_DIV0_1), 0x1234);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_SOUND_SPEED0_0), 0xDEF0);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_SOUND_SPEED0_1), 0x9ABC);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_REP0_0), 0x4321);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_REP0_1), 0x8765);
     for (size_t i = 0; i < size; i++) {
       ASSERT_EQ(bram_read_stm(0, 4 * i), buf[i] & 0xFFFF);
       ASSERT_EQ(bram_read_stm(0, 4 * i + 1), (buf[i] >> 16) & 0xFFFF);
@@ -128,15 +128,15 @@ TEST(Op, FocusSTM) {
       ASSERT_EQ(ack, header->msg_id);
     }
 
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_MODE_1), STM_MODE_FOCUS);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REQ_RD_SEGMENT), 0);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_CYCLE_1), size - 1);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_FREQ_DIV_1_0), 0x4321);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_FREQ_DIV_1_1), 0x8765);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_SOUND_SPEED_1_0), 0xCBA9);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_SOUND_SPEED_1_1), 0x0FED);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REP_1_0), 0x5678);
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REP_1_1), 0x1234);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_MODE1), STM_MODE_FOCUS);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_REQ_RD_SEGMENT), 0);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_CYCLE1), size - 1);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_FREQ_DIV1_0), 0x4321);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_FREQ_DIV1_1), 0x8765);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_SOUND_SPEED1_0), 0xCBA9);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_SOUND_SPEED1_1), 0x0FED);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_REP1_0), 0x5678);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_REP1_1), 0x1234);
     for (size_t i = 0; i < size; i++) {
       ASSERT_EQ(bram_read_stm(1, 4 * i), buf[i] & 0xFFFF);
       ASSERT_EQ(bram_read_stm(1, 4 * i + 1), (buf[i] >> 16) & 0xFFFF);
@@ -163,7 +163,7 @@ TEST(Op, FocusSTM) {
     const auto ack = _sTx.ack >> 8;
     ASSERT_EQ(ack, header->msg_id);
 
-    ASSERT_EQ(bram_read_controller(BRAM_ADDR_STM_REQ_RD_SEGMENT), 1);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_REQ_RD_SEGMENT), 1);
   }
 }
 
@@ -306,7 +306,7 @@ TEST(Op, InvalidCompletionStepsIntensityFocusSTM) {
     const uint16_t intensity = 10;  // 25us * 10 = 250us
     const uint16_t phase = 2;       // 25us * 2 = 50us
     const uint8_t flag =
-        SILNCER_MODE_FIXED_COMPLETION_STEPS | SILNCER_FLAG_STRICT_MODE;
+        SILENCER_MODE_FIXED_COMPLETION_STEPS | SILENCER_FLAG_STRICT_MODE;
 
     auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     data_body[0] = TAG_SILENCER;
@@ -384,7 +384,7 @@ TEST(Op, InvalidCompletionStepsPhaseFocusSTM) {
     const uint16_t intensity = 2;  // 25us * 2 = 50us
     const uint16_t phase = 10;     // 25us * 10 = 250us
     const uint8_t flag =
-        SILNCER_MODE_FIXED_COMPLETION_STEPS | SILNCER_FLAG_STRICT_MODE;
+        SILENCER_MODE_FIXED_COMPLETION_STEPS | SILENCER_FLAG_STRICT_MODE;
 
     auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     data_body[0] = TAG_SILENCER;
@@ -461,7 +461,7 @@ TEST(Op, InvalidCompletionStepsWithPermisiveModeFocusSTM) {
 
     const uint16_t intensity = 10;  // 25us * 10 = 250us
     const uint16_t phase = 10;      // 25us * 2 = 250us
-    const uint8_t flag = SILNCER_MODE_FIXED_COMPLETION_STEPS;
+    const uint8_t flag = SILENCER_MODE_FIXED_COMPLETION_STEPS;
 
     auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     data_body[0] = TAG_SILENCER;

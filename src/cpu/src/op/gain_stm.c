@@ -88,17 +88,17 @@ uint8_t write_gain_stm(const volatile uint8_t* p_data) {
 
     switch (segment) {
       case 0:
-        bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0_0,
+        bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_STM_FREQ_DIV0_0,
                  (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
-        bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_MODE_0, STM_MODE_GAIN);
-        bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_REP_0_0, (uint16_t*)&rep,
+        bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MODE0, STM_MODE_GAIN);
+        bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_STM_REP0_0, (uint16_t*)&rep,
                  sizeof(uint32_t) >> 1);
         break;
       case 1:
-        bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_1_0,
+        bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_STM_FREQ_DIV1_0,
                  (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
-        bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_MODE_1, STM_MODE_GAIN);
-        bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_REP_1_0, (uint16_t*)&rep,
+        bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MODE1, STM_MODE_GAIN);
+        bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_STM_REP1_0, (uint16_t*)&rep,
                  sizeof(uint32_t) >> 1);
         break;
       default:
@@ -121,34 +121,34 @@ uint8_t write_gain_stm(const volatile uint8_t* p_data) {
       bram_cpy_volatile(
           BRAM_SELECT_STM,
           (_stm_cycle[_stm_segment] & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src,
-          TRANS_NUM);
+          NUM_TRANSDUCERS);
       _stm_cycle[_stm_segment] = _stm_cycle[_stm_segment] + 1;
       break;
     case GAIN_STM_MODE_PHASE_FULL:
       bram_cpy_gain_stm_phase_full(
           (_stm_cycle[_stm_segment] & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src, 0,
-          TRANS_NUM);
+          NUM_TRANSDUCERS);
       _stm_cycle[_stm_segment] = _stm_cycle[_stm_segment] + 1;
 
       if (send > 1) {
         src = src_base;
         bram_cpy_gain_stm_phase_full(
             (_stm_cycle[_stm_segment] & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src,
-            8, TRANS_NUM);
+            8, NUM_TRANSDUCERS);
         _stm_cycle[_stm_segment] = _stm_cycle[_stm_segment] + 1;
       }
       break;
     case GAIN_STM_MODE_PHASE_HALF:
       bram_cpy_gain_stm_phase_half(
           (_stm_cycle[_stm_segment] & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src, 0,
-          TRANS_NUM);
+          NUM_TRANSDUCERS);
       _stm_cycle[_stm_segment] = _stm_cycle[_stm_segment] + 1;
 
       if (send > 1) {
         src = src_base;
         bram_cpy_gain_stm_phase_half(
             (_stm_cycle[_stm_segment] & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src,
-            4, TRANS_NUM);
+            4, NUM_TRANSDUCERS);
         _stm_cycle[_stm_segment] = _stm_cycle[_stm_segment] + 1;
       }
 
@@ -156,7 +156,7 @@ uint8_t write_gain_stm(const volatile uint8_t* p_data) {
         src = src_base;
         bram_cpy_gain_stm_phase_half(
             (_stm_cycle[_stm_segment] & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src,
-            8, TRANS_NUM);
+            8, NUM_TRANSDUCERS);
         _stm_cycle[_stm_segment] = _stm_cycle[_stm_segment] + 1;
       }
 
@@ -164,7 +164,7 @@ uint8_t write_gain_stm(const volatile uint8_t* p_data) {
         src = src_base;
         bram_cpy_gain_stm_phase_half(
             (_stm_cycle[_stm_segment] & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8, src,
-            12, TRANS_NUM);
+            12, NUM_TRANSDUCERS);
         _stm_cycle[_stm_segment] = _stm_cycle[_stm_segment] + 1;
       }
       break;
@@ -181,11 +181,11 @@ uint8_t write_gain_stm(const volatile uint8_t* p_data) {
     _stm_mode[_stm_segment] = STM_MODE_GAIN;
     switch (_stm_segment) {
       case 0:
-        bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE_0,
+        bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_CYCLE0,
                    max(1, _stm_cycle[_stm_segment]) - 1);
         break;
       case 1:
-        bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE_1,
+        bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_CYCLE1,
                    max(1, _stm_cycle[_stm_segment]) - 1);
         break;
       default:  // LCOV_EXCL_LINE
@@ -193,8 +193,7 @@ uint8_t write_gain_stm(const volatile uint8_t* p_data) {
     }
 
     if ((p->subseq.flag & GAIN_STM_FLAG_UPDATE) != 0) {
-      bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_REQ_RD_SEGMENT,
-                 _stm_segment);
+      bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_REQ_RD_SEGMENT, _stm_segment);
       set_and_wait_update(CTL_FLAG_STM_SET);
     }
   }
@@ -212,7 +211,7 @@ uint8_t change_gain_stm_segment(const volatile uint8_t* p_data) {
   if (_stm_mode[p->segment] != STM_MODE_GAIN || _stm_cycle[p->segment] == 1)
     return ERR_INVALID_SEGMENT_TRANSITION;
 
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_REQ_RD_SEGMENT, p->segment);
+  bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_REQ_RD_SEGMENT, p->segment);
   set_and_wait_update(CTL_FLAG_STM_SET);
 
   return NO_ERR;

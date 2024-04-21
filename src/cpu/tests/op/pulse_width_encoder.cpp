@@ -56,9 +56,8 @@ TEST(Op, PulseWidthEncoder) {
     ASSERT_EQ(ack, header->msg_id);
   }
 
-  ASSERT_EQ(
-      full_width_start,
-      bram_read_controller(BRAM_ADDR_PULSE_WIDTH_ENCODER_FULL_WIDTH_START));
+  ASSERT_EQ(full_width_start,
+            bram_read_controller(ADDR_PULSE_WIDTH_ENCODER_FULL_WIDTH_START));
   for (size_t i = 0; i < 65536; i += 2) {
     ASSERT_EQ(buf[i], bram_read_duty_table(i / 2) & 0xFF);
     ASSERT_EQ(buf[i + 1], bram_read_duty_table(i / 2) >> 8);

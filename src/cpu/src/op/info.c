@@ -19,13 +19,13 @@ typedef ALIGN2 struct {
   uint8_t ty;
 } FirmInfo;
 
-inline static uint16_t get_cpu_version(void) { return CPU_VERSION_MAJOR; }
-inline static uint16_t get_cpu_version_minor(void) { return CPU_VERSION_MINOR; }
+inline static uint16_t get_cpu_version(void) { return VERSION_NUM_MAJOR; }
+inline static uint16_t get_cpu_version_minor(void) { return VERSION_NUM_MINOR; }
 inline static uint16_t get_fpga_version(void) {
-  return bram_read(BRAM_SELECT_CONTROLLER, BRAM_ADDR_VERSION_NUM_MAJOR);
+  return bram_read(BRAM_SELECT_CONTROLLER, ADDR_VERSION_NUM_MAJOR);
 }
 inline static uint16_t get_fpga_version_minor(void) {
-  return bram_read(BRAM_SELECT_CONTROLLER, BRAM_ADDR_VERSION_NUM_MINOR);
+  return bram_read(BRAM_SELECT_CONTROLLER, ADDR_VERSION_NUM_MINOR);
 }
 
 uint8_t firmware_info(const volatile uint8_t* p_data) {

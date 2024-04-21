@@ -53,8 +53,7 @@ volatile uint16_t _fpga_flags_internal = 0;
 
 void init_app(void) {
   clear();
-  bram_write(BRAM_SELECT_CONTROLLER,
-             BRAM_ADDR_PULSE_WIDTH_ENCODER_FULL_WIDTH_START,
+  bram_write(BRAM_SELECT_CONTROLLER, ADDR_PULSE_WIDTH_ENCODER_FULL_WIDTH_START,
              65025);  // 255 * 255
   set_and_wait_update(CTL_FLAG_PULSE_WIDTH_ENCODER_SET);
 }
@@ -133,8 +132,7 @@ void update(void) {
       if ((_ack & ERR_BIT) != 0) goto FINISH;
     }
 
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG,
-               _fpga_flags_internal);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_CTL_FLAG, _fpga_flags_internal);
 
     _ack = header->msg_id;
   } else {
