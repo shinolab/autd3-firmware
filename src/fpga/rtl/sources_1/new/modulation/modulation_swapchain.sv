@@ -18,6 +18,7 @@ module modulation_swapchain (
   logic segment = 1'b0;
   logic req_segment;
   logic stop = 1'b0;
+  logic ext_mode = 1'b0;
   logic [31:0] rep;
   logic [31:0] loop_cnt;
 
@@ -62,12 +63,14 @@ module modulation_swapchain (
       if (REQ_RD_SEGMENT == segment) begin
         stop <= 1'b0;
         idx_mode <= IDX_MODE_SYNC_IDX;
+        ext_mode <= TRANSITION_MODE == params::TRANSITION_MODE_EXT;
         state <= INFINITE_LOOP;
       end else begin
         if (REP[REQ_RD_SEGMENT] == 32'hFFFFFFFF) begin
           stop <= 1'b0;
           segment <= REQ_RD_SEGMENT;
           idx_mode <= IDX_MODE_SYNC_IDX;
+          ext_mode <= TRANSITION_MODE == params::TRANSITION_MODE_EXT;
           state <= INFINITE_LOOP;
         end else begin
           rep <= REP[REQ_RD_SEGMENT];
@@ -111,6 +114,11 @@ module modulation_swapchain (
           endcase
         end
         INFINITE_LOOP: begin
+          if (ext_mode) begin
+            if (idx_changed[segment] & (SYNC_IDX[segment] == '0)) begin
+              segment <= ~segment;
+            end
+          end
           state <= INFINITE_LOOP;
         end
         FINITE_LOOP: begin

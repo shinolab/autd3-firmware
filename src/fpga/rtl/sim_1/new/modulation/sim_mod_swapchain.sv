@@ -613,6 +613,118 @@ module sim_mod_swapchain ();
     `ASSERT_EQ(0, idx[1]);
   endtask
 
+  task automatic test_ext();
+    @(posedge CLK);
+    sync_idx[0] <= 0;
+    sync_idx[1] <= 0;
+    transition_mode <= params::TRANSITION_MODE_EXT;
+    transition_value <= 0;
+    @(posedge CLK);
+    @(negedge CLK);
+    `ASSERT_EQ(0, segment);
+    `ASSERT_EQ(0, stop);
+    `ASSERT_EQ(0, idx[0]);
+    `ASSERT_EQ(0, idx[1]);
+
+    // Index change
+    @(posedge CLK);
+    sync_idx[0] <= 1;
+    @(posedge CLK);
+    @(negedge CLK);
+    `ASSERT_EQ(0, segment);
+    `ASSERT_EQ(0, stop);
+    `ASSERT_EQ(1, idx[0]);
+    `ASSERT_EQ(0, idx[1]);
+
+    // segment change to 1, immidiate
+    @(posedge CLK);
+    sync_idx[1] <= 1;
+    rep[1] <= 32'hFFFFFFFF;
+    req_rd_segment <= 1;
+    update_settings <= 1;
+    @(posedge CLK);
+    update_settings <= 0;
+    @(negedge CLK);
+    `ASSERT_EQ(1, segment);
+    `ASSERT_EQ(0, stop);
+    `ASSERT_EQ(1, idx[0]);
+    `ASSERT_EQ(1, idx[1]);
+
+    // segment change to 0, wait for idx[1] == 0
+    @(posedge CLK);
+    sync_idx[1] <= 1;
+    @(posedge CLK);
+    @(negedge CLK);
+    `ASSERT_EQ(1, segment);
+    `ASSERT_EQ(0, stop);
+    `ASSERT_EQ(1, idx[0]);
+    `ASSERT_EQ(1, idx[1]);
+
+    // Index change
+    @(posedge CLK);
+    sync_idx[0] <= 2;
+    sync_idx[1] <= 2;
+    @(posedge CLK);
+    @(negedge CLK);
+    `ASSERT_EQ(1, segment);
+    `ASSERT_EQ(0, stop);
+    `ASSERT_EQ(2, idx[0]);
+    `ASSERT_EQ(2, idx[1]);
+
+    // Index change to 0, change segment
+    @(posedge CLK);
+    sync_idx[0] <= 0;
+    sync_idx[1] <= 0;
+    @(posedge CLK);
+    @(negedge CLK);
+    `ASSERT_EQ(0, segment);
+    `ASSERT_EQ(0, stop);
+    `ASSERT_EQ(0, idx[0]);
+    `ASSERT_EQ(0, idx[1]);
+
+    // Index change
+    @(posedge CLK);
+    sync_idx[0] <= 1;
+    @(posedge CLK);
+    @(negedge CLK);
+    `ASSERT_EQ(0, segment);
+    `ASSERT_EQ(0, stop);
+    `ASSERT_EQ(1, idx[0]);
+    `ASSERT_EQ(0, idx[1]);
+
+    // Index change, change segment to 1
+    @(posedge CLK);
+    sync_idx[0] <= 0;
+    @(posedge CLK);
+    @(negedge CLK);
+    `ASSERT_EQ(1, segment);
+    `ASSERT_EQ(0, stop);
+    `ASSERT_EQ(0, idx[0]);
+    `ASSERT_EQ(0, idx[1]);
+
+    // Index change
+    @(posedge CLK);
+    sync_idx[0] <= 1;
+    sync_idx[1] <= 3;
+    @(posedge CLK);
+    @(negedge CLK);
+    `ASSERT_EQ(1, segment);
+    `ASSERT_EQ(0, stop);
+    `ASSERT_EQ(1, idx[0]);
+    `ASSERT_EQ(3, idx[1]);
+
+    // Index change, change segment to 0
+    @(posedge CLK);
+    sync_idx[0] <= 2;
+    sync_idx[1] <= 0;
+    @(posedge CLK);
+    @(negedge CLK);
+    `ASSERT_EQ(0, segment);
+    `ASSERT_EQ(0, stop);
+    `ASSERT_EQ(2, idx[0]);
+    `ASSERT_EQ(0, idx[1]);
+  endtask
+
   initial begin
     update_settings = 0;
     transition_mode = params::TRANSITION_MODE_SYNC_IDX;
@@ -636,6 +748,11 @@ module sim_mod_swapchain ();
 
     reset();
     test_sys_time();
+
+    reset();
+    test_ext();
+
+    reset();
 
     $display("OK! sim_mod_swapchain");
     $finish();
