@@ -1,6 +1,10 @@
-*.jou
-*.log
+vivado.jou
+vivado.log
+vivado_*.jou
+vivado_*.log
 /.Xil
 tmp/
 tmp.mcs
 .vscode/
+.xsim.gcc.version
+vivado_*.str

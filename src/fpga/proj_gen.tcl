@@ -1,4 +1,4 @@
-set project_directory   [file dirname [info script]]
+set project_directory   [file normalize [file dirname [info script]]]
 set project_name        "autd3-fpga"
 
 cd $project_directory
