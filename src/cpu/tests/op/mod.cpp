@@ -2,6 +2,7 @@
 
 #include "app.h"
 #include "ecat.h"
+#include "iodefine.h"
 #include "params.h"
 #include "utils.hpp"
 
@@ -303,5 +304,68 @@ TEST(Op, InvalidCompletionStepsWithPermisiveModeMod) {
 
     const auto ack = _sTx.ack >> 8;
     ASSERT_EQ(ack, header->msg_id);
+  }
+}
+
+TEST(Op, ModMissTransitionTime) {
+  init_app();
+
+  RX_STR data;
+  std::memset(data.data, 0, sizeof(RX_STR));
+
+  std::vector<uint8_t> m;
+  for (auto i = 0; i < 32768; i++) m.push_back(static_cast<uint8_t>(i));
+
+  Header* header = reinterpret_cast<Header*>(data.data);
+  header->slot_2_offset = 0;
+
+  ECATC.DC_SYS_TIME.LONGLONG = 1;
+  {
+    const uint8_t transition_mode = TRANSITION_MODE_SYS_TIME;
+    const uint64_t transition_value = SYS_TIME_TRANSITION_MARGIN;
+    const uint32_t size = 32768;
+    const uint32_t freq_div = 0x12345678;
+    const uint32_t rep = 0x9ABCDEF0;
+
+    size_t cnt = 0;
+    while (cnt < size) {
+      header->msg_id = get_msg_id();
+
+      auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+      data_body[0] = TAG_MODULATION;
+      auto offset = 4;
+      if (cnt == 0) {
+        data_body[1] = MODULATION_FLAG_BEGIN;
+        data_body[4] = transition_mode;
+        *reinterpret_cast<uint32_t*>(data_body + 8) = freq_div;
+        *reinterpret_cast<uint32_t*>(data_body + 12) = rep;
+        *reinterpret_cast<uint64_t*>(data_body + 16) = transition_value;
+        offset += 20;
+      } else {
+        data_body[1] = 0;
+      }
+      auto send =
+          std::min(size - cnt, sizeof(RX_STR) - sizeof(Header) - offset);
+      *reinterpret_cast<uint16_t*>(data_body + 2) = static_cast<uint16_t>(send);
+
+      for (size_t i = 0; i < send; i++) data_body[offset + i] = m[cnt + i];
+      cnt += send;
+
+      if (cnt == size)
+        data_body[1] |= MODULATION_FLAG_END | MODULATION_FLAG_UPDATE;
+
+      auto frame = to_frame_data(data);
+
+      recv_ethercat(&frame[0]);
+      update();
+
+      if (cnt == size) {
+        const auto ack = _sTx.ack >> 8;
+        ASSERT_EQ(ack, ERR_MISS_TRANSITION_TIME);
+      } else {
+        const auto ack = _sTx.ack >> 8;
+        ASSERT_EQ(ack, header->msg_id);
+      }
+    }
   }
 }

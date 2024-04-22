@@ -2,6 +2,7 @@
 
 #include "app.h"
 #include "ecat.h"
+#include "iodefine.h"
 #include "params.h"
 #include "utils.hpp"
 
@@ -678,5 +679,73 @@ TEST(Op, InvalidCompletionStepsWithPermisiveModeGainSTM) {
 
     const auto ack = _sTx.ack >> 8;
     ASSERT_EQ(ack, header->msg_id);
+  }
+}
+
+TEST(Op, STMMissTransitionTime) {
+  init_app();
+
+  RX_STR data;
+  std::memset(data.data, 0, sizeof(RX_STR));
+
+  std::vector<std::vector<uint16_t>> buf;
+  for (uint16_t i = 0; i < 1024; i++) {
+    std::vector<uint16_t> tmp;
+    tmp.reserve(NUM_TRANSDUCERS);
+    for (uint16_t j = 0; j < NUM_TRANSDUCERS; j++) tmp.emplace_back(i + j);
+    buf.emplace_back(std::move(tmp));
+  }
+
+  Header* header = reinterpret_cast<Header*>(data.data);
+  header->slot_2_offset = 0;
+
+  ECATC.DC_SYS_TIME.LONGLONG = 1;
+  {
+    const uint8_t transition_mode = TRANSITION_MODE_SYS_TIME;
+    const uint64_t transition_value = SYS_TIME_TRANSITION_MARGIN;
+    const uint32_t size = 1024;
+    const uint8_t mode = GAIN_STM_MODE_INTENSITY_PHASE_FULL;
+    const uint32_t freq_div = 0x12345678;
+    const uint32_t rep = 0x87654321;
+
+    size_t cnt = 0;
+    while (cnt < size) {
+      header->msg_id = get_msg_id();
+
+      auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+      data_body[0] = TAG_GAIN_STM;
+      auto offset = 2;
+      if (cnt == 0) {
+        data_body[1] = GAIN_STM_FLAG_BEGIN;
+        *reinterpret_cast<uint8_t*>(data_body + 2) = mode;
+        *reinterpret_cast<uint8_t*>(data_body + 3) = transition_mode;
+        *reinterpret_cast<uint32_t*>(data_body + 8) = freq_div;
+        *reinterpret_cast<uint32_t*>(data_body + 12) = rep;
+        *reinterpret_cast<uint64_t*>(data_body + 16) = transition_value;
+        offset += 22;
+      } else {
+        data_body[1] = 0;
+      }
+
+      for (size_t i = 0; i < NUM_TRANSDUCERS; i++)
+        *reinterpret_cast<uint16_t*>(data_body + offset + 2 * i) = buf[cnt][i];
+
+      cnt++;
+
+      if (cnt == size) data_body[1] |= GAIN_STM_FLAG_END | GAIN_STM_FLAG_UPDATE;
+
+      auto frame = to_frame_data(data);
+
+      recv_ethercat(&frame[0]);
+      update();
+
+      if (cnt == size) {
+        const auto ack = _sTx.ack >> 8;
+        ASSERT_EQ(ack, ERR_MISS_TRANSITION_TIME);
+      } else {
+        const auto ack = _sTx.ack >> 8;
+        ASSERT_EQ(ack, header->msg_id);
+      }
+    }
   }
 }
