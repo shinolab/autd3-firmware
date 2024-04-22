@@ -50,8 +50,8 @@ uint8_t write_gain(const volatile uint8_t* p_data) {
       bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_CYCLE1, 0);
       bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MODE1, STM_MODE_GAIN);
       break;
-    default:
-      return ERR_INVALID_SEGMENT;
+    default:  // LCOV_EXCL_LINE
+      break;  // LCOV_EXCL_LINE
   }
   _stm_cycle[segment] = 1;
   _stm_freq_div[segment] = 0xFFFFFFFF;

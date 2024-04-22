@@ -155,14 +155,11 @@ TEST(Op, GainInvalidSegmentTransition) {
       header->msg_id = get_msg_id();
       auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
       data_body[0] = TAG_GAIN_STM;
-      auto offset = 2;
       if (cnt == 0) {
-        data_body[1] = GAIN_STM_FLAG_BEGIN;
+        data_body[1] = GAIN_STM_FLAG_BEGIN | GAIN_STM_FLAG_SEGMENT;
         *reinterpret_cast<uint8_t*>(data_body + 2) = mode;
-        *reinterpret_cast<uint8_t*>(data_body + 3) = 1;
-        *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
-        *reinterpret_cast<uint32_t*>(data_body + 8) = rep;
-        offset += 10;
+        *reinterpret_cast<uint32_t*>(data_body + 8) = freq_div;
+        *reinterpret_cast<uint32_t*>(data_body + 12) = rep;
       } else {
         data_body[1] = 0;
       }
@@ -213,27 +210,4 @@ TEST(Op, GainInvalidSegmentTransition) {
     const auto ack = _sTx.ack >> 8;
     ASSERT_EQ(ack, ERR_INVALID_SEGMENT_TRANSITION);
   }
-}
-
-TEST(Op, GainInvalidSegment) {
-  init_app();
-
-  RX_STR data;
-  std::memset(data.data, 0, sizeof(RX_STR));
-
-  Header* header = reinterpret_cast<Header*>(data.data);
-  header->msg_id = get_msg_id();
-  header->slot_2_offset = 0;
-
-  auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
-  data_body[0] = TAG_GAIN;
-  data_body[1] = 0xFF;
-
-  auto frame = to_frame_data(data);
-
-  recv_ethercat(&frame[0]);
-  update();
-
-  const auto ack = _sTx.ack >> 8;
-  ASSERT_EQ(ack, ERR_INVALID_SEGMENT);
 }

@@ -26,10 +26,16 @@ class Enum:
         self.consts = consts
 
 
-# define SILNCER_FLAG_MODE (1 << 0)
-# define SILNCER_FLAG_STRICT_MODE (1 << 1)
-
 cpu_enums = [
+    Enum(
+        "params_t",
+        [
+            Const("NANOSECONDS", "1"),
+            Const("MICROSECONDS", "NANOSECONDS * 1000"),
+            Const("MILLISECONDS", "MICROSECONDS * 1000"),
+            Const("SYS_TIME_TRANSITION_MARGIN", "1 * MILLISECONDS"),
+        ],
+    ),
     Enum(
         "tag_t",
         [
@@ -67,6 +73,7 @@ cpu_enums = [
         "gain_flag_t",
         [
             Const("GAIN_FLAG_UPDATE", "1 << 0"),
+            Const("GAIN_FLAG_SEGMENT", "1 << 1"),
         ],
     ),
     Enum(
@@ -75,6 +82,7 @@ cpu_enums = [
             Const("MODULATION_FLAG_BEGIN", "1 << 0"),
             Const("MODULATION_FLAG_END", "1 << 1"),
             Const("MODULATION_FLAG_UPDATE", "1 << 2"),
+            Const("MODULATION_FLAG_SEGMENT", "1 << 3"),
         ],
     ),
     Enum(
@@ -83,6 +91,7 @@ cpu_enums = [
             Const("FOCUS_STM_FLAG_BEGIN", "1 << 0"),
             Const("FOCUS_STM_FLAG_END", "1 << 1"),
             Const("FOCUS_STM_FLAG_UPDATE", "1 << 2"),
+            Const("FOCUS_STM_FLAG_SEGMENT", "1 << 3"),
         ],
     ),
     Enum(
@@ -91,6 +100,7 @@ cpu_enums = [
             Const("GAIN_STM_FLAG_BEGIN", "1 << 0"),
             Const("GAIN_STM_FLAG_END", "1 << 1"),
             Const("GAIN_STM_FLAG_UPDATE", "1 << 2"),
+            Const("GAIN_STM_FLAG_SEGMENT", "1 << 3"),
         ],
     ),
     Enum(
@@ -126,11 +136,11 @@ cpu_enums = [
             Const("ERR_COMPLETION_STEPS_TOO_LARGE", "ERR_BIT | 0x03"),
             Const("ERR_INVALID_INFO_TYPE", "ERR_BIT | 0x04"),
             Const("ERR_INVALID_GAIN_STM_MODE", "ERR_BIT | 0x05"),
-            Const("ERR_INVALID_SEGMENT", "ERR_BIT | 0x06"),
             Const("ERR_INVALID_MODE", "ERR_BIT | 0x07"),
             Const("ERR_INVALID_SEGMENT_TRANSITION", "ERR_BIT | 0x08"),
             Const("ERR_INVALID_PWE_DATA_SIZE", "ERR_BIT | 0x09"),
             Const("ERR_PWE_INCOMPLETE_DATA", "ERR_BIT | 0x0A"),
+            Const("ERR_MISS_TRANSITION_TIME", "ERR_BIT | 0x0B"),
         ],
     ),
 ]

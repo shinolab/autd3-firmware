@@ -28,6 +28,8 @@ TEST(Op, GainSTMPhaseIntensityFull) {
 
   // segment 0
   {
+    const uint8_t transition_mode = TRANSITION_MODE_EXT;
+    const uint64_t transition_value = 0x0123456789ABCDEF;
     const uint32_t size = 1024;
     const uint8_t mode = GAIN_STM_MODE_INTENSITY_PHASE_FULL;
     const uint32_t freq_div = 0x12345678;
@@ -43,10 +45,11 @@ TEST(Op, GainSTMPhaseIntensityFull) {
       if (cnt == 0) {
         data_body[1] = GAIN_STM_FLAG_BEGIN;
         *reinterpret_cast<uint8_t*>(data_body + 2) = mode;
-        *reinterpret_cast<uint8_t*>(data_body + 3) = 0;
-        *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
-        *reinterpret_cast<uint32_t*>(data_body + 8) = rep;
-        offset += 10;
+        *reinterpret_cast<uint8_t*>(data_body + 3) = transition_mode;
+        *reinterpret_cast<uint32_t*>(data_body + 8) = freq_div;
+        *reinterpret_cast<uint32_t*>(data_body + 12) = rep;
+        *reinterpret_cast<uint64_t*>(data_body + 16) = transition_value;
+        offset += 22;
       } else {
         data_body[1] = 0;
       }
@@ -74,13 +77,20 @@ TEST(Op, GainSTMPhaseIntensityFull) {
     ASSERT_EQ(bram_read_controller(ADDR_STM_FREQ_DIV0_1), 0x1234);
     ASSERT_EQ(bram_read_controller(ADDR_STM_REP0_0), 0x4321);
     ASSERT_EQ(bram_read_controller(ADDR_STM_REP0_1), 0x8765);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_MODE), transition_mode);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_VALUE_0), 0xCDEF);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_VALUE_1), 0x89AB);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_VALUE_2), 0x4567);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_VALUE_3), 0x0123);
     for (uint16_t i = 0; i < size; i++)
       for (uint16_t j = 0; j < NUM_TRANSDUCERS; j++)
         ASSERT_EQ(bram_read_stm(0, 256 * i + j), i + j);
   }
 
-  // segment 1
+  // segment 1 without segment change
   {
+    const uint8_t transition_mode = TRANSITION_MODE_SYS_TIME;
+    const uint64_t transition_value = 0xFEDCBA9876543210;
     const uint32_t size = 64;
     const uint8_t mode = GAIN_STM_MODE_INTENSITY_PHASE_FULL;
     const uint32_t freq_div = 0x87654321;
@@ -94,12 +104,13 @@ TEST(Op, GainSTMPhaseIntensityFull) {
       data_body[0] = TAG_GAIN_STM;
       auto offset = 2;
       if (cnt == 0) {
-        data_body[1] = GAIN_STM_FLAG_BEGIN;
+        data_body[1] = GAIN_STM_FLAG_BEGIN | GAIN_STM_FLAG_SEGMENT;
         *reinterpret_cast<uint8_t*>(data_body + 2) = mode;
-        *reinterpret_cast<uint8_t*>(data_body + 3) = 1;
-        *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
-        *reinterpret_cast<uint32_t*>(data_body + 8) = rep;
-        offset += 10;
+        *reinterpret_cast<uint8_t*>(data_body + 3) = transition_mode;
+        *reinterpret_cast<uint32_t*>(data_body + 8) = freq_div;
+        *reinterpret_cast<uint32_t*>(data_body + 12) = rep;
+        *reinterpret_cast<uint64_t*>(data_body + 16) = transition_value;
+        offset += 22;
       } else {
         data_body[1] = 0;
       }
@@ -127,6 +138,12 @@ TEST(Op, GainSTMPhaseIntensityFull) {
     ASSERT_EQ(bram_read_controller(ADDR_STM_FREQ_DIV1_1), 0x8765);
     ASSERT_EQ(bram_read_controller(ADDR_STM_REP1_0), 0x5678);
     ASSERT_EQ(bram_read_controller(ADDR_STM_REP1_1), 0x1234);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_MODE),
+              TRANSITION_MODE_EXT);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_VALUE_0), 0xCDEF);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_VALUE_1), 0x89AB);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_VALUE_2), 0x4567);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_VALUE_3), 0x0123);
     for (uint16_t i = 0; i < size; i++)
       for (uint16_t j = 0; j < NUM_TRANSDUCERS; j++)
         ASSERT_EQ(bram_read_stm(1, 256 * i + j), i + j);
@@ -138,9 +155,14 @@ TEST(Op, GainSTMPhaseIntensityFull) {
     header->msg_id = get_msg_id();
     header->slot_2_offset = 0;
 
+    const uint8_t transition_mode = TRANSITION_MODE_SYS_TIME;
+    const uint64_t transition_value = 0xFEDCBA9876543210;
+
     auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     data_body[0] = TAG_GAIN_STM_CHANGE_SEGMENT;
     data_body[1] = 1;
+    data_body[2] = transition_mode;
+    *reinterpret_cast<uint64_t*>(data_body + 8) = transition_value;
 
     auto frame = to_frame_data(data);
 
@@ -151,6 +173,11 @@ TEST(Op, GainSTMPhaseIntensityFull) {
     ASSERT_EQ(ack, header->msg_id);
 
     ASSERT_EQ(bram_read_controller(ADDR_STM_REQ_RD_SEGMENT), 1);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_MODE), transition_mode);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_VALUE_0), 0x3210);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_VALUE_1), 0x7654);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_VALUE_2), 0xBA98);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_VALUE_3), 0xFEDC);
   }
 }
 
@@ -179,11 +206,10 @@ TEST(Op, GainSTMInvalidSegmentTransition) {
       auto offset = 4;
       if (cnt == 0) {
         data_body[1] = FOCUS_STM_FLAG_BEGIN;
-        *reinterpret_cast<uint8_t*>(data_body + 3) = 0;
         *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
         *reinterpret_cast<uint32_t*>(data_body + 8) = sound_speed;
         *reinterpret_cast<uint32_t*>(data_body + 12) = rep;
-        offset += 12;
+        offset += 20;
       } else {
         data_body[1] = 0;
       }
@@ -265,34 +291,6 @@ TEST(Op, GainSTMInvalidSegmentTransition) {
   }
 }
 
-TEST(Op, GainSTMInvalidSegment) {
-  init_app();
-
-  RX_STR data;
-  std::memset(data.data, 0, sizeof(RX_STR));
-
-  Header* header = reinterpret_cast<Header*>(data.data);
-  header->slot_2_offset = 0;
-
-  header->msg_id = get_msg_id();
-
-  auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
-  data_body[0] = TAG_GAIN_STM;
-  data_body[1] = GAIN_STM_FLAG_BEGIN;
-  *reinterpret_cast<uint8_t*>(data_body + 2) =
-      GAIN_STM_MODE_INTENSITY_PHASE_FULL;
-  *reinterpret_cast<uint8_t*>(data_body + 3) = 0xFF;
-  *reinterpret_cast<uint32_t*>(data_body + 4) = 0xFFFFFFFF;
-
-  auto frame = to_frame_data(data);
-
-  recv_ethercat(&frame[0]);
-  update();
-
-  const auto ack = _sTx.ack >> 8;
-  ASSERT_EQ(ack, ERR_INVALID_SEGMENT);
-}
-
 TEST(Op, GainSTMPhaseFull) {
   init_app();
 
@@ -326,10 +324,9 @@ TEST(Op, GainSTMPhaseFull) {
     if (cnt == 0) {
       data_body[1] = GAIN_STM_FLAG_BEGIN;
       *reinterpret_cast<uint8_t*>(data_body + 2) = mode;
-      *reinterpret_cast<uint8_t*>(data_body + 3) = 0;
-      *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
-      *reinterpret_cast<uint32_t*>(data_body + 8) = rep;
-      offset += 10;
+      *reinterpret_cast<uint32_t*>(data_body + 8) = freq_div;
+      *reinterpret_cast<uint32_t*>(data_body + 12) = rep;
+      offset += 22;
     } else {
       data_body[1] = 0;
     }
@@ -398,10 +395,9 @@ TEST(Op, GainSTMPhaseHalf) {
     if (cnt == 0) {
       data_body[1] = GAIN_STM_FLAG_BEGIN;
       *reinterpret_cast<uint8_t*>(data_body + 2) = mode;
-      *reinterpret_cast<uint8_t*>(data_body + 3) = 0;
-      *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
-      *reinterpret_cast<uint32_t*>(data_body + 8) = rep;
-      offset += 10;
+      *reinterpret_cast<uint32_t*>(data_body + 8) = freq_div;
+      *reinterpret_cast<uint32_t*>(data_body + 12) = rep;
+      offset += 22;
     } else {
       data_body[1] = 0;
     }
@@ -457,7 +453,7 @@ TEST(Op, GainSTMInvalidMode) {
   data_body[0] = TAG_GAIN_STM;
   data_body[1] = GAIN_STM_FLAG_BEGIN;
   *reinterpret_cast<uint8_t*>(data_body + 2) = mode;
-  *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
+  *reinterpret_cast<uint32_t*>(data_body + 8) = freq_div;
 
   auto frame = to_frame_data(data);
 
@@ -512,9 +508,7 @@ TEST(Op, InvalidCompletionStepsIntensityGainSTM) {
     data_body[1] = GAIN_STM_FLAG_BEGIN | GAIN_STM_FLAG_END;
     *reinterpret_cast<uint8_t*>(data_body + 2) =
         GAIN_STM_MODE_INTENSITY_PHASE_FULL;
-    *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
-    *reinterpret_cast<uint16_t*>(data_body + 8) = 0;
-    *reinterpret_cast<uint16_t*>(data_body + 10) = 0;
+    *reinterpret_cast<uint32_t*>(data_body + 8) = freq_div;
 
     auto frame = to_frame_data(data);
 
@@ -538,9 +532,7 @@ TEST(Op, InvalidCompletionStepsIntensityGainSTM) {
     data_body[1] = GAIN_STM_FLAG_BEGIN | GAIN_STM_FLAG_END;
     *reinterpret_cast<uint8_t*>(data_body + 2) =
         GAIN_STM_MODE_INTENSITY_PHASE_FULL;
-    *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
-    *reinterpret_cast<uint16_t*>(data_body + 8) = 0;
-    *reinterpret_cast<uint16_t*>(data_body + 10) = 0;
+    *reinterpret_cast<uint32_t*>(data_body + 8) = freq_div;
 
     auto frame = to_frame_data(data);
 
@@ -596,9 +588,7 @@ TEST(Op, InvalidCompletionStepsPhaseGainSTM) {
     data_body[1] = GAIN_STM_FLAG_BEGIN | GAIN_STM_FLAG_END;
     *reinterpret_cast<uint8_t*>(data_body + 2) =
         GAIN_STM_MODE_INTENSITY_PHASE_FULL;
-    *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
-    *reinterpret_cast<uint16_t*>(data_body + 8) = 0;
-    *reinterpret_cast<uint16_t*>(data_body + 10) = 0;
+    *reinterpret_cast<uint32_t*>(data_body + 8) = freq_div;
 
     auto frame = to_frame_data(data);
 
@@ -622,9 +612,7 @@ TEST(Op, InvalidCompletionStepsPhaseGainSTM) {
     data_body[1] = GAIN_STM_FLAG_BEGIN | GAIN_STM_FLAG_END;
     *reinterpret_cast<uint8_t*>(data_body + 2) =
         GAIN_STM_MODE_INTENSITY_PHASE_FULL;
-    *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
-    *reinterpret_cast<uint16_t*>(data_body + 8) = 0;
-    *reinterpret_cast<uint16_t*>(data_body + 10) = 0;
+    *reinterpret_cast<uint32_t*>(data_body + 8) = freq_div;
 
     auto frame = to_frame_data(data);
 

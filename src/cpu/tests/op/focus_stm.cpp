@@ -24,6 +24,8 @@ TEST(Op, FocusSTM) {
 
   // segment 0
   {
+    const uint8_t transition_mode = TRANSITION_MODE_EXT;
+    const uint64_t transition_value = 0x0123456789ABCDEF;
     const uint32_t size = 65536;
     const uint32_t freq_div = 0x12345678;
     const uint32_t sound_speed = 0x9ABCDEF0;
@@ -38,11 +40,12 @@ TEST(Op, FocusSTM) {
       auto offset = 4;
       if (cnt == 0) {
         data_body[1] = FOCUS_STM_FLAG_BEGIN;
-        *reinterpret_cast<uint8_t*>(data_body + 3) = 0;
+        *reinterpret_cast<uint8_t*>(data_body + 3) = transition_mode;
         *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
         *reinterpret_cast<uint32_t*>(data_body + 8) = sound_speed;
         *reinterpret_cast<uint32_t*>(data_body + 12) = rep;
-        offset += 12;
+        *reinterpret_cast<uint64_t*>(data_body + 16) = transition_value;
+        offset += 20;
       } else {
         data_body[1] = 0;
       }
@@ -76,6 +79,11 @@ TEST(Op, FocusSTM) {
     ASSERT_EQ(bram_read_controller(ADDR_STM_SOUND_SPEED0_1), 0x9ABC);
     ASSERT_EQ(bram_read_controller(ADDR_STM_REP0_0), 0x4321);
     ASSERT_EQ(bram_read_controller(ADDR_STM_REP0_1), 0x8765);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_MODE), transition_mode);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_VALUE_0), 0xCDEF);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_VALUE_1), 0x89AB);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_VALUE_2), 0x4567);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_VALUE_3), 0x0123);
     for (size_t i = 0; i < size; i++) {
       ASSERT_EQ(bram_read_stm(0, 4 * i), buf[i] & 0xFFFF);
       ASSERT_EQ(bram_read_stm(0, 4 * i + 1), (buf[i] >> 16) & 0xFFFF);
@@ -84,8 +92,10 @@ TEST(Op, FocusSTM) {
     }
   }
 
-  // segment 1
+  // segment 1 without segment change
   {
+    const uint8_t transition_mode = TRANSITION_MODE_SYS_TIME;
+    const uint64_t transition_value = 0xFEDCBA9876543210;
     const uint32_t size = 1024;
     const uint32_t freq_div = 0x87654321;
     const uint32_t sound_speed = 0x0FEDCBA9;
@@ -99,12 +109,13 @@ TEST(Op, FocusSTM) {
       data_body[0] = TAG_FOCUS_STM;
       auto offset = 4;
       if (cnt == 0) {
-        data_body[1] = FOCUS_STM_FLAG_BEGIN;
-        *reinterpret_cast<uint8_t*>(data_body + 3) = 1;
+        data_body[1] = FOCUS_STM_FLAG_BEGIN | FOCUS_STM_FLAG_SEGMENT;
+        *reinterpret_cast<uint8_t*>(data_body + 3) = transition_mode;
         *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
         *reinterpret_cast<uint32_t*>(data_body + 8) = sound_speed;
         *reinterpret_cast<uint32_t*>(data_body + 12) = rep;
-        offset += 12;
+        *reinterpret_cast<uint64_t*>(data_body + 16) = transition_value;
+        offset += 20;
       } else {
         data_body[1] = 0;
       }
@@ -137,6 +148,12 @@ TEST(Op, FocusSTM) {
     ASSERT_EQ(bram_read_controller(ADDR_STM_SOUND_SPEED1_1), 0x0FED);
     ASSERT_EQ(bram_read_controller(ADDR_STM_REP1_0), 0x5678);
     ASSERT_EQ(bram_read_controller(ADDR_STM_REP1_1), 0x1234);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_MODE),
+              TRANSITION_MODE_EXT);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_VALUE_0), 0xCDEF);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_VALUE_1), 0x89AB);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_VALUE_2), 0x4567);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_VALUE_3), 0x0123);
     for (size_t i = 0; i < size; i++) {
       ASSERT_EQ(bram_read_stm(1, 4 * i), buf[i] & 0xFFFF);
       ASSERT_EQ(bram_read_stm(1, 4 * i + 1), (buf[i] >> 16) & 0xFFFF);
@@ -151,9 +168,14 @@ TEST(Op, FocusSTM) {
     header->msg_id = get_msg_id();
     header->slot_2_offset = 0;
 
+    const uint8_t transition_mode = TRANSITION_MODE_SYS_TIME;
+    const uint64_t transition_value = 0xFEDCBA9876543210;
+
     auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     data_body[0] = TAG_FOCUS_STM_CHANGE_SEGMENT;
     data_body[1] = 1;
+    data_body[2] = transition_mode;
+    *reinterpret_cast<uint64_t*>(data_body + 8) = transition_value;
 
     auto frame = to_frame_data(data);
 
@@ -164,6 +186,11 @@ TEST(Op, FocusSTM) {
     ASSERT_EQ(ack, header->msg_id);
 
     ASSERT_EQ(bram_read_controller(ADDR_STM_REQ_RD_SEGMENT), 1);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_MODE), transition_mode);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_VALUE_0), 0x3210);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_VALUE_1), 0x7654);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_VALUE_2), 0xBA98);
+    ASSERT_EQ(bram_read_controller(ADDR_STM_TRANSITION_VALUE_3), 0xFEDC);
   }
 }
 
@@ -187,14 +214,11 @@ TEST(Op, FocusSTMInvalidSegmentTransition) {
       header->msg_id = get_msg_id();
       auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
       data_body[0] = TAG_GAIN_STM;
-      auto offset = 2;
       if (cnt == 0) {
         data_body[1] = GAIN_STM_FLAG_BEGIN;
         *reinterpret_cast<uint8_t*>(data_body + 2) = mode;
-        *reinterpret_cast<uint8_t*>(data_body + 3) = 0;
-        *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
-        *reinterpret_cast<uint32_t*>(data_body + 8) = rep;
-        offset += 10;
+        *reinterpret_cast<uint32_t*>(data_body + 8) = freq_div;
+        *reinterpret_cast<uint32_t*>(data_body + 12) = rep;
       } else {
         data_body[1] = 0;
       }
@@ -265,31 +289,6 @@ TEST(Op, FocusSTMInvalidSegmentTransition) {
     const auto ack = _sTx.ack >> 8;
     ASSERT_EQ(ack, ERR_INVALID_SEGMENT_TRANSITION);
   }
-}
-
-TEST(Op, FocusSTMInvalidSegment) {
-  init_app();
-
-  RX_STR data;
-  std::memset(data.data, 0, sizeof(RX_STR));
-
-  Header* header = reinterpret_cast<Header*>(data.data);
-  header->slot_2_offset = 0;
-
-  header->msg_id = get_msg_id();
-
-  auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
-  data_body[0] = TAG_FOCUS_STM;
-  data_body[1] = FOCUS_STM_FLAG_BEGIN;
-  *reinterpret_cast<uint8_t*>(data_body + 3) = 0xFF;
-  *reinterpret_cast<uint32_t*>(data_body + 4) = 0xFFFFFFFF;
-  auto frame = to_frame_data(data);
-
-  recv_ethercat(&frame[0]);
-  update();
-
-  const auto ack = _sTx.ack >> 8;
-  ASSERT_EQ(ack, ERR_INVALID_SEGMENT);
 }
 
 TEST(Op, InvalidCompletionStepsIntensityFocusSTM) {
