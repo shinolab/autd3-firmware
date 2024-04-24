@@ -51,6 +51,9 @@ uint8_t clear(void) {
   _mod_cycle = 2;
   _mod_freq_div[0] = 5120;
   _mod_freq_div[1] = 5120;
+  bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_TRANSITION_MODE,
+             TRANSITION_MODE_SYNC_IDX);
+  bram_set(BRAM_SELECT_CONTROLLER, ADDR_MOD_TRANSITION_VALUE_0, 0, 4);
   bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_REQ_RD_SEGMENT, 0);
   bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_CYCLE0, _mod_cycle - 1);
   bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_MOD_FREQ_DIV0_0,
@@ -73,6 +76,9 @@ uint8_t clear(void) {
   _stm_cycle[1] = 1;
   _stm_freq_div[0] = 0xFFFFFFFF;
   _stm_freq_div[1] = 0xFFFFFFFF;
+  bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_TRANSITION_MODE,
+             TRANSITION_MODE_SYNC_IDX);
+  bram_set(BRAM_SELECT_CONTROLLER, ADDR_STM_TRANSITION_VALUE_0, 0, 4);
   bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MODE0, STM_MODE_GAIN);
   bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MODE1, STM_MODE_GAIN);
   bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_REQ_RD_SEGMENT, 0);
