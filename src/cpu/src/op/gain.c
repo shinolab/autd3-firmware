@@ -64,6 +64,8 @@ uint8_t write_gain(const volatile uint8_t* p_data) {
 
   if ((p->flag & GAIN_FLAG_UPDATE) != 0) {
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_REQ_RD_SEGMENT, segment);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_TRANSITION_MODE,
+               TRANSITION_MODE_SYNC_IDX);
     set_and_wait_update(CTL_FLAG_STM_SET);
   }
 
@@ -81,6 +83,8 @@ uint8_t change_gain_segment(const volatile uint8_t* p_data) {
     return ERR_INVALID_SEGMENT_TRANSITION;
 
   bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_REQ_RD_SEGMENT, p->segment);
+  bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_TRANSITION_MODE,
+             TRANSITION_MODE_SYNC_IDX);
   set_and_wait_update(CTL_FLAG_STM_SET);
 
   return NO_ERR;
