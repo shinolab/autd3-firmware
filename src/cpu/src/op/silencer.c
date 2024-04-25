@@ -38,39 +38,34 @@ uint8_t config_silencer(const volatile uint8_t* p_data) {
   const uint16_t value_phase = p->value_phase;
   const uint8_t flag = p->flag;
 
-  switch (flag & SILENCER_FLAG_MODE) {
-    case SILENCER_MODE_FIXED_COMPLETION_STEPS:
-      _silencer_strict_mode = (flag & SILENCER_FLAG_STRICT_MODE) != 0;
-      _min_freq_div_intensity = (uint32_t)value_intensity << 9;
-      _min_freq_div_phase = (uint32_t)value_phase << 9;
-      if (_silencer_strict_mode) {
-        if ((_mod_freq_div[0] < _min_freq_div_intensity) ||
-            _mod_freq_div[1] < _min_freq_div_intensity)
-          return ERR_COMPLETION_STEPS_TOO_LARGE;
-        if (((_stm_freq_div[0] < _min_freq_div_intensity) ||
-             (_stm_freq_div[0] < _min_freq_div_phase)) ||
-            (_stm_freq_div[1] < _min_freq_div_intensity) ||
-            (_stm_freq_div[1] < _min_freq_div_phase))
-          return ERR_COMPLETION_STEPS_TOO_LARGE;
-      }
-      bram_write(BRAM_SELECT_CONTROLLER,
-                 ADDR_SILENCER_COMPLETION_STEPS_INTENSITY, value_intensity);
-      bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_COMPLETION_STEPS_PHASE,
-                 value_phase);
-      bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_MODE,
-                 SILENCER_MODE_FIXED_COMPLETION_STEPS);
-      break;
-    case SILENCER_MODE_FIXED_UPDATE_RATE:
-      bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_UPDATE_RATE_INTENSITY,
-                 value_intensity);
-      bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_UPDATE_RATE_PHASE,
-                 value_phase);
-      bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_MODE,
-                 SILENCER_MODE_FIXED_UPDATE_RATE);
-      _silencer_strict_mode = false;
-      break;
-    default:                    // LCOV_EXCL_LINE
-      return ERR_INVALID_MODE;  // LCOV_EXCL_LINE
+  if ((flag & SILENCER_FLAG_MODE) == SILENCER_MODE_FIXED_COMPLETION_STEPS) {
+    _silencer_strict_mode = (flag & SILENCER_FLAG_STRICT_MODE) != 0;
+    _min_freq_div_intensity = (uint32_t)value_intensity << 9;
+    _min_freq_div_phase = (uint32_t)value_phase << 9;
+    if (_silencer_strict_mode) {
+      if ((_mod_freq_div[0] < _min_freq_div_intensity) ||
+          _mod_freq_div[1] < _min_freq_div_intensity)
+        return ERR_COMPLETION_STEPS_TOO_LARGE;
+      if (((_stm_freq_div[0] < _min_freq_div_intensity) ||
+           (_stm_freq_div[0] < _min_freq_div_phase)) ||
+          (_stm_freq_div[1] < _min_freq_div_intensity) ||
+          (_stm_freq_div[1] < _min_freq_div_phase))
+        return ERR_COMPLETION_STEPS_TOO_LARGE;
+    }
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_COMPLETION_STEPS_INTENSITY,
+               value_intensity);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_COMPLETION_STEPS_PHASE,
+               value_phase);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_MODE,
+               SILENCER_MODE_FIXED_COMPLETION_STEPS);
+  } else {
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_UPDATE_RATE_INTENSITY,
+               value_intensity);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_UPDATE_RATE_PHASE,
+               value_phase);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_MODE,
+               SILENCER_MODE_FIXED_UPDATE_RATE);
+    _silencer_strict_mode = false;
   }
 
   set_and_wait_update(CTL_FLAG_SILENCER_SET);
