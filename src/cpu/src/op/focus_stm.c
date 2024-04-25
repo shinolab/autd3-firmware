@@ -197,7 +197,7 @@ uint8_t change_focus_stm_segment(const volatile uint8_t* p_data) {
 
   const FocusSTMUpdate* p = (const FocusSTMUpdate*)p_data;
 
-  if (_stm_mode[p->segment] != STM_MODE_FOCUS || _stm_cycle[p->segment] == 1)
+  if (_stm_mode[p->segment] != STM_MODE_FOCUS)
     return ERR_INVALID_SEGMENT_TRANSITION;
 
   return stm_segment_update(p->segment, p->transition_mode,
