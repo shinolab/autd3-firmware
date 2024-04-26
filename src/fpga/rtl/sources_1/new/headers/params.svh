@@ -2,7 +2,7 @@ package params;
 
   localparam int NumTransducers = 249;
   localparam int NumSegment = 2;
-  localparam real UltrasoundFrequency = 40000.0;
+  localparam int UltrasoundFrequency = 40000;
 
   localparam int GainSTMSize = 1024;
   localparam int STMWrAddrWidth = $clog2(GainSTMSize * 256);

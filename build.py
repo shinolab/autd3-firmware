@@ -355,8 +355,8 @@ def fpga_config_ultrasound_freq(args):
             "w",
         ) as f:
             result = re.sub(
-                r"localparam real UltrasoundFrequency = (.+);",
-                f"localparam real UltrasoundFrequency = {args.frequency};",
+                r"localparam int UltrasoundFrequency = (.+);",
+                f"localparam int UltrasoundFrequency = {args.frequency};",
                 content,
                 flags=re.MULTILINE,
             )
@@ -486,7 +486,7 @@ if __name__ == "__main__":
             "config_ultrasound_freq", help="see `config_ultrasound_freq -h`"
         )
         parser_fpga_config_ultrasound_freq.add_argument(
-            "-f", "--frequency", required=True, help="target frequency", type=float
+            "-f", "--frequency", required=True, help="target frequency", type=int
         )
         parser_fpga_config_ultrasound_freq.add_argument(
             "-b", "--base_frequency", help="base frequency", type=float, default=25.6e6

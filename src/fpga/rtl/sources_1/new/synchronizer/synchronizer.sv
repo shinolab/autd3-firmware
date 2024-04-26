@@ -11,7 +11,7 @@ module synchronizer (
   localparam int AddSubLatency = 6;
 
   localparam logic [31:0] ECatSyncBase = 32'd500000;  // ns
-  localparam int ECatSyncBaseCnt = int'(params::UltrasoundFrequency * 512.0 * 0.0005);
+  localparam int ECatSyncBaseCnt = params::UltrasoundFrequency * 512 / 2000;
 
   logic [63:0] ecat_sync_time;
   logic [63:0] lap;
