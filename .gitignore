@@ -8,3 +8,4 @@ tmp.mcs
 .vscode/
 .xsim.gcc.version
 vivado_*.str
+autd_firmware_writer.log

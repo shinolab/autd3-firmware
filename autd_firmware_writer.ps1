@@ -1,5 +1,5 @@
 ﻿Param(
-    [string]$version = "6.1.0",
+    [string]$version = "7.0.0-rc.2",
     [string]$vivado_dir = "NULL"
 )
 
@@ -125,6 +125,7 @@ if (-not (Test-Path "tmp")) {
 }
 if (-not (Test-Path "tmp/v$version")) {
   ColorEcho "Green" "INFO" "Downloading firmware files..."
+  ColorEcho "Green" "INFO" "https://github.com/shinolab/autd3-firmware/releases/download/v$version/firmware-v$version.zip"
   Invoke-WebRequest "https://github.com/shinolab/autd3-firmware/releases/download/v$version/firmware-v$version.zip" -OutFile "tmp.zip" | Out-Null
   Expand-Archive -Path "tmp.zip" -DestinationPath "tmp/v$version" -Force
   Remove-Item -Path "tmp.zip"
