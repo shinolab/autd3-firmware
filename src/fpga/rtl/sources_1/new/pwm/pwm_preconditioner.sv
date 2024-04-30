@@ -32,7 +32,7 @@ module pwm_preconditioner #(
 
   delay_fifo #(
       .WIDTH(9),
-      .DEPTH(4)
+      .DEPTH(2)
   ) pw_buf (
       .CLK (CLK),
       .DIN (PULSE_WIDTH),
@@ -81,6 +81,7 @@ module pwm_preconditioner #(
     IDLE,
     WAIT0,
     WAIT1,
+    WAIT2,
     RUN,
     DONE
   } state_t;
@@ -100,6 +101,9 @@ module pwm_preconditioner #(
         state <= WAIT1;
       end
       WAIT1: begin
+        state <= WAIT2;
+      end
+      WAIT2: begin
         state <= RUN;
       end
       RUN: begin
