@@ -3,6 +3,7 @@ module sim_clock ();
 
   logic CLK;
   logic locked;
+  logic [63:0] sys_time;
 
   sim_helper_bram sim_helper_bram ();
 
@@ -24,8 +25,6 @@ module sim_clock ();
       .DUTY_TABLE_BUS(duty_table_bus.in_port),
       .FILTER_BUS(filter_bus.in_port)
   );
-
-  logic [63:0] sys_time;
 
   sim_helper_clk sim_helper_clk (
       .MRCC_25P6M(MRCC_25P6M),

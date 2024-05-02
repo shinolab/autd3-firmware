@@ -6,15 +6,11 @@ module sim_mem_duty_table ();
 
   logic CLK;
   logic locked;
-  sim_helper_clk sim_helper_clk (
-      .CLK_20P48M(CLK),
-      .LOCKED(locked),
-      .SYS_TIME()
-  );
 
   sim_helper_random sim_helper_random ();
   sim_helper_bram #(.DEPTH(DEPTH)) sim_helper_bram ();
 
+  clock_bus_if clock_bus ();
   cnt_bus_if cnt_bus ();
   modulation_bus_if mod_bus ();
   stm_bus_if stm_bus ();
@@ -23,12 +19,22 @@ module sim_mem_duty_table ();
 
   memory memory (
       .CLK(CLK),
+      .MRCC_25P6M(MRCC_25P6M),
       .MEM_BUS(sim_helper_bram.memory_bus.bram_port),
-      .CNT_BUS_IF(cnt_bus.in_port),
+      .CLOCK_BUS(clock_bus.in_port),
+      .CNT_BUS(cnt_bus.in_port),
       .MOD_BUS(mod_bus.in_port),
       .STM_BUS(stm_bus.in_port),
       .DUTY_TABLE_BUS(duty_table_bus.in_port),
       .FILTER_BUS(filter_bus.in_port)
+  );
+
+  sim_helper_clk sim_helper_clk (
+      .MRCC_25P6M(),
+      .CLK(CLK),
+      .CLOCK_BUS(clock_bus.out_port),
+      .LOCKED(locked),
+      .SYS_TIME()
   );
 
   logic [ 7:0] buffer[SIZE];

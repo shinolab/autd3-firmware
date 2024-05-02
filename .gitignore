@@ -9,3 +9,5 @@ tmp.mcs
 .xsim.gcc.version
 vivado_*.str
 autd_firmware_writer.log
+hs_err_pid*.log
+hs_err_pid*.dmp

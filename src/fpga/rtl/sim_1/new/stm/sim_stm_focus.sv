@@ -4,13 +4,6 @@ module sim_stm_focus ();
   logic CLK;
   logic locked;
   logic [63:0] SYS_TIME;
-  sim_helper_clk #(
-      .SPEED_UP(1.0)
-  ) sim_helper_clk (
-      .CLK_20P48M(CLK),
-      .LOCKED(locked),
-      .SYS_TIME(SYS_TIME)
-  );
 
   localparam int DEPTH = 249;
   localparam int SIZE = 16;
@@ -33,8 +26,8 @@ module sim_stm_focus ();
   logic [7:0] phase;
   logic dout_valid;
 
+  clock_bus_if clock_bus ();
   cnt_bus_if cnt_bus ();
-  modulation_delay_bus_if mod_delay_bus ();
   modulation_bus_if mod_bus ();
   stm_bus_if stm_bus ();
   duty_table_bus_if duty_table_bus ();
@@ -42,12 +35,22 @@ module sim_stm_focus ();
 
   memory memory (
       .CLK(CLK),
+      .MRCC_25P6M(MRCC_25P6M),
       .MEM_BUS(sim_helper_bram.memory_bus.bram_port),
-      .CNT_BUS_IF(cnt_bus.in_port),
+      .CLOCK_BUS(clock_bus.in_port),
+      .CNT_BUS(cnt_bus.in_port),
       .MOD_BUS(mod_bus.in_port),
       .STM_BUS(stm_bus.in_port),
       .DUTY_TABLE_BUS(duty_table_bus.in_port),
       .FILTER_BUS(filter_bus.in_port)
+  );
+
+  sim_helper_clk sim_helper_clk (
+      .MRCC_25P6M(MRCC_25P6M),
+      .CLK(CLK),
+      .CLOCK_BUS(clock_bus.out_port),
+      .LOCKED(locked),
+      .SYS_TIME(SYS_TIME)
   );
 
   time_cnt_generator #(
@@ -161,6 +164,8 @@ module sim_stm_focus ();
     freq_div_buf[0] = 1;
     freq_div_buf[1] = 3;
 
+    stm_settings.TRANSITION_MODE = params::TRANSITION_MODE_SYNC_IDX;
+    stm_settings.TRANSITION_VALUE = 0;
     stm_settings.MODE[0] = params::STM_MODE_FOCUS;
     stm_settings.MODE[1] = params::STM_MODE_FOCUS;
     stm_settings.SOUND_SPEED[0] = 340 * 1024;

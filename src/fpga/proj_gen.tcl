@@ -6,9 +6,9 @@ create_project -force $project_name $project_directory
 
 set_property PART xc7a200tfbg676-2 [current_project]
 
-set_property "default_lib"        "xil_defaultlib" [current_project]
-set_property "simulator_language" "Verilog"        [current_project]
-set_property "target_language"    "Verilog"        [current_project]
+set_property default_lib        xil_defaultlib [current_project]
+set_property simulator_language Mixed          [current_project]
+set_property target_language    Verilog        [current_project]
 
 if {[string equal [get_filesets -quiet sources_1] ""]} {
     create_fileset -srcset sources_1
