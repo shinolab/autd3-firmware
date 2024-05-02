@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 module step_calculator_intensity #(
     parameter int DEPTH = 249
 ) (

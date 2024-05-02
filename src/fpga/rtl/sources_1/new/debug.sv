@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 module debug #(
     parameter int DEPTH = 249
 ) (

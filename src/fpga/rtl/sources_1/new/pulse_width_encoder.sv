@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 module pulse_width_encoder #(
     parameter int DEPTH = 249
 ) (

@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 module interpolator #(
     parameter int DEPTH = 249
 ) (

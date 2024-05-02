@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 module memory (
     input wire CLK,
     input wire MRCC_25P6M,

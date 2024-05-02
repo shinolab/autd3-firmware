@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 module phase_filter #(
     parameter int DEPTH = 249
 ) (

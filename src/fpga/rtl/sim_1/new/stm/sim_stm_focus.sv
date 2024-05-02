@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 module sim_stm_focus ();
 
   logic CLK;
