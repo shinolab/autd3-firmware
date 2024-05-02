@@ -1443,4 +1443,4 @@ set_property PULLTYPE PULLUP [get_ports {GPIO_IN[3]}]
 set_property PACKAGE_PIN AA19 [get_ports {GPIO_IN[3]}]
 
 create_clock -period 13.333 -name cpu_bsc_75M -waveform {0.000 6.666} [get_ports CPU_CKIO]
-create_clock -period 39.063 -name main_25P6M -waveform {0.000 19.531} [get_ports MRCC_25P6M]
+create_clock -period 39.063 -waveform {0.000 19.531} [get_ports MRCC_25P6M]

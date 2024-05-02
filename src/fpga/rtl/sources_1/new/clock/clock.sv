@@ -15,13 +15,7 @@ module clock (
   logic        dclk;
   logic        reset;
 
-  (* rom_style = "distributed" *)
-  logic [38:0] rom   [32] = '{32{'0}};
-
-  BUFG BUFG_IN (
-      .O(clkin),
-      .I(MRCC_25P6M)
-  );
+  logic [38:0] rom   [32];
 
   clock_rom clock_rom (
       .CLK(MRCC_25P6M),
@@ -31,7 +25,7 @@ module clock (
   );
 
   clock_drp clock_drp (
-      .CLK(clkin),
+      .CLK(MRCC_25P6M),
       .LOCKED(LOCKED),
       .ROM(rom),
       .UPDATE(update),

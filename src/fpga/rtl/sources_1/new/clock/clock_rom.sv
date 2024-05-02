@@ -2,7 +2,7 @@
 module clock_rom (
     input wire CLK,
     clock_bus_if.out_port CLOCK_BUS,
-    output var [38:0] ROM[32],
+    output wire [38:0] ROM[32],
     output wire UPDATE
 );
 
@@ -14,11 +14,15 @@ module clock_rom (
   logic [4:0] rom_addr;
   logic update;
 
+  (* rom_style = "distributed" *)
+  logic [38:0] rom[32] = '{32{'0}};
+
   assign CLOCK_BUS.WE = we;
   assign CLOCK_BUS.ADDR = addr;
   assign CLOCK_BUS.DIN = {15'd0, din};
   assign dout = CLOCK_BUS.DOUT[38:0];
   assign UPDATE = update;
+  assign ROM = rom;
 
   typedef enum logic [3:0] {
     WAIT,
@@ -59,7 +63,7 @@ module clock_rom (
         state <= LOAD;
       end
       LOAD: begin
-        ROM[rom_addr] <= dout;
+        rom[rom_addr] <= dout;
         addr <= addr + 1;
         rom_addr <= rom_addr + 1;
         if (rom_addr == 22) begin
