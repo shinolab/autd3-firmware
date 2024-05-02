@@ -13,6 +13,7 @@ module synchronizer (
   localparam logic [31:0] ECatSyncBase = 32'd500000;  // ns
 
   logic [63:0] ecat_sync_time;
+  logic [17:0] ecat_sync_base_cnt;
   logic [63:0] lap;
   logic [31:0] lap_rem_unused;
   logic [63:0] sync_time;
@@ -49,7 +50,7 @@ module synchronizer (
   mult_sync_base mult_sync_base_time (
       .CLK(CLK),
       .A  (lap),
-      .B  (SYNC_SETTINGS.ECAT_SYNC_BASE_CNT[17:0]),
+      .B  (ecat_sync_base_cnt),
       .P  (sync_time)
   );
 
@@ -76,6 +77,7 @@ module synchronizer (
     end else if (SYNC_SETTINGS.UPDATE) begin
       set <= 1'b1;
       ecat_sync_time <= SYNC_SETTINGS.ECAT_SYNC_TIME;
+      ecat_sync_base_cnt <= SYNC_SETTINGS.ECAT_SYNC_BASE_CNT;
     end
   end
 
@@ -93,7 +95,7 @@ module synchronizer (
         sys_time <= sys_time + 1;
       end
       diff_cnt <= 0;
-      next_sync_cnt <= {1'b0, ECatSyncBaseCnt[17:1]};
+      next_sync_cnt <= {1'b0, ecat_sync_base_cnt[17:1]};
       skip_one_assert <= 1'b0;
     end else begin
       if (diff_cnt == AddSubLatency + 1) begin
@@ -120,10 +122,10 @@ module synchronizer (
         skip_one_assert <= 1'b0;
       end
 
-      if (next_sync_cnt == ECatSyncBaseCnt[17:0] - 1) begin
+      if (next_sync_cnt == ecat_sync_base_cnt - 1) begin
         next_sync_cnt <= 0;
         a_next <= next_sync_time;
-        b_next <= {46'd0, ECatSyncBaseCnt[17:0]};
+        b_next <= {46'd0, ecat_sync_base_cnt};
         next_cnt <= 0;
       end else begin
         if (next_cnt == AddSubLatency + 1) begin
