@@ -38,17 +38,11 @@ module top (
   assign memory_bus.BRAM_ADDR = CPU_ADDR[14:1];
   assign memory_bus.CPU_DATA = CPU_DATA;
 
-  ultrasound_cnt_clk_gen ultrasound_cnt_clk_gen (
-      .clk_in1(MRCC_25P6M),
-      .reset  (reset),
-      .clk_out(clk),
-      .locked ()
-  );
-
   main #(
       .DEPTH(params::NumTransducers)
   ) main (
-      .CLK(clk),
+      .MRCC_25P6M(MRCC_25P6M),
+      .RESET(reset),
       .CAT_SYNC0(CAT_SYNC0),
       .MEM_BUS(memory_bus.bram_port),
       .THERMO(THERMO),

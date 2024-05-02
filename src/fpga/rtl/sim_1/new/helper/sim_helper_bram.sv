@@ -9,7 +9,7 @@ module sim_helper_bram #(
   assign CPU_ADDR = {bram_addr, 1'b1};
   logic [15:0] CPU_DATA;
   logic CPU_CKIO;
-  logic CPU_CS1_N;
+  logic CPU_CN;
   logic CPU_WE0_N;
   logic [15:0] CPU_DATA_READ;
   logic [15:0] bus_data_reg = 16'bzzzzzzzzzzzzzzzz;
@@ -17,7 +17,7 @@ module sim_helper_bram #(
 
   memory_bus_if memory_bus ();
   assign memory_bus.BUS_CLK = CPU_CKIO;
-  assign memory_bus.EN = ~CPU_CS1_N;
+  assign memory_bus.EN = ~CPU_CN;
   assign memory_bus.WE = ~CPU_WE0_N;
   assign memory_bus.BRAM_SELECT = CPU_ADDR[16:15];
   assign memory_bus.BRAM_ADDR = CPU_ADDR[14:1];
@@ -27,7 +27,7 @@ module sim_helper_bram #(
                             input logic [15:0] data_in);
     @(posedge CPU_CKIO);
     bram_addr <= {select, addr};
-    CPU_CS1_N <= 0;
+    CPU_CN <= 0;
     bus_data_reg <= data_in;
     @(posedge CPU_CKIO);
     @(negedge CPU_CKIO);
@@ -37,6 +37,75 @@ module sim_helper_bram #(
 
     @(negedge CPU_CKIO);
     CPU_WE0_N <= 1;
+  endtask
+
+  task automatic config_clk(logic [37:0] CLKOUT0_FRAC, logic [37:0] DIVCLK,
+                            logic [37:0] CLKFBOUT_FRAC, logic [39:0] LOCK,
+                            logic [9:0] DIGITAL_FILT);
+
+    logic [38:0] rom[32] = '{32{'0}};
+
+    logic [37:0] CLKOUT_UNUSED = 38'h0000400041;
+
+    rom[0] = {7'h28, 16'h0000, 16'hFFFF};
+
+    rom[1] = {7'h09, 16'h8000, CLKOUT0_FRAC[31:16]};
+    rom[2] = {7'h08, 16'h1000, CLKOUT0_FRAC[15:0]};
+
+    rom[3] = {7'h0A, 16'h1000, CLKOUT_UNUSED[15:0]};
+    rom[4] = {7'h0B, 16'hFC00, CLKOUT_UNUSED[31:16]};
+
+    rom[5] = {7'h0C, 16'h1000, CLKOUT_UNUSED[15:0]};
+    rom[6] = {7'h0D, 16'hFC00, CLKOUT_UNUSED[31:16]};
+
+    rom[7] = {7'h0E, 16'h1000, CLKOUT_UNUSED[15:0]};
+    rom[8] = {7'h0F, 16'hFC00, CLKOUT_UNUSED[31:16]};
+
+    rom[9] = {7'h10, 16'h1000, CLKOUT_UNUSED[15:0]};
+    rom[10] = {7'h11, 16'hFC00, CLKOUT_UNUSED[31:16]};
+
+    rom[11] = {7'h06, 16'h1000, CLKOUT_UNUSED[15:0]};
+    rom[12] = {7'h07, 16'hC000, CLKOUT_UNUSED[31:30], CLKOUT0_FRAC[35:32], CLKOUT_UNUSED[25:16]};
+
+    rom[13] = {7'h12, 16'h1000, 16'h0000};
+    rom[14] = {7'h13, 16'hC000, CLKOUT_UNUSED[31:30], CLKFBOUT_FRAC[35:32], CLKOUT_UNUSED[25:16]};
+
+    rom[15] = {7'h16, 16'hC000, {2'h0, DIVCLK[23:22], DIVCLK[11:0]}};
+
+    rom[16] = {7'h14, 16'h1000, CLKFBOUT_FRAC[15:0]};
+    rom[17] = {7'h15, 16'h8000, CLKFBOUT_FRAC[31:16]};
+
+    rom[18] = {7'h18, 16'hFC00, {6'h00, LOCK[29:20]}};
+    rom[19] = {7'h19, 16'h8000, {1'b0, LOCK[34:30], LOCK[9:0]}};
+    rom[20] = {7'h1A, 16'h8000, {1'b0, LOCK[39:35], LOCK[19:10]}};
+
+    rom[21] = {
+      7'h4E, 16'h66FF, DIGITAL_FILT[9], 2'h0, DIGITAL_FILT[8:7], 2'h0, DIGITAL_FILT[6], 8'h00
+    };
+    rom[22] = {
+      7'h4F,
+      16'h666F,
+      DIGITAL_FILT[5],
+      2'h0,
+      DIGITAL_FILT[4:3],
+      2'h0,
+      DIGITAL_FILT[2:1],
+      2'h0,
+      DIGITAL_FILT[0],
+      4'h0
+    };
+
+    rom[31] = 1;
+
+    for (int i = 0; i < 32; i++) begin
+      bram_write(params::BRAM_SELECT_CONTROLLER, {
+                 2'b00, params::BRAM_CNT_SELECT_CLOCK, 1'b0, i[4:0], 2'b00}, rom[i][15:0]);
+      bram_write(params::BRAM_SELECT_CONTROLLER, {
+                 2'b00, params::BRAM_CNT_SELECT_CLOCK, 1'b0, i[4:0], 2'b01}, rom[i][31:16]);
+      bram_write(params::BRAM_SELECT_CONTROLLER, {
+                 2'b00, params::BRAM_CNT_SELECT_CLOCK, 1'b0, i[4:0], 2'b10}, {9'd0, rom[i][38:32]});
+    end
+
   endtask
 
   task automatic write_cnt(logic [7:0] addr, logic [15:0] data);

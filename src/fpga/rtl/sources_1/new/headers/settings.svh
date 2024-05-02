@@ -33,6 +33,7 @@ package settings;
 
   typedef struct {
     logic UPDATE;
+    logic [31:0] ECAT_SYNC_BASE_CNT;
     logic [63:0] ECAT_SYNC_TIME;
   } sync_settings_t;
 

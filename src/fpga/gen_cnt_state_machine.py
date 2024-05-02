@@ -120,6 +120,7 @@ sync_params = Params(
     "SYNC",
     [
         Param("ECAT_SYNC_TIME", 64, "ECAT_SYNC_TIME", 0),
+        Param("ECAT_SYNC_BASE_CNT", 32, "ECAT_SYNC_BASE_CNT", 10240),
     ],
 )
 

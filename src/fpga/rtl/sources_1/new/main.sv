@@ -2,7 +2,8 @@
 module main #(
     parameter int DEPTH = 249
 ) (
-    input wire CLK,
+    input wire MRCC_25P6M,
+    input wire RESET,
     input wire CAT_SYNC0,
     memory_bus_if.bram_port MEM_BUS,
     input wire THERMO,
@@ -12,6 +13,7 @@ module main #(
     output wire GPIO_OUT[4]
 );
 
+  clock_bus_if clock_bus ();
   cnt_bus_if cnt_bus ();
   modulation_bus_if mod_bus ();
   stm_bus_if stm_bus ();
@@ -24,6 +26,8 @@ module main #(
   settings::sync_settings_t sync_settings;
   settings::pulse_width_encoder_settings_t pulse_width_encoder_settings;
   settings::debug_settings_t debug_settings;
+
+  logic clk;
 
   logic [63:0] sys_time;
   logic skip_one_assert;
@@ -54,17 +58,26 @@ module main #(
   logic [14:0] mod_idx;
 
   memory memory (
-      .CLK(CLK),
+      .MRCC_25P6M(MRCC_25P6M),
+      .CLK(clk),
       .MEM_BUS(MEM_BUS),
-      .CNT_BUS_IF(cnt_bus.in_port),
+      .CLOCKING_BUS(clocking_bus.in_port),
+      .CNT_BUS(cnt_bus.in_port),
       .MOD_BUS(mod_bus.in_port),
       .STM_BUS(stm_bus.in_port),
       .DUTY_TABLE_BUS(duty_table_bus.in_port),
       .FILTER_BUS(filter_bus.in_port)
   );
 
+  clock clock (
+      .MRCC_25P6M(MRCC_25P6M),
+      .CLOCKING_BUS(clocking_bus.out_port),
+      .CLK(clk),
+      .LOCKED()
+  );
+
   controller controller (
-      .CLK(CLK),
+      .CLK(clk),
       .THERMO(THERMO),
       .STM_SEGMENT(stm_segment),
       .MOD_SEGMENT(mod_segment),
@@ -80,7 +93,7 @@ module main #(
   );
 
   synchronizer synchronizer (
-      .CLK(CLK),
+      .CLK(clk),
       .SYNC_SETTINGS(sync_settings),
       .ECAT_SYNC(CAT_SYNC0),
       .SYS_TIME(sys_time),
@@ -91,7 +104,7 @@ module main #(
   time_cnt_generator #(
       .DEPTH(DEPTH)
   ) time_cnt_generator (
-      .CLK(CLK),
+      .CLK(clk),
       .SYS_TIME(sys_time),
       .SKIP_ONE_ASSERT(skip_one_assert),
       .TIME_CNT(time_cnt),
@@ -101,7 +114,7 @@ module main #(
   stm #(
       .DEPTH(DEPTH)
   ) stm (
-      .CLK(CLK),
+      .CLK(clk),
       .SYS_TIME(sys_time),
       .UPDATE(update),
       .STM_SETTINGS(stm_settings),
@@ -120,7 +133,7 @@ module main #(
   modulation #(
       .DEPTH(DEPTH)
   ) modulation (
-      .CLK(CLK),
+      .CLK(clk),
       .SYS_TIME(sys_time),
       .MOD_SETTINGS(mod_settings),
       .DIN_VALID(dout_valid),
@@ -140,7 +153,7 @@ module main #(
   silencer #(
       .DEPTH(DEPTH)
   ) silencer (
-      .CLK(CLK),
+      .CLK(clk),
       .DIN_VALID(dout_valid_m),
       .SILENCER_SETTINGS(silencer_settings),
       .INTENSITY_IN(intensity_m),
@@ -153,7 +166,7 @@ module main #(
   pulse_width_encoder #(
       .DEPTH(DEPTH)
   ) pulse_width_encoder (
-      .CLK(CLK),
+      .CLK(clk),
       .DUTY_TABLE_BUS(duty_table_bus.out_port),
       .PULSE_WIDTH_ENCODER_SETTINGS(pulse_width_encoder_settings),
       .DIN_VALID(dout_valid_s),
@@ -167,7 +180,7 @@ module main #(
   pwm #(
       .DEPTH(DEPTH)
   ) pwm (
-      .CLK(CLK),
+      .CLK(clk),
       .TIME_CNT(time_cnt),
       .UPDATE(update),
       .DIN_VALID(dout_valid_e),
@@ -180,7 +193,7 @@ module main #(
   debug #(
       .DEPTH(DEPTH)
   ) debug (
-      .CLK(CLK),
+      .CLK(clk),
       .DEBUG_SETTINGS(debug_settings),
       .TIME_CNT(time_cnt),
       .PWM_OUT(PWM_OUT),
