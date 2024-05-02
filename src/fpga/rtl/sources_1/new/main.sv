@@ -61,7 +61,7 @@ module main #(
       .MRCC_25P6M(MRCC_25P6M),
       .CLK(clk),
       .MEM_BUS(MEM_BUS),
-      .CLOCKING_BUS(clocking_bus.in_port),
+      .CLOCK_BUS(clock_bus.in_port),
       .CNT_BUS(cnt_bus.in_port),
       .MOD_BUS(mod_bus.in_port),
       .STM_BUS(stm_bus.in_port),
@@ -71,7 +71,7 @@ module main #(
 
   clock clock (
       .MRCC_25P6M(MRCC_25P6M),
-      .CLOCKING_BUS(clocking_bus.out_port),
+      .CLOCK_BUS(clock_bus.out_port),
       .CLK(clk),
       .LOCKED()
   );
