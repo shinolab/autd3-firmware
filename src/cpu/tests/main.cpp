@@ -26,6 +26,7 @@ uint16_t* modulation_bram_0 = new uint16_t[32768 / sizeof(uint16_t)];
 uint16_t* modulation_bram_1 = new uint16_t[32768 / sizeof(uint16_t)];
 uint16_t* duty_table_bram = new uint16_t[65536 / sizeof(uint16_t)];
 uint16_t* phase_filter_bram = new uint16_t[256 / sizeof(uint16_t)];
+uint16_t* clk_bram = new uint16_t[256 / sizeof(uint16_t)];
 uint16_t* stm_op_bram_0 = new uint16_t[1024 * 256];
 uint16_t* stm_op_bram_1 = new uint16_t[1024 * 256];
 
@@ -56,6 +57,8 @@ uint16_t bram_read_duty_table(uint32_t bram_addr) {
 uint16_t bram_read_phase_filter(uint32_t bram_addr) {
   return phase_filter_bram[bram_addr];
 }
+
+uint16_t bram_read_clk(uint32_t bram_addr) { return clk_bram[bram_addr]; }
 
 uint16_t bram_read_stm(uint32_t segment, uint32_t bram_addr) {
   switch (segment) {
@@ -100,6 +103,9 @@ void fpga_write(uint16_t bram_addr, uint16_t value) {
           break;
         case BRAM_CNT_SELECT_FILTER:
           phase_filter_bram[addr & 0xFF] = value;
+          break;
+        case BRAM_CNT_SELECT_CLOCK:
+          clk_bram[addr & 0xFF] = value;
           break;
         default:
           exit(1);

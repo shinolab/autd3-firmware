@@ -33,6 +33,7 @@ set_source_files_properties(
   ${PROJECT_SOURCE_DIR}/../src/app.c
   ${PROJECT_SOURCE_DIR}/../src/buf.c
   ${PROJECT_SOURCE_DIR}/../src/op/clear.c
+  ${PROJECT_SOURCE_DIR}/../src/op/clk.c
   ${PROJECT_SOURCE_DIR}/../src/op/debug.c
   ${PROJECT_SOURCE_DIR}/../src/op/focus_stm.c
   ${PROJECT_SOURCE_DIR}/../src/op/force_fan.c
@@ -42,6 +43,7 @@ set_source_files_properties(
   ${PROJECT_SOURCE_DIR}/../src/op/mod.c
   ${PROJECT_SOURCE_DIR}/../src/op/reads_fpga_state.c
   ${PROJECT_SOURCE_DIR}/../src/op/silencer.c
+  ${PROJECT_SOURCE_DIR}/../src/op/sync.c
   ${PROJECT_SOURCE_DIR}/../src/op/pulse_width_encoder.c
   ${PROJECT_SOURCE_DIR}/../src/op/phase_filter.c
   PROPERTIES LANGUAGE CXX

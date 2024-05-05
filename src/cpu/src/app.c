@@ -11,7 +11,8 @@ extern "C" {
 #include "utils.h"
 
 extern uint8_t clear(void);
-extern uint8_t synchronize(void);
+extern uint8_t synchronize(const volatile uint8_t*);
+extern uint8_t configure_clk(const volatile uint8_t*);
 extern uint8_t firmware_info(const volatile uint8_t*);
 extern uint8_t write_mod(const volatile uint8_t*);
 extern uint8_t change_mod_segment(const volatile uint8_t*);
@@ -63,7 +64,9 @@ uint8_t handle_payload(const volatile uint8_t* p_data) {
     case TAG_CLEAR:
       return clear();
     case TAG_SYNC:
-      return synchronize();
+      return synchronize(p_data);
+    case TAG_CONFIG_FPGA_CLK:
+      return configure_clk(p_data);
     case TAG_FIRM_INFO:
       return firmware_info(p_data);
     case TAG_MODULATION:

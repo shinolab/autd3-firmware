@@ -1,5 +1,6 @@
 target_sources(test_autd3-firmware PRIVATE
   ${PROJECT_SOURCE_DIR}/../src/op/clear.c
+  ${PROJECT_SOURCE_DIR}/../src/op/clk.c
   ${PROJECT_SOURCE_DIR}/../src/op/debug.c
   ${PROJECT_SOURCE_DIR}/../src/op/focus_stm.c
   ${PROJECT_SOURCE_DIR}/../src/op/force_fan.c
@@ -11,7 +12,9 @@ target_sources(test_autd3-firmware PRIVATE
   ${PROJECT_SOURCE_DIR}/../src/op/pulse_width_encoder.c
   ${PROJECT_SOURCE_DIR}/../src/op/phase_filter.c
   ${PROJECT_SOURCE_DIR}/../src/op/silencer.c
+  ${PROJECT_SOURCE_DIR}/../src/op/sync.c
   clear.cpp
+  clk.cpp
   silencer.cpp
   debug.cpp
   force_fan.cpp

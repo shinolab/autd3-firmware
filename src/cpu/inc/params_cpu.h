@@ -9,6 +9,7 @@
 #define TAG_CLEAR (0x01)
 #define TAG_SYNC (0x02)
 #define TAG_FIRM_INFO (0x03)
+#define TAG_CONFIG_FPGA_CLK (0x04)
 #define TAG_MODULATION (0x10)
 #define TAG_MODULATION_CHANGE_SEGMENT (0x11)
 #define TAG_SILENCER (0x20)
@@ -59,6 +60,9 @@
 #define SILENCER_FLAG_MODE (1 << 0)
 #define SILENCER_FLAG_STRICT_MODE (1 << 1)
 
+#define CLK_FLAG_BEGIN (1 << 0)
+#define CLK_FLAG_END (1 << 1)
+
 #define NO_ERR (0x00)
 #define ERR_BIT (0x80)
 #define ERR_NOT_SUPPORTED_TAG (ERR_BIT | 0x00)
@@ -71,5 +75,7 @@
 #define ERR_INVALID_PWE_DATA_SIZE (ERR_BIT | 0x09)
 #define ERR_PWE_INCOMPLETE_DATA (ERR_BIT | 0x0A)
 #define ERR_MISS_TRANSITION_TIME (ERR_BIT | 0x0B)
+#define ERR_INVALID_CLK_DATA_SIZE (ERR_BIT | 0x0C)
+#define ERR_CLK_INCOMPLETE_DATA (ERR_BIT | 0x0D)
 
 #endif  // PARAMS_CPU_H
