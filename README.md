@@ -1,7 +1,7 @@
 # AUTD3 firmware
 
 ![build](https://github.com/shinolab/autd3-firmware/workflows/build/badge.svg)
-[![codecov](https://codecov.io/gh/shinolab/autd3-firmware/graph/badge.svg)](https://codecov.io/gh/shinolab/autd3-firmware)
+[![codecov](https://codecov.io/gh/shinolab/autd3-firmware/graph/badge.svg?precision=2)](https://codecov.io/gh/shinolab/autd3-firmware)
 [![release](https://img.shields.io/github/v/release/shinolab/autd3-firmware)](https://github.com/shinolab/autd3-firmware/releases/latest)
 
 ## Usage (Windows 64bit only)
