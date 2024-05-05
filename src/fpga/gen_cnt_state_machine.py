@@ -211,7 +211,8 @@ module controller (
     output var settings::sync_settings_t SYNC_SETTINGS,
     output var settings::pulse_width_encoder_settings_t PULSE_WIDTH_ENCODER_SETTINGS,
     output var settings::debug_settings_t DEBUG_SETTINGS,
-    output var FORCE_FAN
+    output var FORCE_FAN,
+    output var GPIO_IN[4]
 );
 
   logic [15:0] ctl_flags;
@@ -227,6 +228,10 @@ module controller (
   assign dout = cnt_bus.DOUT;
 
   assign FORCE_FAN = ctl_flags[params::CTL_FLAG_BIT_FORCE_FAN];
+  assign GPIO_IN[0] = ctl_flags[params::CTL_FLAG_BIT_GPIO_IN_0];
+  assign GPIO_IN[1] = ctl_flags[params::CTL_FLAG_BIT_GPIO_IN_1];
+  assign GPIO_IN[2] = ctl_flags[params::CTL_FLAG_BIT_GPIO_IN_2];
+  assign GPIO_IN[3] = ctl_flags[params::CTL_FLAG_BIT_GPIO_IN_3];
 
   typedef enum logic [{int(math.ceil(math.log2(7 + len(list(chain.from_iterable(all_states.values()))))))-1}:0] {{
     REQ_WR_VER_MINOR,

@@ -9,7 +9,7 @@ module main #(
     input wire THERMO,
     output wire FORCE_FAN,
     output wire PWM_OUT[DEPTH],
-    input wire GPIO_IN[4],
+    input wire GPIO_IN_HARD[4],
     output wire GPIO_OUT[4]
 );
 
@@ -56,6 +56,13 @@ module main #(
   logic [15:0] stm_cycle;
   logic mod_segment;
   logic [14:0] mod_idx;
+  logic gpio_in_soft[4];
+
+  logic gpio_in[4];
+  assign gpio_in[0] = GPIO_IN_HARD[0] | gpio_in_soft[0];
+  assign gpio_in[1] = GPIO_IN_HARD[1] | gpio_in_soft[1];
+  assign gpio_in[2] = GPIO_IN_HARD[2] | gpio_in_soft[2];
+  assign gpio_in[3] = GPIO_IN_HARD[3] | gpio_in_soft[3];
 
   memory memory (
       .MRCC_25P6M(MRCC_25P6M),
@@ -89,7 +96,8 @@ module main #(
       .SYNC_SETTINGS(sync_settings),
       .PULSE_WIDTH_ENCODER_SETTINGS(pulse_width_encoder_settings),
       .DEBUG_SETTINGS(debug_settings),
-      .FORCE_FAN(FORCE_FAN)
+      .FORCE_FAN(FORCE_FAN),
+      .GPIO_IN(gpio_in_soft)
   );
 
   synchronizer synchronizer (
@@ -123,7 +131,7 @@ module main #(
       .STM_BUS_GAIN(stm_bus.out_gain_port),
       .INTENSITY(intensity),
       .PHASE(phase),
-      .GPIO_IN(GPIO_IN),
+      .GPIO_IN(gpio_in),
       .DOUT_VALID(dout_valid),
       .DEBUG_IDX(stm_idx),
       .DEBUG_SEGMENT(stm_segment),
@@ -144,7 +152,7 @@ module main #(
       .DOUT_VALID(dout_valid_m),
       .MOD_BUS(mod_bus.out_port),
       .FILTER_BUS(filter_bus.out_port),
-      .GPIO_IN(GPIO_IN),
+      .GPIO_IN(gpio_in),
       .DEBUG_IDX(mod_idx),
       .DEBUG_SEGMENT(mod_segment),
       .DEBUG_STOP()

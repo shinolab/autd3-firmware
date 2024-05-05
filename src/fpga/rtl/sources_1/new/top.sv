@@ -48,7 +48,7 @@ module top (
       .THERMO(THERMO),
       .FORCE_FAN(FORCE_FAN),
       .PWM_OUT(PWM_OUT),
-      .GPIO_IN(GPIO_IN),
+      .GPIO_IN_HARD(GPIO_IN),
       .GPIO_OUT(GPIO_OUT)
   );
 

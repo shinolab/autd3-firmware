@@ -24,6 +24,7 @@
 #define TAG_CONFIG_PULSE_WIDTH_ENCODER (0x70)
 #define TAG_PHASE_FILTER (0x80)
 #define TAG_DEBUG (0xF0)
+#define TAG_EMULATE_GPIO_IN (0xF1)
 
 #define INFO_TYPE_CPU_VERSION_MAJOR (0x01)
 #define INFO_TYPE_CPU_VERSION_MINOR (0x02)
@@ -62,6 +63,11 @@
 
 #define CLK_FLAG_BEGIN (1 << 0)
 #define CLK_FLAG_END (1 << 1)
+
+#define GPIO_IN_FLAG_0 (1 << 0)
+#define GPIO_IN_FLAG_1 (1 << 1)
+#define GPIO_IN_FLAG_2 (1 << 2)
+#define GPIO_IN_FLAG_3 (1 << 3)
 
 #define NO_ERR (0x00)
 #define ERR_BIT (0x80)
