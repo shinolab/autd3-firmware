@@ -79,7 +79,7 @@ uint8_t config_pwe(const volatile uint8_t* p_data) {
   page_capacity = (_pwe_write & ~PWE_TABLE_PAGE_SIZE_MASK) +
                   PWE_TABLE_PAGE_SIZE - _pwe_write;
 
-  if (size < page_capacity) {
+  if (size <= page_capacity) {
     bram_cpy(BRAM_SELECT_DUTY_TABLE,
              (_pwe_write & PWE_TABLE_PAGE_SIZE_MASK) >> 1, data, (size >> 1));
     _pwe_write = _pwe_write + size;
