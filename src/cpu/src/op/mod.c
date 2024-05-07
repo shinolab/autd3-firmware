@@ -16,10 +16,9 @@ volatile uint8_t _mod_transision_mode;
 volatile uint64_t _mod_transition_value;
 volatile uint32_t _mod_cycle;
 volatile uint32_t _mod_freq_div[2];
-volatile uint32_t _mod_segment;
+volatile uint8_t _mod_segment;
 
-extern volatile bool_t _silencer_strict_mode;
-extern volatile uint32_t _min_freq_div_intensity;
+extern bool_t validate_silencer_settings(void);
 
 typedef ALIGN2 struct {
   uint8_t tag;
@@ -92,45 +91,37 @@ uint8_t write_mod(const volatile uint8_t* p_data) {
 
   const Modulation* p = (const Modulation*)p_data;
 
-  uint32_t freq_div;
-  uint8_t segment;
-  uint32_t rep;
-
   volatile uint16_t write = p->subseq.size;
 
   const uint16_t* data;
   if ((p->subseq.flag & MODULATION_FLAG_BEGIN) == MODULATION_FLAG_BEGIN) {
     _mod_cycle = 0;
-
-    freq_div = p->head.freq_div;
-    segment = (p->head.flag & MODULATION_FLAG_SEGMENT) != 0 ? 1 : 0;
-    rep = p->head.rep;
+    _mod_segment = (p->head.flag & MODULATION_FLAG_SEGMENT) != 0 ? 1 : 0;
     _mod_transision_mode = p->head.transition_mode;
     _mod_transition_value = p->head.transition_value;
+    _mod_freq_div[_mod_segment] = p->head.freq_div;
+    if (validate_silencer_settings()) return ERR_INVALID_SILENCER_SETTING;
 
-    if (_silencer_strict_mode & (freq_div < _min_freq_div_intensity))
-      return ERR_FREQ_DIV_TOO_SMALL;
-    _mod_freq_div[segment] = freq_div;
-
-    switch (segment) {
+    switch (_mod_segment) {
       case 0:
         bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_MOD_FREQ_DIV0_0,
-                 (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
-        bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_MOD_REP0_0, (uint16_t*)&rep,
+                 (uint16_t*)&_mod_freq_div[_mod_segment],
                  sizeof(uint32_t) >> 1);
+        bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_MOD_REP0_0,
+                 (uint16_t*)&p->head.rep, sizeof(uint32_t) >> 1);
         break;
       case 1:
         bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_MOD_FREQ_DIV1_0,
-                 (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
-        bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_MOD_REP1_0, (uint16_t*)&rep,
+                 (uint16_t*)&_mod_freq_div[_mod_segment],
                  sizeof(uint32_t) >> 1);
+        bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_MOD_REP1_0,
+                 (uint16_t*)&p->head.rep, sizeof(uint32_t) >> 1);
         break;
       default:  // LCOV_EXCL_LINE
         break;  // LCOV_EXCL_LINE
     }
-    _mod_segment = segment;
 
-    change_mod_wr_segment(segment);
+    change_mod_wr_segment(_mod_segment);
 
     data = (const uint16_t*)(&p_data[sizeof(ModulationHead)]);
   } else {
@@ -174,6 +165,8 @@ uint8_t change_mod_segment(const volatile uint8_t* p_data) {
                 "Modulation is not valid.");
 
   const ModulationUpdate* p = (const ModulationUpdate*)p_data;
+  _mod_segment = p->segment;
+  if (validate_silencer_settings()) return ERR_INVALID_SILENCER_SETTING;
   return mod_segment_update(p->segment, p->transition_mode,
                             p->transition_value);
 }

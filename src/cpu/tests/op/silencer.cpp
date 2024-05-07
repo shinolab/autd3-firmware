@@ -98,8 +98,8 @@ TEST(Op, SilencerFixedCompletionStepsInvaidStepMod) {
     data_body[0] = TAG_MODULATION;
     auto offset = 4;
     data_body[1] = MODULATION_FLAG_BEGIN | MODULATION_FLAG_END;
-    *reinterpret_cast<uint32_t*>(data_body + offset) = freq_div;
-    offset += 4;
+    *reinterpret_cast<uint32_t*>(data_body + 8) = freq_div;
+    offset += 20;
     *reinterpret_cast<uint16_t*>(data_body + 2) = 2;
 
     for (size_t i = 0; i < 2; i++) data_body[offset + i] = 0xFF;
@@ -160,7 +160,7 @@ TEST(Op, SilencerFixedCompletionStepsInvaidStepMod) {
     update();
 
     const auto ack = _sTx.ack >> 8;
-    ASSERT_EQ(ack, ERR_COMPLETION_STEPS_TOO_LARGE);
+    ASSERT_EQ(ack, ERR_INVALID_SILENCER_SETTING);
   }
 
   {
@@ -317,7 +317,7 @@ TEST(Op, SilencerFixedCompletionStepsInvaidStepSTM) {
     update();
 
     const auto ack = _sTx.ack >> 8;
-    ASSERT_EQ(ack, ERR_COMPLETION_STEPS_TOO_LARGE);
+    ASSERT_EQ(ack, ERR_INVALID_SILENCER_SETTING);
   }
 
   {
@@ -342,7 +342,7 @@ TEST(Op, SilencerFixedCompletionStepsInvaidStepSTM) {
     update();
 
     const auto ack = _sTx.ack >> 8;
-    ASSERT_EQ(ack, ERR_COMPLETION_STEPS_TOO_LARGE);
+    ASSERT_EQ(ack, ERR_INVALID_SILENCER_SETTING);
   }
 
   {

@@ -22,9 +22,7 @@ volatile uint32_t _stm_cycle[2];
 volatile uint32_t _stm_freq_div[2];
 volatile uint8_t _gain_stm_mode;
 
-extern volatile bool_t _silencer_strict_mode;
-extern volatile uint32_t _min_freq_div_intensity;
-extern volatile uint32_t _min_freq_div_phase;
+extern bool_t validate_silencer_settings(void);
 
 typedef ALIGN2 struct {
   uint8_t tag;
@@ -77,48 +75,39 @@ uint8_t write_gain_stm(const volatile uint8_t* p_data) {
   uint8_t send = (p->subseq.flag >> 6) + 1;
 
   const volatile uint16_t *src, *src_base;
-  uint32_t freq_div;
-  uint32_t rep;
-  uint8_t segment;
 
   if ((p->subseq.flag & GAIN_STM_FLAG_BEGIN) == GAIN_STM_FLAG_BEGIN) {
     _gain_stm_mode = p->head.mode;
-    rep = p->head.rep;
-    segment = (p->head.flag & GAIN_STM_FLAG_SEGMENT) != 0 ? 1 : 0;
+    _stm_segment = (p->head.flag & GAIN_STM_FLAG_SEGMENT) != 0 ? 1 : 0;
 
-    _stm_cycle[segment] = 0;
+    _stm_cycle[_stm_segment] = 0;
     _stm_transition_mode = p->head.transition_mode;
     _stm_transition_value = p->head.transition_value;
+    _stm_freq_div[_stm_segment] = p->head.freq_div;
+    if (validate_silencer_settings()) return ERR_INVALID_SILENCER_SETTING;
 
-    freq_div = p->head.freq_div;
-    if (_silencer_strict_mode) {
-      if ((freq_div < _min_freq_div_intensity) ||
-          (freq_div < _min_freq_div_phase))
-        return ERR_FREQ_DIV_TOO_SMALL;
-    }
-    _stm_freq_div[segment] = freq_div;
-
-    switch (segment) {
+    switch (_stm_segment) {
       case 0:
         bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_STM_FREQ_DIV0_0,
-                 (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
-        bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MODE0, STM_MODE_GAIN);
-        bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_STM_REP0_0, (uint16_t*)&rep,
+                 (uint16_t*)&_stm_freq_div[_stm_segment],
                  sizeof(uint32_t) >> 1);
+        bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MODE0, STM_MODE_GAIN);
+        bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_STM_REP0_0,
+                 (uint16_t*)&p->head.rep, sizeof(uint32_t) >> 1);
         break;
       case 1:
         bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_STM_FREQ_DIV1_0,
-                 (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
-        bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MODE1, STM_MODE_GAIN);
-        bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_STM_REP1_0, (uint16_t*)&rep,
+                 (uint16_t*)&_stm_freq_div[_stm_segment],
                  sizeof(uint32_t) >> 1);
+        bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MODE1, STM_MODE_GAIN);
+        bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_STM_REP1_0,
+                 (uint16_t*)&p->head.rep, sizeof(uint32_t) >> 1);
         break;
       default:  // LCOV_EXCL_LINE
         break;  // LCOV_EXCL_LINE
     }
-    _stm_segment = segment;
 
-    change_stm_wr_segment(segment);
+    change_stm_wr_segment(_stm_segment);
     change_stm_wr_page(0);
 
     src_base = (const uint16_t*)(&p_data[sizeof(GainSTMHead)]);
@@ -222,10 +211,10 @@ uint8_t change_gain_stm_segment(const volatile uint8_t* p_data) {
                 "GainSTM is not valid.");
 
   const GainSTMUpdate* p = (const GainSTMUpdate*)p_data;
-
   if (_stm_mode[p->segment] != STM_MODE_GAIN || _stm_cycle[p->segment] == 1)
     return ERR_INVALID_SEGMENT_TRANSITION;
-
+  _stm_segment = p->segment;
+  if (validate_silencer_settings()) return ERR_INVALID_SILENCER_SETTING;
   return stm_segment_update(p->segment, p->transition_mode,
                             p->transition_value);
 }

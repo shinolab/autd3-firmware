@@ -9,6 +9,7 @@ extern "C" {
 #include "params.h"
 #include "stm.h"
 
+extern volatile uint8_t _stm_segment;
 extern volatile uint8_t _stm_mode[2];
 extern volatile uint32_t _stm_cycle[2];
 extern volatile uint32_t _stm_freq_div[2];
@@ -78,6 +79,7 @@ uint8_t change_gain_segment(const volatile uint8_t* p_data) {
   static_assert(offsetof(GainUpdate, segment) == 1, "GainUpdate is not valid.");
 
   const GainUpdate* p = (const GainUpdate*)p_data;
+  _stm_segment = p->segment;
 
   if (_stm_mode[p->segment] != STM_MODE_GAIN || _stm_cycle[p->segment] != 1)
     return ERR_INVALID_SEGMENT_TRANSITION;

@@ -250,7 +250,7 @@ TEST(Op, InvalidCompletionStepsMod) {
     update();
 
     const auto ack = _sTx.ack >> 8;
-    ASSERT_EQ(ack, ERR_FREQ_DIV_TOO_SMALL);
+    ASSERT_EQ(ack, ERR_INVALID_SILENCER_SETTING);
   }
 }
 

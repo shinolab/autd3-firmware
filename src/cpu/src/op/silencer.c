@@ -8,6 +8,8 @@ extern "C" {
 #include "app.h"
 #include "params.h"
 
+extern volatile uint8_t _mod_segment;
+extern volatile uint8_t _stm_segment;
 extern volatile uint32_t _mod_freq_div[2];
 extern volatile uint32_t _stm_freq_div[2];
 
@@ -21,6 +23,16 @@ typedef ALIGN2 struct {
   uint16_t value_intensity;
   uint16_t value_phase;
 } ConfigSilencer;
+
+bool_t validate_silencer_settings(void) {
+  if (_silencer_strict_mode) {
+    if ((_mod_freq_div[_mod_segment] < _min_freq_div_intensity) ||
+        (_stm_freq_div[_stm_segment] < _min_freq_div_intensity) ||
+        (_stm_freq_div[_stm_segment] < _min_freq_div_phase))
+      return true;
+  }
+  return false;
+}
 
 uint8_t config_silencer(const volatile uint8_t* p_data) {
   static_assert(sizeof(ConfigSilencer) == 6, "ConfigSilencer is not valid.");
@@ -42,16 +54,8 @@ uint8_t config_silencer(const volatile uint8_t* p_data) {
     _silencer_strict_mode = (flag & SILENCER_FLAG_STRICT_MODE) != 0;
     _min_freq_div_intensity = (uint32_t)value_intensity << 9;
     _min_freq_div_phase = (uint32_t)value_phase << 9;
-    if (_silencer_strict_mode) {
-      if ((_mod_freq_div[0] < _min_freq_div_intensity) ||
-          _mod_freq_div[1] < _min_freq_div_intensity)
-        return ERR_COMPLETION_STEPS_TOO_LARGE;
-      if (((_stm_freq_div[0] < _min_freq_div_intensity) ||
-           (_stm_freq_div[0] < _min_freq_div_phase)) ||
-          (_stm_freq_div[1] < _min_freq_div_intensity) ||
-          (_stm_freq_div[1] < _min_freq_div_phase))
-        return ERR_COMPLETION_STEPS_TOO_LARGE;
-    }
+
+    if (validate_silencer_settings()) return ERR_INVALID_SILENCER_SETTING;
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_COMPLETION_STEPS_INTENSITY,
                value_intensity);
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_COMPLETION_STEPS_PHASE,
