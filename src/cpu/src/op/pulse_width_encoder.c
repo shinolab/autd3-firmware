@@ -100,6 +100,7 @@ uint8_t config_pwe(const volatile uint8_t* p_data) {
   if ((p->subseq.flag & PULSE_WIDTH_ENCODER_FLAG_END) ==
       PULSE_WIDTH_ENCODER_FLAG_END) {
     if (_pwe_write != 65536) return ERR_PWE_INCOMPLETE_DATA;
+    set_and_wait_update(CTL_FLAG_PULSE_WIDTH_ENCODER_SET);
   }
 
   return NO_ERR;

@@ -46,6 +46,7 @@ module sim_pulse_width_encoder ();
 
   logic [15:0] intensity_buf[DEPTH];
   logic [7:0] phase_buf[DEPTH];
+  logic [7:0] duty_table[65536];
 
   pulse_width_encoder #(
       .DEPTH(DEPTH)
@@ -76,22 +77,7 @@ module sim_pulse_width_encoder ();
     din_valid <= 1'b0;
   endtask
 
-  task automatic set_random();
-    for (int i = 0; i < DEPTH; i++) begin
-      intensity_buf[i] = sim_helper_random.range(16'hFFFF, 0);
-      phase_buf[i] = sim_helper_random.range(8'hFF, 0);
-    end
-    for (int i = 0; i < DEPTH; i++) begin
-      @(posedge CLK);
-      din_valid <= 1'b1;
-      intensity_in <= intensity_buf[i];
-      phase <= phase_buf[i];
-    end
-    @(posedge CLK);
-    din_valid <= 1'b0;
-  endtask
-
-  task automatic check();
+  task automatic check_default();
     int expect_pulse_width;
     while (1) begin
       @(posedge CLK);
@@ -117,6 +103,34 @@ module sim_pulse_width_encoder ();
     end
   endtask
 
+  task automatic check();
+    int expect_pulse_width;
+    while (1) begin
+      @(posedge CLK);
+      if (dout_valid) begin
+        break;
+      end
+    end
+
+    for (int i = 0; i < DEPTH; i++) begin
+      expect_pulse_width = {
+        intensity_buf[i] >= pulse_width_encoder_settings.FULL_WIDTH_START,
+        duty_table[intensity_buf[i]]
+      };
+      if (pulse_width_out !== expect_pulse_width) begin
+        $error("At %d: i=%d, d=%d, d_m=%d", i, intensity_buf[i], expect_pulse_width,
+               pulse_width_out);
+        $finish();
+      end
+      if (phase_out !== phase_buf[i]) begin
+        $error("At %d: p=%d, p_m=%d", i, phase_buf[i], phase_out);
+        $finish();
+      end
+
+      @(posedge CLK);
+    end
+  endtask
+
   logic [15:0] intensity_tmp[DEPTH];
   logic [7:0] phase_tmp[DEPTH];
   initial begin
@@ -126,13 +140,25 @@ module sim_pulse_width_encoder ();
 
     @(posedge locked);
 
-    for (int j = 0; j < 1000; j++) begin
-      $display("Check %d", j);
+    for (int i = 0; i <= 16'hFFFF;) begin
+      $display("Check %d/%d", i, 16'hFFFF);
+      for (int j = i; j < i + DEPTH; j++) begin
+        intensity_tmp[j-i] = j;
+        phase_tmp[j-i] = sim_helper_random.range(8'hFF, 0);
+      end
       fork
-        set_random();
-        check();
+        set(intensity_tmp, phase_tmp);
+        check_default();
       join
+      i += DEPTH;
     end
+
+    // config bram
+    for (int i = 0; i < 65536; i++) begin
+      duty_table[i] = sim_helper_random.range(8'hFF, 0);
+    end
+    pulse_width_encoder_settings.FULL_WIDTH_START = sim_helper_random.range(16'hFFFF, 0);
+    sim_helper_bram.write_duty_table(duty_table);
 
     for (int i = 0; i <= 16'hFFFF;) begin
       $display("Check %d/%d", i, 16'hFFFF);
