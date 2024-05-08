@@ -302,6 +302,88 @@ TEST(Op, FocusSTMInvalidSegmentTransition) {
   }
 }
 
+TEST(Op, FocusSTMInvalidTransitionMode) {
+  init_app();
+
+  RX_STR data;
+  std::memset(data.data, 0, sizeof(RX_STR));
+
+  // segment 0 to 0
+  {
+    Header* header = reinterpret_cast<Header*>(data.data);
+    header->msg_id = get_msg_id();
+    header->slot_2_offset = 0;
+
+    auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+    reinterpret_cast<FocusSTMHead*>(p)->tag = TAG_FOCUS_STM;
+    reinterpret_cast<FocusSTMHead*>(p)->flag = FOCUS_STM_FLAG_BEGIN;
+    reinterpret_cast<FocusSTMHead*>(p)->transition_mode =
+        TRANSITION_MODE_SYNC_IDX;
+
+    auto frame = to_frame_data(data);
+
+    recv_ethercat(&frame[0]);
+    update();
+
+    const auto ack = _sTx.ack >> 8;
+    ASSERT_EQ(ERR_INVALID_TRANSITION_MODE, ack);
+  }
+
+  // segment 0 to 1
+  {
+    Header* header = reinterpret_cast<Header*>(data.data);
+    header->msg_id = get_msg_id();
+    header->slot_2_offset = 0;
+
+    auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+    reinterpret_cast<FocusSTMHead*>(p)->tag = TAG_FOCUS_STM;
+    reinterpret_cast<FocusSTMHead*>(p)->flag =
+        FOCUS_STM_FLAG_BEGIN | FOCUS_STM_FLAG_SEGMENT;
+    reinterpret_cast<FocusSTMHead*>(p)->rep = 0;
+    reinterpret_cast<FocusSTMHead*>(p)->transition_mode =
+        TRANSITION_MODE_IMMIDIATE;
+
+    auto frame = to_frame_data(data);
+
+    recv_ethercat(&frame[0]);
+    update();
+
+    const auto ack = _sTx.ack >> 8;
+    ASSERT_EQ(ERR_INVALID_TRANSITION_MODE, ack);
+  }
+
+  {
+    Header* header = reinterpret_cast<Header*>(data.data);
+    header->msg_id = get_msg_id();
+    header->slot_2_offset = 0;
+    auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+    reinterpret_cast<FocusSTMHead*>(p)->tag = TAG_FOCUS_STM;
+    reinterpret_cast<FocusSTMHead*>(p)->flag =
+        FOCUS_STM_FLAG_BEGIN | FOCUS_STM_FLAG_END | FOCUS_STM_FLAG_SEGMENT;
+    reinterpret_cast<FocusSTMHead*>(p)->send_num = 2;
+    reinterpret_cast<FocusSTMHead*>(p)->freq_div = 0xFFFFFFFF;
+    reinterpret_cast<FocusSTMHead*>(p)->rep = 0xFFFFFFFF;
+    reinterpret_cast<FocusSTMHead*>(p)->transition_mode = TRANSITION_MODE_NONE;
+    auto frame = to_frame_data(data);
+    recv_ethercat(&frame[0]);
+    update();
+    auto ack = _sTx.ack >> 8;
+    ASSERT_EQ(header->msg_id, ack);
+
+    header->msg_id = get_msg_id();
+    reinterpret_cast<FocusSTMUpdate*>(p)->tag = TAG_FOCUS_STM_CHANGE_SEGMENT;
+    reinterpret_cast<FocusSTMUpdate*>(p)->segment = 1;
+    reinterpret_cast<FocusSTMUpdate*>(p)->transition_mode =
+        TRANSITION_MODE_SYNC_IDX;
+    reinterpret_cast<FocusSTMUpdate*>(p)->transition_value = 0;
+    frame = to_frame_data(data);
+    recv_ethercat(&frame[0]);
+    update();
+    ack = _sTx.ack >> 8;
+    ASSERT_EQ(ERR_INVALID_TRANSITION_MODE, ack);
+  }
+}
+
 TEST(Op, InvalidCompletionStepsIntensityFocusSTM) {
   init_app();
 

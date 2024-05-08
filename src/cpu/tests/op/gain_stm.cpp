@@ -302,6 +302,98 @@ TEST(Op, GainSTMInvalidSegmentTransition) {
   }
 }
 
+TEST(Op, GainSTMInvalidTransitionMode) {
+  init_app();
+
+  RX_STR data;
+  std::memset(data.data, 0, sizeof(RX_STR));
+
+  // segment 0 to 0
+  {
+    Header* header = reinterpret_cast<Header*>(data.data);
+    header->msg_id = get_msg_id();
+    header->slot_2_offset = 0;
+
+    auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+    reinterpret_cast<GainSTMHead*>(p)->tag = TAG_GAIN_STM;
+    reinterpret_cast<GainSTMHead*>(p)->flag = GAIN_STM_FLAG_BEGIN;
+    reinterpret_cast<GainSTMHead*>(p)->transition_mode =
+        TRANSITION_MODE_SYNC_IDX;
+
+    auto frame = to_frame_data(data);
+
+    recv_ethercat(&frame[0]);
+    update();
+
+    const auto ack = _sTx.ack >> 8;
+    ASSERT_EQ(ERR_INVALID_TRANSITION_MODE, ack);
+  }
+
+  // segment 0 to 1
+  {
+    Header* header = reinterpret_cast<Header*>(data.data);
+    header->msg_id = get_msg_id();
+    header->slot_2_offset = 0;
+
+    auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+    reinterpret_cast<GainSTMHead*>(p)->tag = TAG_GAIN_STM;
+    reinterpret_cast<GainSTMHead*>(p)->flag =
+        GAIN_STM_FLAG_BEGIN | GAIN_STM_FLAG_SEGMENT;
+    reinterpret_cast<GainSTMHead*>(p)->rep = 0;
+    reinterpret_cast<GainSTMHead*>(p)->transition_mode =
+        TRANSITION_MODE_IMMIDIATE;
+
+    auto frame = to_frame_data(data);
+
+    recv_ethercat(&frame[0]);
+    update();
+
+    const auto ack = _sTx.ack >> 8;
+    ASSERT_EQ(ERR_INVALID_TRANSITION_MODE, ack);
+  }
+
+  {
+    Header* header = reinterpret_cast<Header*>(data.data);
+    header->msg_id = get_msg_id();
+    header->slot_2_offset = 0;
+    auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+
+    reinterpret_cast<GainSTMHead*>(p)->tag = TAG_GAIN_STM;
+    reinterpret_cast<GainSTMHead*>(p)->flag =
+        GAIN_STM_FLAG_BEGIN | GAIN_STM_FLAG_SEGMENT;
+    reinterpret_cast<GainSTMHead*>(p)->freq_div = 0xFFFFFFFF;
+    reinterpret_cast<GainSTMHead*>(p)->rep = 0xFFFFFFFF;
+    reinterpret_cast<GainSTMHead*>(p)->transition_mode = TRANSITION_MODE_NONE;
+    auto frame = to_frame_data(data);
+    recv_ethercat(&frame[0]);
+    update();
+    auto ack = _sTx.ack >> 8;
+    ASSERT_EQ(header->msg_id, ack);
+
+    header->msg_id = get_msg_id();
+    reinterpret_cast<GainSTMSubseq*>(p)->tag = TAG_GAIN_STM;
+    reinterpret_cast<GainSTMSubseq*>(p)->flag =
+        GAIN_STM_FLAG_END | GAIN_STM_FLAG_SEGMENT;
+    frame = to_frame_data(data);
+    recv_ethercat(&frame[0]);
+    update();
+    ack = _sTx.ack >> 8;
+    ASSERT_EQ(header->msg_id, ack);
+
+    header->msg_id = get_msg_id();
+    reinterpret_cast<GainSTMUpdate*>(p)->tag = TAG_GAIN_STM_CHANGE_SEGMENT;
+    reinterpret_cast<GainSTMUpdate*>(p)->segment = 1;
+    reinterpret_cast<GainSTMUpdate*>(p)->transition_mode =
+        TRANSITION_MODE_SYNC_IDX;
+    reinterpret_cast<GainSTMUpdate*>(p)->transition_value = 0;
+    frame = to_frame_data(data);
+    recv_ethercat(&frame[0]);
+    update();
+    ack = _sTx.ack >> 8;
+    ASSERT_EQ(ERR_INVALID_TRANSITION_MODE, ack);
+  }
+}
+
 TEST(Op, GainSTMPhaseFull) {
   init_app();
 
