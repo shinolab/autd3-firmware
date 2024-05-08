@@ -2,6 +2,8 @@
 extern "C" {
 #endif
 
+#include "gain.h"
+
 #include <assert.h>
 #include <stddef.h>
 
@@ -12,18 +14,8 @@ extern "C" {
 extern volatile uint8_t _stm_segment;
 extern volatile uint8_t _stm_mode[2];
 extern volatile uint32_t _stm_cycle[2];
+extern volatile uint32_t _stm_rep[2];
 extern volatile uint32_t _stm_freq_div[2];
-
-typedef ALIGN2 struct {
-  uint8_t tag;
-  uint8_t segment;
-  uint16_t flag;
-} Gain;
-
-typedef ALIGN2 struct {
-  uint8_t tag;
-  uint8_t segment;
-} GainUpdate;
 
 uint8_t write_gain(const volatile uint8_t* p_data) {
   static_assert(sizeof(Gain) == 4, "Gain is not valid.");
@@ -32,7 +24,8 @@ uint8_t write_gain(const volatile uint8_t* p_data) {
   static_assert(offsetof(Gain, flag) == 2, "Gain is not valid.");
 
   const Gain* p = (const Gain*)p_data;
-  uint8_t segment = p->segment;
+  const uint8_t segment = p->segment;
+  _stm_segment = segment;
 
   switch (segment) {
     case 0:
@@ -55,6 +48,7 @@ uint8_t write_gain(const volatile uint8_t* p_data) {
       break;  // LCOV_EXCL_LINE
   }
   _stm_cycle[segment] = 1;
+  _stm_rep[segment] = 0xFFFFFFFF;
   _stm_freq_div[segment] = 0xFFFFFFFF;
 
   change_stm_wr_segment(segment);
@@ -79,10 +73,11 @@ uint8_t change_gain_segment(const volatile uint8_t* p_data) {
   static_assert(offsetof(GainUpdate, segment) == 1, "GainUpdate is not valid.");
 
   const GainUpdate* p = (const GainUpdate*)p_data;
-  _stm_segment = p->segment;
 
   if (_stm_mode[p->segment] != STM_MODE_GAIN || _stm_cycle[p->segment] != 1)
     return ERR_INVALID_SEGMENT_TRANSITION;
+
+  _stm_segment = p->segment;
 
   bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_REQ_RD_SEGMENT, p->segment);
   bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_TRANSITION_MODE,

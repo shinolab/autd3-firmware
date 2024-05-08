@@ -1,7 +1,11 @@
 #include <gtest/gtest.h>
 
+//
 #include "app.h"
 #include "ecat.h"
+#include "focus_stm.h"
+#include "gain.h"
+#include "gain_stm.h"
 #include "params.h"
 #include "utils.hpp"
 
@@ -21,12 +25,13 @@ TEST(Op, Gain) {
     header->msg_id = get_msg_id();
     header->slot_2_offset = 0;
 
-    auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
-    data_body[0] = TAG_GAIN;
-    data_body[1] = 0;
-    *reinterpret_cast<uint16_t*>((data_body + 2)) = GAIN_FLAG_UPDATE;
+    auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+    reinterpret_cast<Gain*>(p)->tag = TAG_GAIN;
+    reinterpret_cast<Gain*>(p)->segment = 0;
+    reinterpret_cast<Gain*>(p)->flag = GAIN_FLAG_UPDATE;
+
     for (uint8_t i = 0; i < NUM_TRANSDUCERS; i++)
-      *reinterpret_cast<uint16_t*>((data_body + 4 + i * 2)) = (i << 8) | i;
+      *reinterpret_cast<uint16_t*>((p + sizeof(Gain) + i * 2)) = (i << 8) | i;
 
     auto frame = to_frame_data(data);
 
@@ -48,12 +53,12 @@ TEST(Op, Gain) {
     header->msg_id = get_msg_id();
     header->slot_2_offset = 0;
 
-    auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
-    data_body[0] = TAG_GAIN;
-    data_body[1] = 1;
-    *reinterpret_cast<uint16_t*>((data_body + 2)) = 0;
+    auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+    reinterpret_cast<Gain*>(p)->tag = TAG_GAIN;
+    reinterpret_cast<Gain*>(p)->segment = 1;
+    reinterpret_cast<Gain*>(p)->flag = 0;
     for (uint8_t i = 0; i < NUM_TRANSDUCERS; i++)
-      *reinterpret_cast<uint16_t*>((data_body + 4 + i * 2)) =
+      *reinterpret_cast<uint16_t*>((p + sizeof(Gain) + i * 2)) =
           ((i + 1) << 8) | (i + 1);
 
     auto frame = to_frame_data(data);
@@ -76,9 +81,9 @@ TEST(Op, Gain) {
     header->msg_id = get_msg_id();
     header->slot_2_offset = 0;
 
-    auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
-    data_body[0] = TAG_GAIN_CHANGE_SEGMENT;
-    data_body[1] = 1;
+    auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+    reinterpret_cast<GainUpdate*>(p)->tag = TAG_GAIN_CHANGE_SEGMENT;
+    reinterpret_cast<GainUpdate*>(p)->segment = 1;
 
     auto frame = to_frame_data(data);
 
@@ -112,27 +117,30 @@ TEST(Op, GainInvalidSegmentTransition) {
     while (cnt < size) {
       header->msg_id = get_msg_id();
 
-      auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
-      data_body[0] = TAG_FOCUS_STM;
-      auto offset = 4;
+      auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+      reinterpret_cast<FocusSTMHead*>(p)->tag = TAG_FOCUS_STM;
+      reinterpret_cast<FocusSTMHead*>(p)->flag = 0;
+      size_t offset;
       if (cnt == 0) {
-        data_body[1] = FOCUS_STM_FLAG_BEGIN;
-        *reinterpret_cast<uint8_t*>(data_body + 3) = 0;
-        *reinterpret_cast<uint32_t*>(data_body + 4) = freq_div;
-        *reinterpret_cast<uint32_t*>(data_body + 8) = sound_speed;
-        *reinterpret_cast<uint32_t*>(data_body + 12) = rep;
-        offset += 12;
+        reinterpret_cast<FocusSTMHead*>(p)->flag = FOCUS_STM_FLAG_BEGIN;
+        reinterpret_cast<FocusSTMHead*>(p)->transition_mode =
+            TRANSITION_MODE_IMMIDIATE;
+        reinterpret_cast<FocusSTMHead*>(p)->freq_div = freq_div;
+        reinterpret_cast<FocusSTMHead*>(p)->sound_speed = sound_speed;
+        reinterpret_cast<FocusSTMHead*>(p)->rep = rep;
+        offset = sizeof(FocusSTMHead);
       } else {
-        data_body[1] = 0;
+        offset = sizeof(FocusSTMSubseq);
       }
       auto send =
           std::min(size - cnt, (sizeof(RX_STR) - sizeof(Header) - offset) / 8);
-      *reinterpret_cast<uint8_t*>(data_body + 2) = static_cast<uint8_t>(send);
+      reinterpret_cast<FocusSTMHead*>(p)->send_num = static_cast<uint8_t>(send);
 
       cnt += send;
 
       if (cnt == size)
-        data_body[1] |= FOCUS_STM_FLAG_END | FOCUS_STM_FLAG_UPDATE;
+        reinterpret_cast<FocusSTMHead*>(p)->flag |=
+            FOCUS_STM_FLAG_END | FOCUS_STM_FLAG_UPDATE;
 
       auto frame = to_frame_data(data);
 
@@ -153,18 +161,22 @@ TEST(Op, GainInvalidSegmentTransition) {
     size_t cnt = 0;
     while (cnt < size) {
       header->msg_id = get_msg_id();
-      auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
-      data_body[0] = TAG_GAIN_STM;
+      auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+      reinterpret_cast<GainSTMHead*>(p)->tag = TAG_GAIN_STM;
+      reinterpret_cast<GainSTMHead*>(p)->flag = 0;
       if (cnt == 0) {
-        data_body[1] = GAIN_STM_FLAG_BEGIN | GAIN_STM_FLAG_SEGMENT;
-        *reinterpret_cast<uint8_t*>(data_body + 2) = mode;
-        *reinterpret_cast<uint32_t*>(data_body + 8) = freq_div;
-        *reinterpret_cast<uint32_t*>(data_body + 12) = rep;
-      } else {
-        data_body[1] = 0;
+        reinterpret_cast<GainSTMHead*>(p)->flag = GAIN_STM_FLAG_BEGIN;
+        reinterpret_cast<GainSTMHead*>(p)->mode = mode;
+        reinterpret_cast<GainSTMHead*>(p)->transition_mode =
+            TRANSITION_MODE_IMMIDIATE;
+        reinterpret_cast<GainSTMHead*>(p)->freq_div = freq_div;
+        reinterpret_cast<GainSTMHead*>(p)->rep = rep;
       }
+      reinterpret_cast<GainSTMHead*>(p)->flag |= GAIN_STM_FLAG_SEGMENT;
       cnt++;
-      if (cnt == size) data_body[1] |= GAIN_STM_FLAG_END | GAIN_STM_FLAG_UPDATE;
+      if (cnt == size)
+        reinterpret_cast<GainSTMHead*>(p)->flag |=
+            GAIN_STM_FLAG_END | GAIN_STM_FLAG_UPDATE;
       auto frame = to_frame_data(data);
       recv_ethercat(&frame[0]);
       update();
@@ -179,9 +191,9 @@ TEST(Op, GainInvalidSegmentTransition) {
     header->msg_id = get_msg_id();
     header->slot_2_offset = 0;
 
-    auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
-    data_body[0] = TAG_GAIN_CHANGE_SEGMENT;
-    data_body[1] = 0;
+    auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+    reinterpret_cast<GainUpdate*>(p)->tag = TAG_GAIN_CHANGE_SEGMENT;
+    reinterpret_cast<GainUpdate*>(p)->segment = 0;
 
     auto frame = to_frame_data(data);
 
@@ -198,9 +210,9 @@ TEST(Op, GainInvalidSegmentTransition) {
     header->msg_id = get_msg_id();
     header->slot_2_offset = 0;
 
-    auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
-    data_body[0] = TAG_GAIN_CHANGE_SEGMENT;
-    data_body[1] = 1;
+    auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+    reinterpret_cast<GainUpdate*>(p)->tag = TAG_GAIN_CHANGE_SEGMENT;
+    reinterpret_cast<GainUpdate*>(p)->segment = 1;
 
     auto frame = to_frame_data(data);
 

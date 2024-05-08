@@ -2,6 +2,8 @@
 extern "C" {
 #endif
 
+#include "silencer.h"
+
 #include <assert.h>
 #include <stddef.h>
 
@@ -17,18 +19,12 @@ volatile bool_t _silencer_strict_mode;
 volatile uint32_t _min_freq_div_intensity;
 volatile uint32_t _min_freq_div_phase;
 
-typedef ALIGN2 struct {
-  uint8_t tag;
-  uint8_t flag;
-  uint16_t value_intensity;
-  uint16_t value_phase;
-} ConfigSilencer;
-
-bool_t validate_silencer_settings(void) {
+bool_t validate_silencer_settings(const uint8_t stm_segment,
+                                  const uint8_t mod_segment) {
   if (_silencer_strict_mode) {
-    if ((_mod_freq_div[_mod_segment] < _min_freq_div_intensity) ||
-        (_stm_freq_div[_stm_segment] < _min_freq_div_intensity) ||
-        (_stm_freq_div[_stm_segment] < _min_freq_div_phase))
+    if ((_mod_freq_div[mod_segment] < _min_freq_div_intensity) ||
+        (_stm_freq_div[stm_segment] < _min_freq_div_intensity) ||
+        (_stm_freq_div[stm_segment] < _min_freq_div_phase))
       return true;
   }
   return false;
@@ -55,7 +51,8 @@ uint8_t config_silencer(const volatile uint8_t* p_data) {
     _min_freq_div_intensity = (uint32_t)value_intensity << 9;
     _min_freq_div_phase = (uint32_t)value_phase << 9;
 
-    if (validate_silencer_settings()) return ERR_INVALID_SILENCER_SETTING;
+    if (validate_silencer_settings(_stm_segment, _mod_segment))
+      return ERR_INVALID_SILENCER_SETTING;
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_COMPLETION_STEPS_INTENSITY,
                value_intensity);
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_COMPLETION_STEPS_PHASE,

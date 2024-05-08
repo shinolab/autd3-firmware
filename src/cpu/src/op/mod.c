@@ -16,39 +16,13 @@ volatile uint8_t _mod_transision_mode;
 volatile uint64_t _mod_transition_value;
 volatile uint32_t _mod_cycle;
 volatile uint32_t _mod_freq_div[2];
+volatile uint32_t _mod_rep[2];
 volatile uint8_t _mod_segment;
 
-extern bool_t validate_silencer_settings(void);
+extern volatile uint8_t _stm_segment;
 
-typedef ALIGN2 struct {
-  uint8_t tag;
-  uint8_t flag;
-  uint16_t size;
-  uint8_t transition_mode;
-  uint8_t _pad[3];
-  uint32_t freq_div;
-  uint32_t rep;
-  uint64_t transition_value;
-} ModulationHead;
-
-typedef ALIGN2 struct {
-  uint8_t tag;
-  uint8_t flag;
-  uint16_t size;
-} ModulationSubseq;
-
-typedef ALIGN2 union {
-  ModulationHead head;
-  ModulationSubseq subseq;
-} Modulation;
-
-typedef ALIGN2 struct {
-  uint8_t tag;
-  uint8_t segment;
-  uint8_t transition_mode;
-  uint8_t _pad[5];
-  uint64_t transition_value;
-} ModulationUpdate;
+extern bool_t validate_transition_mode(uint8_t, uint8_t, uint32_t, uint8_t);
+extern bool_t validate_silencer_settings(uint8_t, uint8_t);
 
 inline static uint8_t mod_segment_update(const uint8_t segment,
                                          const uint8_t mode,
@@ -92,28 +66,33 @@ uint8_t write_mod(const volatile uint8_t* p_data) {
   const Modulation* p = (const Modulation*)p_data;
 
   volatile uint16_t write = p->subseq.size;
+  const uint8_t segment = (p->head.flag & MODULATION_FLAG_SEGMENT) != 0 ? 1 : 0;
 
   const uint16_t* data;
   if ((p->subseq.flag & MODULATION_FLAG_BEGIN) == MODULATION_FLAG_BEGIN) {
+    if (validate_transition_mode(_mod_segment, segment, p->head.rep,
+                                 p->head.transition_mode))
+      return ERR_INVALID_TRANSITION_MODE;
+    if (p->head.transition_mode != TRANSITION_MODE_NONE) _mod_segment = segment;
+
     _mod_cycle = 0;
-    _mod_segment = (p->head.flag & MODULATION_FLAG_SEGMENT) != 0 ? 1 : 0;
     _mod_transision_mode = p->head.transition_mode;
     _mod_transition_value = p->head.transition_value;
-    _mod_freq_div[_mod_segment] = p->head.freq_div;
-    if (validate_silencer_settings()) return ERR_INVALID_SILENCER_SETTING;
+    _mod_freq_div[segment] = p->head.freq_div;
+    _mod_rep[segment] = p->head.rep;
+    if (validate_silencer_settings(_stm_segment, segment))
+      return ERR_INVALID_SILENCER_SETTING;
 
-    switch (_mod_segment) {
+    switch (segment) {
       case 0:
         bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_MOD_FREQ_DIV0_0,
-                 (uint16_t*)&_mod_freq_div[_mod_segment],
-                 sizeof(uint32_t) >> 1);
+                 (uint16_t*)&_mod_freq_div[segment], sizeof(uint32_t) >> 1);
         bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_MOD_REP0_0,
                  (uint16_t*)&p->head.rep, sizeof(uint32_t) >> 1);
         break;
       case 1:
         bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_MOD_FREQ_DIV1_0,
-                 (uint16_t*)&_mod_freq_div[_mod_segment],
-                 sizeof(uint32_t) >> 1);
+                 (uint16_t*)&_mod_freq_div[segment], sizeof(uint32_t) >> 1);
         bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_MOD_REP1_0,
                  (uint16_t*)&p->head.rep, sizeof(uint32_t) >> 1);
         break;
@@ -121,7 +100,7 @@ uint8_t write_mod(const volatile uint8_t* p_data) {
         break;  // LCOV_EXCL_LINE
     }
 
-    change_mod_wr_segment(_mod_segment);
+    change_mod_wr_segment(segment);
 
     data = (const uint16_t*)(&p_data[sizeof(ModulationHead)]);
   } else {
@@ -132,7 +111,7 @@ uint8_t write_mod(const volatile uint8_t* p_data) {
   _mod_cycle = _mod_cycle + write;
 
   if ((p->subseq.flag & MODULATION_FLAG_END) == MODULATION_FLAG_END) {
-    switch (_mod_segment) {
+    switch (segment) {
       case 0:
         bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_CYCLE0,
                    max(1, _mod_cycle) - 1);
@@ -146,7 +125,7 @@ uint8_t write_mod(const volatile uint8_t* p_data) {
     }
 
     if ((p->subseq.flag & MODULATION_FLAG_UPDATE) != 0)
-      return mod_segment_update(_mod_segment, _mod_transision_mode,
+      return mod_segment_update(segment, _mod_transision_mode,
                                 _mod_transition_value);
   }
 
@@ -165,8 +144,12 @@ uint8_t change_mod_segment(const volatile uint8_t* p_data) {
                 "Modulation is not valid.");
 
   const ModulationUpdate* p = (const ModulationUpdate*)p_data;
+  if (validate_transition_mode(_mod_segment, p->segment, _mod_rep[p->segment],
+                               p->transition_mode))
+    return ERR_INVALID_TRANSITION_MODE;
   _mod_segment = p->segment;
-  if (validate_silencer_settings()) return ERR_INVALID_SILENCER_SETTING;
+  if (validate_silencer_settings(_stm_segment, p->segment))
+    return ERR_INVALID_SILENCER_SETTING;
   return mod_segment_update(p->segment, p->transition_mode,
                             p->transition_value);
 }

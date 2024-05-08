@@ -16,10 +16,12 @@ extern volatile uint16_t _fpga_flags_internal;
 extern volatile uint8_t _mod_segment;
 extern volatile uint32_t _mod_cycle;
 extern volatile uint32_t _mod_freq_div[2];
+extern volatile uint32_t _mod_rep[2];
 
 extern volatile uint8_t _stm_segment;
 extern volatile uint8_t _stm_mode[2];
 extern volatile uint32_t _stm_cycle[2];
+extern volatile uint32_t _stm_rep[2];
 extern volatile uint32_t _stm_freq_div[2];
 
 extern volatile bool_t _silencer_strict_mode;
@@ -53,6 +55,8 @@ uint8_t clear(void) {
   _mod_cycle = 2;
   _mod_freq_div[0] = 5120;
   _mod_freq_div[1] = 5120;
+  _mod_rep[0] = 0xFFFFFFFF;
+  _mod_rep[1] = 0xFFFFFFFF;
   _mod_segment = 0;
   bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_TRANSITION_MODE,
              TRANSITION_MODE_SYNC_IDX);
@@ -79,6 +83,8 @@ uint8_t clear(void) {
   _stm_cycle[1] = 1;
   _stm_freq_div[0] = 0xFFFFFFFF;
   _stm_freq_div[1] = 0xFFFFFFFF;
+  _stm_rep[0] = 0xFFFFFFFF;
+  _stm_rep[1] = 0xFFFFFFFF;
   _stm_segment = 0;
   bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_TRANSITION_MODE,
              TRANSITION_MODE_SYNC_IDX);

@@ -1,9 +1,12 @@
 #include <gtest/gtest.h>
 
+//
 #include "app.h"
 #include "ecat.h"
 #include "iodefine.h"
+#include "mod.h"
 #include "params.h"
+#include "silencer.h"
 #include "utils.hpp"
 
 extern "C" {
@@ -34,28 +37,31 @@ TEST(Op, Mod) {
     while (cnt < size) {
       header->msg_id = get_msg_id();
 
-      auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
-      data_body[0] = TAG_MODULATION;
-      auto offset = 4;
+      auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+      reinterpret_cast<ModulationHead*>(p)->tag = TAG_MODULATION;
+      reinterpret_cast<ModulationHead*>(p)->flag = 0;
+      size_t offset;
       if (cnt == 0) {
-        data_body[1] = MODULATION_FLAG_BEGIN;
-        data_body[4] = transition_mode;
-        *reinterpret_cast<uint32_t*>(data_body + 8) = freq_div;
-        *reinterpret_cast<uint32_t*>(data_body + 12) = rep;
-        *reinterpret_cast<uint64_t*>(data_body + 16) = transition_value;
-        offset += 20;
+        reinterpret_cast<ModulationHead*>(p)->flag = MODULATION_FLAG_BEGIN;
+        reinterpret_cast<ModulationHead*>(p)->freq_div = freq_div;
+        reinterpret_cast<ModulationHead*>(p)->rep = rep;
+        reinterpret_cast<ModulationHead*>(p)->transition_mode = transition_mode;
+        reinterpret_cast<ModulationHead*>(p)->transition_value =
+            transition_value;
+        offset = sizeof(ModulationHead);
       } else {
-        data_body[1] = 0;
+        offset = sizeof(ModulationSubseq);
       }
       auto send =
           std::min(size - cnt, sizeof(RX_STR) - sizeof(Header) - offset);
-      *reinterpret_cast<uint16_t*>(data_body + 2) = static_cast<uint16_t>(send);
+      reinterpret_cast<ModulationHead*>(p)->size = static_cast<uint16_t>(send);
 
-      for (size_t i = 0; i < send; i++) data_body[offset + i] = m[cnt + i];
+      for (size_t i = 0; i < send; i++) p[offset + i] = m[cnt + i];
       cnt += send;
 
       if (cnt == size)
-        data_body[1] |= MODULATION_FLAG_END | MODULATION_FLAG_UPDATE;
+        reinterpret_cast<ModulationHead*>(p)->flag |=
+            MODULATION_FLAG_END | MODULATION_FLAG_UPDATE;
 
       auto frame = to_frame_data(data);
 
@@ -86,8 +92,6 @@ TEST(Op, Mod) {
 
   // segment 1 without segment change
   {
-    const uint8_t transition_mode = TRANSITION_MODE_SYS_TIME;
-    const uint64_t transition_value = 0xFEDCBA9876543210;
     const uint32_t size = 1024;
     const uint32_t freq_div = 0x9ABCDEF0;
     const uint32_t rep = 0x12345678;
@@ -96,27 +100,31 @@ TEST(Op, Mod) {
     while (cnt < size) {
       header->msg_id = get_msg_id();
 
-      auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
-      data_body[0] = TAG_MODULATION;
-      auto offset = 4;
+      auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+      reinterpret_cast<ModulationHead*>(p)->tag = TAG_MODULATION;
+      reinterpret_cast<ModulationHead*>(p)->flag = 0;
+      size_t offset;
       if (cnt == 0) {
-        data_body[1] = MODULATION_FLAG_BEGIN | MODULATION_FLAG_SEGMENT;
-        data_body[4] = transition_mode;
-        *reinterpret_cast<uint32_t*>(data_body + 8) = freq_div;
-        *reinterpret_cast<uint32_t*>(data_body + 12) = rep;
-        *reinterpret_cast<uint64_t*>(data_body + 16) = transition_value;
-        offset += 20;
+        reinterpret_cast<ModulationHead*>(p)->flag = MODULATION_FLAG_BEGIN;
+        reinterpret_cast<ModulationHead*>(p)->freq_div = freq_div;
+        reinterpret_cast<ModulationHead*>(p)->rep = rep;
+        reinterpret_cast<ModulationHead*>(p)->transition_mode =
+            TRANSITION_MODE_NONE;
+        reinterpret_cast<ModulationHead*>(p)->transition_value = 0;
+        offset = sizeof(ModulationHead);
       } else {
-        data_body[1] = 0;
+        offset = sizeof(ModulationSubseq);
       }
+      reinterpret_cast<ModulationHead*>(p)->flag |= MODULATION_FLAG_SEGMENT;
       auto send =
           std::min(size - cnt, sizeof(RX_STR) - sizeof(Header) - offset);
-      *reinterpret_cast<uint16_t*>(data_body + 2) = static_cast<uint16_t>(send);
+      reinterpret_cast<ModulationHead*>(p)->size = static_cast<uint16_t>(send);
 
-      for (size_t i = 0; i < send; i++) data_body[offset + i] = m[cnt + i];
+      for (size_t i = 0; i < send; i++) p[offset + i] = m[cnt + i];
       cnt += send;
 
-      if (cnt == size) data_body[1] |= MODULATION_FLAG_END;
+      if (cnt == size)
+        reinterpret_cast<ModulationHead*>(p)->flag |= MODULATION_FLAG_END;
 
       auto frame = to_frame_data(data);
 
@@ -155,11 +163,11 @@ TEST(Op, Mod) {
     const uint8_t transition_mode = TRANSITION_MODE_SYS_TIME;
     const uint64_t transition_value = 0xFEDCBA9876543210;
 
-    auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
-    data_body[0] = TAG_MODULATION_CHANGE_SEGMENT;
-    data_body[1] = 1;
-    data_body[2] = transition_mode;
-    *reinterpret_cast<uint64_t*>(data_body + 8) = transition_value;
+    auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+    reinterpret_cast<ModulationUpdate*>(p)->tag = TAG_MODULATION_CHANGE_SEGMENT;
+    reinterpret_cast<ModulationUpdate*>(p)->segment = 1;
+    reinterpret_cast<ModulationUpdate*>(p)->transition_mode = transition_mode;
+    reinterpret_cast<ModulationUpdate*>(p)->transition_value = transition_value;
 
     auto frame = to_frame_data(data);
 
@@ -194,12 +202,11 @@ TEST(Op, InvalidCompletionStepsMod) {
     const uint8_t flag =
         SILENCER_MODE_FIXED_COMPLETION_STEPS | SILENCER_FLAG_STRICT_MODE;
 
-    auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
-    data_body[0] = TAG_SILENCER;
-    *reinterpret_cast<uint8_t*>(data_body + 1) = flag;
-    *reinterpret_cast<uint16_t*>(data_body + 2) = intensity;
-    *reinterpret_cast<uint16_t*>(data_body + 4) = phase;
-
+    auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+    reinterpret_cast<ConfigSilencer*>(p)->tag = TAG_SILENCER;
+    reinterpret_cast<ConfigSilencer*>(p)->flag = flag;
+    reinterpret_cast<ConfigSilencer*>(p)->value_intensity = intensity;
+    reinterpret_cast<ConfigSilencer*>(p)->value_phase = phase;
     auto frame = to_frame_data(data);
 
     recv_ethercat(&frame[0]);
@@ -217,10 +224,14 @@ TEST(Op, InvalidCompletionStepsMod) {
 
     header->msg_id = get_msg_id();
 
-    auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
-    data_body[0] = TAG_MODULATION;
-    data_body[1] = MODULATION_FLAG_BEGIN | MODULATION_FLAG_END;
-    *reinterpret_cast<uint32_t*>(data_body + 8) = freq_div;
+    auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+    reinterpret_cast<ModulationHead*>(p)->tag = TAG_MODULATION;
+    reinterpret_cast<ModulationHead*>(p)->flag =
+        MODULATION_FLAG_BEGIN | MODULATION_FLAG_END;
+    reinterpret_cast<ModulationHead*>(p)->freq_div = freq_div;
+    reinterpret_cast<ModulationHead*>(p)->size = 2;
+    reinterpret_cast<ModulationHead*>(p)->transition_mode =
+        TRANSITION_MODE_IMMIDIATE;
 
     auto frame = to_frame_data(data);
 
@@ -239,10 +250,14 @@ TEST(Op, InvalidCompletionStepsMod) {
 
     header->msg_id = get_msg_id();
 
-    auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
-    data_body[0] = TAG_MODULATION;
-    data_body[1] = MODULATION_FLAG_BEGIN | MODULATION_FLAG_END;
-    *reinterpret_cast<uint32_t*>(data_body + 8) = freq_div;
+    auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+    reinterpret_cast<ModulationHead*>(p)->tag = TAG_MODULATION;
+    reinterpret_cast<ModulationHead*>(p)->flag =
+        MODULATION_FLAG_BEGIN | MODULATION_FLAG_END;
+    reinterpret_cast<ModulationHead*>(p)->freq_div = freq_div;
+    reinterpret_cast<ModulationHead*>(p)->size = 2;
+    reinterpret_cast<ModulationHead*>(p)->transition_mode =
+        TRANSITION_MODE_IMMIDIATE;
 
     auto frame = to_frame_data(data);
 
@@ -269,11 +284,11 @@ TEST(Op, InvalidCompletionStepsWithPermisiveModeMod) {
     const auto phase = 0xFF;
     const auto flag = SILENCER_MODE_FIXED_COMPLETION_STEPS;
 
-    auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
-    data_body[0] = TAG_SILENCER;
-    *reinterpret_cast<uint16_t*>(data_body + 2) = intensity;
-    *reinterpret_cast<uint16_t*>(data_body + 4) = phase;
-    *reinterpret_cast<uint16_t*>(data_body + 6) = flag;
+    auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+    reinterpret_cast<ConfigSilencer*>(p)->tag = TAG_SILENCER;
+    reinterpret_cast<ConfigSilencer*>(p)->flag = flag;
+    reinterpret_cast<ConfigSilencer*>(p)->value_intensity = intensity;
+    reinterpret_cast<ConfigSilencer*>(p)->value_phase = phase;
 
     auto frame = to_frame_data(data);
 
@@ -292,10 +307,14 @@ TEST(Op, InvalidCompletionStepsWithPermisiveModeMod) {
 
     header->msg_id = get_msg_id();
 
-    auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
-    data_body[0] = TAG_MODULATION;
-    data_body[1] = MODULATION_FLAG_BEGIN | MODULATION_FLAG_END;
-    *reinterpret_cast<uint32_t*>(data_body + 8) = freq_div;
+    auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+    reinterpret_cast<ModulationHead*>(p)->tag = TAG_MODULATION;
+    reinterpret_cast<ModulationHead*>(p)->flag =
+        MODULATION_FLAG_BEGIN | MODULATION_FLAG_END;
+    reinterpret_cast<ModulationHead*>(p)->freq_div = freq_div;
+    reinterpret_cast<ModulationHead*>(p)->size = 2;
+    reinterpret_cast<ModulationHead*>(p)->transition_mode =
+        TRANSITION_MODE_IMMIDIATE;
 
     auto frame = to_frame_data(data);
 
@@ -331,28 +350,33 @@ TEST(Op, ModMissTransitionTime) {
     while (cnt < size) {
       header->msg_id = get_msg_id();
 
-      auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
-      data_body[0] = TAG_MODULATION;
-      auto offset = 4;
+      auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+      reinterpret_cast<ModulationHead*>(p)->tag = TAG_MODULATION;
+      reinterpret_cast<ModulationHead*>(p)->flag = 0;
+      size_t offset;
       if (cnt == 0) {
-        data_body[1] = MODULATION_FLAG_BEGIN;
-        data_body[4] = transition_mode;
-        *reinterpret_cast<uint32_t*>(data_body + 8) = freq_div;
-        *reinterpret_cast<uint32_t*>(data_body + 12) = rep;
-        *reinterpret_cast<uint64_t*>(data_body + 16) = transition_value;
-        offset += 20;
+        reinterpret_cast<ModulationHead*>(p)->flag = MODULATION_FLAG_BEGIN;
+        reinterpret_cast<ModulationHead*>(p)->freq_div = freq_div;
+        reinterpret_cast<ModulationHead*>(p)->rep = rep;
+        reinterpret_cast<ModulationHead*>(p)->transition_mode = transition_mode;
+        reinterpret_cast<ModulationHead*>(p)->transition_value =
+            transition_value;
+        offset = sizeof(ModulationHead);
       } else {
-        data_body[1] = 0;
+        offset = sizeof(ModulationSubseq);
       }
+      reinterpret_cast<ModulationHead*>(p)->flag |= MODULATION_FLAG_SEGMENT;
+
       auto send =
           std::min(size - cnt, sizeof(RX_STR) - sizeof(Header) - offset);
-      *reinterpret_cast<uint16_t*>(data_body + 2) = static_cast<uint16_t>(send);
+      reinterpret_cast<ModulationHead*>(p)->size = static_cast<uint16_t>(send);
 
-      for (size_t i = 0; i < send; i++) data_body[offset + i] = m[cnt + i];
+      for (size_t i = 0; i < send; i++) p[offset + i] = m[cnt + i];
       cnt += send;
 
       if (cnt == size)
-        data_body[1] |= MODULATION_FLAG_END | MODULATION_FLAG_UPDATE;
+        reinterpret_cast<ModulationHead*>(p)->flag |=
+            MODULATION_FLAG_END | MODULATION_FLAG_UPDATE;
 
       auto frame = to_frame_data(data);
 

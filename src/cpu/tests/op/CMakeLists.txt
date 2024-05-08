@@ -1,6 +1,7 @@
 target_sources(test_autd3-firmware PRIVATE
   ${PROJECT_SOURCE_DIR}/../src/op/clear.c
   ${PROJECT_SOURCE_DIR}/../src/op/clk.c
+  ${PROJECT_SOURCE_DIR}/../src/op/utils.c
   ${PROJECT_SOURCE_DIR}/../src/op/debug.c
   ${PROJECT_SOURCE_DIR}/../src/op/gpio_in.c
   ${PROJECT_SOURCE_DIR}/../src/op/focus_stm.c

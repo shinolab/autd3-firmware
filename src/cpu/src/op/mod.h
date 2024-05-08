@@ -4,6 +4,36 @@
 #include "app.h"
 #include "params.h"
 
+typedef ALIGN2 struct {
+  uint8_t tag;
+  uint8_t flag;
+  uint16_t size;
+  uint8_t transition_mode;
+  uint8_t _pad[3];
+  uint32_t freq_div;
+  uint32_t rep;
+  uint64_t transition_value;
+} ModulationHead;
+
+typedef ALIGN2 struct {
+  uint8_t tag;
+  uint8_t flag;
+  uint16_t size;
+} ModulationSubseq;
+
+typedef ALIGN2 union {
+  ModulationHead head;
+  ModulationSubseq subseq;
+} Modulation;
+
+typedef ALIGN2 struct {
+  uint8_t tag;
+  uint8_t segment;
+  uint8_t transition_mode;
+  uint8_t _pad[5];
+  uint64_t transition_value;
+} ModulationUpdate;
+
 inline static void change_mod_wr_segment(uint16_t segment) {
   asm("dmb");
   bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_MEM_WR_SEGMENT, segment);
