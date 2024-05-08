@@ -10,7 +10,9 @@ extern "C" {
 #include "app.h"
 #include "iodefine.h"
 #include "params.h"
+#include "silencer.h"
 #include "utils.h"
+#include "validate.h"
 
 volatile uint8_t _mod_transision_mode;
 volatile uint64_t _mod_transition_value;
@@ -19,10 +21,11 @@ volatile uint32_t _mod_freq_div[2];
 volatile uint32_t _mod_rep[2];
 volatile uint8_t _mod_segment;
 
+extern volatile bool_t _silencer_strict_mode;
+extern volatile uint32_t _min_freq_div_intensity;
+extern volatile uint32_t _min_freq_div_phase;
 extern volatile uint8_t _stm_segment;
-
-extern bool_t validate_transition_mode(uint8_t, uint8_t, uint32_t, uint8_t);
-extern bool_t validate_silencer_settings(uint8_t, uint8_t);
+extern volatile uint32_t _stm_freq_div[2];
 
 inline static uint8_t mod_segment_update(const uint8_t segment,
                                          const uint8_t mode,
@@ -73,15 +76,18 @@ uint8_t write_mod(const volatile uint8_t* p_data) {
     if (validate_transition_mode(_mod_segment, segment, p->head.rep,
                                  p->head.transition_mode))
       return ERR_INVALID_TRANSITION_MODE;
-    if (p->head.transition_mode != TRANSITION_MODE_NONE) _mod_segment = segment;
 
+    if (validate_silencer_settings(
+            _silencer_strict_mode, _min_freq_div_intensity, _min_freq_div_phase,
+            _stm_freq_div[_stm_segment], p->head.freq_div))
+      return ERR_INVALID_SILENCER_SETTING;
+
+    if (p->head.transition_mode != TRANSITION_MODE_NONE) _mod_segment = segment;
     _mod_cycle = 0;
     _mod_transision_mode = p->head.transition_mode;
     _mod_transition_value = p->head.transition_value;
     _mod_freq_div[segment] = p->head.freq_div;
     _mod_rep[segment] = p->head.rep;
-    if (validate_silencer_settings(_stm_segment, segment))
-      return ERR_INVALID_SILENCER_SETTING;
 
     switch (segment) {
       case 0:
@@ -147,9 +153,13 @@ uint8_t change_mod_segment(const volatile uint8_t* p_data) {
   if (validate_transition_mode(_mod_segment, p->segment, _mod_rep[p->segment],
                                p->transition_mode))
     return ERR_INVALID_TRANSITION_MODE;
-  _mod_segment = p->segment;
-  if (validate_silencer_settings(_stm_segment, p->segment))
+
+  if (validate_silencer_settings(
+          _silencer_strict_mode, _min_freq_div_intensity, _min_freq_div_phase,
+          _stm_freq_div[_stm_segment], _mod_freq_div[p->segment]))
     return ERR_INVALID_SILENCER_SETTING;
+
+  _mod_segment = p->segment;
   return mod_segment_update(p->segment, p->transition_mode,
                             p->transition_value);
 }

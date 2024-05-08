@@ -9,14 +9,14 @@ extern "C" {
 
 #include "app.h"
 #include "params.h"
+#include "silencer.h"
 #include "stm.h"
 #include "utils.h"
+#include "validate.h"
 
 #define GAIN_STM_BUF_PAGE_SIZE_WIDTH (6)
 #define GAIN_STM_BUF_PAGE_SIZE (1 << GAIN_STM_BUF_PAGE_SIZE_WIDTH)
 #define GAIN_STM_BUF_PAGE_SIZE_MASK (GAIN_STM_BUF_PAGE_SIZE - 1)
-
-extern volatile uint8_t _mod_segment;
 
 volatile uint8_t _stm_segment;
 volatile uint8_t _stm_transition_mode;
@@ -27,8 +27,11 @@ volatile uint32_t _stm_freq_div[2];
 volatile uint32_t _stm_rep[2];
 volatile uint8_t _gain_stm_mode;
 
-extern bool_t validate_transition_mode(uint8_t, uint8_t, uint32_t, uint8_t);
-extern bool_t validate_silencer_settings(uint8_t, uint8_t);
+extern volatile bool_t _silencer_strict_mode;
+extern volatile uint32_t _min_freq_div_intensity;
+extern volatile uint32_t _min_freq_div_phase;
+extern volatile uint8_t _mod_segment;
+extern volatile uint32_t _mod_freq_div[2];
 
 uint8_t write_gain_stm(const volatile uint8_t* p_data) {
   static_assert(sizeof(GainSTMHead) == 24, "GainSTM is not valid.");
@@ -58,16 +61,19 @@ uint8_t write_gain_stm(const volatile uint8_t* p_data) {
     if (validate_transition_mode(_stm_segment, segment, p->head.rep,
                                  p->head.transition_mode))
       return ERR_INVALID_TRANSITION_MODE;
-    if (p->head.transition_mode != TRANSITION_MODE_NONE) _stm_segment = segment;
 
+    if (validate_silencer_settings(
+            _silencer_strict_mode, _min_freq_div_intensity, _min_freq_div_phase,
+            p->head.freq_div, _mod_freq_div[_mod_segment]))
+      return ERR_INVALID_SILENCER_SETTING;
+
+    if (p->head.transition_mode != TRANSITION_MODE_NONE) _stm_segment = segment;
     _stm_cycle[segment] = 0;
     _gain_stm_mode = p->head.mode;
     _stm_transition_mode = p->head.transition_mode;
     _stm_transition_value = p->head.transition_value;
     _stm_freq_div[segment] = p->head.freq_div;
     _stm_rep[segment] = p->head.rep;
-    if (validate_silencer_settings(segment, _mod_segment))
-      return ERR_INVALID_SILENCER_SETTING;
 
     switch (segment) {
       case 0:
@@ -191,14 +197,20 @@ uint8_t change_gain_stm_segment(const volatile uint8_t* p_data) {
                 "GainSTM is not valid.");
 
   const GainSTMUpdate* p = (const GainSTMUpdate*)p_data;
+
   if (_stm_mode[p->segment] != STM_MODE_GAIN || _stm_cycle[p->segment] == 1)
     return ERR_INVALID_SEGMENT_TRANSITION;
+
   if (validate_transition_mode(_stm_segment, p->segment, _stm_rep[p->segment],
                                p->transition_mode))
     return ERR_INVALID_TRANSITION_MODE;
-  _stm_segment = p->segment;
-  if (validate_silencer_settings(p->segment, _mod_segment))
+
+  if (validate_silencer_settings(_silencer_strict_mode, _min_freq_div_intensity,
+                                 _min_freq_div_phase, _stm_freq_div[p->segment],
+                                 _mod_freq_div[_mod_segment]))
     return ERR_INVALID_SILENCER_SETTING;
+
+  _stm_segment = p->segment;
   return stm_segment_update(p->segment, p->transition_mode,
                             p->transition_value);
 }

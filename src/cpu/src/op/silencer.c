@@ -19,17 +19,6 @@ volatile bool_t _silencer_strict_mode;
 volatile uint32_t _min_freq_div_intensity;
 volatile uint32_t _min_freq_div_phase;
 
-bool_t validate_silencer_settings(const uint8_t stm_segment,
-                                  const uint8_t mod_segment) {
-  if (_silencer_strict_mode) {
-    if ((_mod_freq_div[mod_segment] < _min_freq_div_intensity) ||
-        (_stm_freq_div[stm_segment] < _min_freq_div_intensity) ||
-        (_stm_freq_div[stm_segment] < _min_freq_div_phase))
-      return true;
-  }
-  return false;
-}
-
 uint8_t config_silencer(const volatile uint8_t* p_data) {
   static_assert(sizeof(ConfigSilencer) == 6, "ConfigSilencer is not valid.");
   static_assert(offsetof(ConfigSilencer, tag) == 0,
@@ -45,14 +34,22 @@ uint8_t config_silencer(const volatile uint8_t* p_data) {
   const uint16_t value_intensity = p->value_intensity;
   const uint16_t value_phase = p->value_phase;
   const uint8_t flag = p->flag;
+  bool_t strict_mode;
+  uint32_t min_freq_div_intensity;
+  uint32_t min_freq_div_phase;
 
   if ((flag & SILENCER_FLAG_MODE) == SILENCER_MODE_FIXED_COMPLETION_STEPS) {
-    _silencer_strict_mode = (flag & SILENCER_FLAG_STRICT_MODE) != 0;
-    _min_freq_div_intensity = (uint32_t)value_intensity << 9;
-    _min_freq_div_phase = (uint32_t)value_phase << 9;
-
-    if (validate_silencer_settings(_stm_segment, _mod_segment))
+    strict_mode = (flag & SILENCER_FLAG_STRICT_MODE) != 0;
+    min_freq_div_intensity = (uint32_t)value_intensity << 9;
+    min_freq_div_phase = (uint32_t)value_phase << 9;
+    if (validate_silencer_settings(
+            strict_mode, min_freq_div_intensity, min_freq_div_phase,
+            _stm_freq_div[_stm_segment], _mod_freq_div[_mod_segment]))
       return ERR_INVALID_SILENCER_SETTING;
+
+    _silencer_strict_mode = strict_mode;
+    _min_freq_div_intensity = min_freq_div_intensity;
+    _min_freq_div_phase = min_freq_div_phase;
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_COMPLETION_STEPS_INTENSITY,
                value_intensity);
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_COMPLETION_STEPS_PHASE,
