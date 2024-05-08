@@ -466,6 +466,77 @@ TEST(Op, InvalidCompletionStepsIntensityFocusSTM) {
     const auto ack = _sTx.ack >> 8;
     ASSERT_EQ(ack, ERR_INVALID_SILENCER_SETTING);
   }
+
+  {
+    Header* header = reinterpret_cast<Header*>(data.data);
+    header->msg_id = get_msg_id();
+    header->slot_2_offset = 0;
+
+    auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
+    reinterpret_cast<FocusSTMHead*>(p)->tag = TAG_FOCUS_STM;
+    reinterpret_cast<FocusSTMHead*>(p)->flag =
+        FOCUS_STM_FLAG_BEGIN | FOCUS_STM_FLAG_END;
+    reinterpret_cast<FocusSTMHead*>(p)->send_num = 2;
+    reinterpret_cast<FocusSTMHead*>(p)->freq_div = 0xFFFFFFFF;
+    reinterpret_cast<FocusSTMHead*>(p)->rep = 0xFFFFFFFF;
+    reinterpret_cast<FocusSTMHead*>(p)->transition_mode =
+        TRANSITION_MODE_IMMIDIATE;
+    auto frame = to_frame_data(data);
+    recv_ethercat(&frame[0]);
+    update();
+    auto ack = _sTx.ack >> 8;
+    ASSERT_EQ(header->msg_id, ack);
+
+    header->msg_id = get_msg_id();
+    reinterpret_cast<ConfigSilencer*>(p)->tag = TAG_SILENCER;
+    reinterpret_cast<ConfigSilencer*>(p)->flag =
+        SILENCER_MODE_FIXED_COMPLETION_STEPS | SILENCER_FLAG_STRICT_MODE;
+    reinterpret_cast<ConfigSilencer*>(p)->value_intensity = 10;
+    reinterpret_cast<ConfigSilencer*>(p)->value_phase = 40;
+    frame = to_frame_data(data);
+    recv_ethercat(&frame[0]);
+    update();
+    ack = _sTx.ack >> 8;
+    ASSERT_EQ(header->msg_id, ack);
+
+    header->msg_id = get_msg_id();
+    reinterpret_cast<FocusSTMHead*>(p)->tag = TAG_FOCUS_STM;
+    reinterpret_cast<FocusSTMHead*>(p)->flag =
+        FOCUS_STM_FLAG_BEGIN | FOCUS_STM_FLAG_END | FOCUS_STM_FLAG_SEGMENT;
+    reinterpret_cast<FocusSTMHead*>(p)->send_num = 2;
+    reinterpret_cast<FocusSTMHead*>(p)->freq_div = 512 * 40;
+    reinterpret_cast<FocusSTMHead*>(p)->rep = 0xFFFFFFFF;
+    reinterpret_cast<FocusSTMHead*>(p)->transition_mode = TRANSITION_MODE_NONE;
+    frame = to_frame_data(data);
+    recv_ethercat(&frame[0]);
+    update();
+    ack = _sTx.ack >> 8;
+    ASSERT_EQ(header->msg_id, ack);
+
+    header->msg_id = get_msg_id();
+    reinterpret_cast<ConfigSilencer*>(p)->tag = TAG_SILENCER;
+    reinterpret_cast<ConfigSilencer*>(p)->flag =
+        SILENCER_MODE_FIXED_COMPLETION_STEPS | SILENCER_FLAG_STRICT_MODE;
+    reinterpret_cast<ConfigSilencer*>(p)->value_intensity = 10;
+    reinterpret_cast<ConfigSilencer*>(p)->value_phase = 80;
+    frame = to_frame_data(data);
+    recv_ethercat(&frame[0]);
+    update();
+    ack = _sTx.ack >> 8;
+    ASSERT_EQ(header->msg_id, ack);
+
+    header->msg_id = get_msg_id();
+    reinterpret_cast<FocusSTMUpdate*>(p)->tag = TAG_FOCUS_STM_CHANGE_SEGMENT;
+    reinterpret_cast<FocusSTMUpdate*>(p)->segment = 1;
+    reinterpret_cast<FocusSTMUpdate*>(p)->transition_mode =
+        TRANSITION_MODE_IMMIDIATE;
+    reinterpret_cast<FocusSTMUpdate*>(p)->transition_value = 0;
+    frame = to_frame_data(data);
+    recv_ethercat(&frame[0]);
+    update();
+    ack = _sTx.ack >> 8;
+    ASSERT_EQ(ERR_INVALID_SILENCER_SETTING, ack);
+  }
 }
 
 TEST(Op, InvalidCompletionStepsPhaseFocusSTM) {
