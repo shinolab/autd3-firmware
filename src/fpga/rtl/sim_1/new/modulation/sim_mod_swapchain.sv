@@ -9,6 +9,7 @@ module sim_mod_swapchain ();
 
   localparam int AddSubLatency = 6;
   localparam int DEPTH = 249;
+  localparam int ECAT_SYNC_BASE_CNT = 40000 * 512 / 2000;
 
   logic CLK;
   logic locked;
@@ -41,6 +42,7 @@ module sim_mod_swapchain ();
       .REQ_RD_SEGMENT(req_rd_segment),
       .TRANSITION_MODE(transition_mode),
       .TRANSITION_VALUE(transition_value),
+      .ECAT_SYNC_BASE_CNT(ECAT_SYNC_BASE_CNT),
       .CYCLE(cycle),
       .REP(rep),
       .SYNC_IDX(sync_idx),
@@ -420,6 +422,7 @@ module sim_mod_swapchain ();
   endtask
 
   task automatic test_sys_time();
+    #500000;
     @(posedge CLK);
     sync_idx[0] <= 0;
     sync_idx[1] <= 0;
@@ -457,7 +460,7 @@ module sim_mod_swapchain ();
     `ASSERT_EQ(1, idx[1]);
 
     @(posedge CLK);
-    transition_value <= SYS_TIME + 5;
+    transition_value <= (SYS_TIME / ECAT_SYNC_BASE_CNT + 1) * 500000;
     repeat (AddSubLatency) @(posedge CLK);
 
     // segment change to 0, wait for 5 clocks, repeat one time
@@ -473,12 +476,13 @@ module sim_mod_swapchain ();
     `ASSERT_EQ(0, stop);
     `ASSERT_EQ(sync_idx[1], idx[1]);
 
-    // wait for 3 clocks
-    for (int i = 0; i < 3; i++) begin
+    // wait
+    while(1'b1) begin
       @(posedge CLK);
       @(negedge CLK);
       `ASSERT_EQ(1, segment);
       `ASSERT_EQ(0, stop);
+      if (SYS_TIME == ECAT_SYNC_BASE_CNT * 2 + 7) break;
     end
 
     // change segment
@@ -516,7 +520,7 @@ module sim_mod_swapchain ();
     `ASSERT_EQ(0, idx[0]);
 
     @(posedge CLK);
-    transition_value <= SYS_TIME + 5;
+    transition_value <= (SYS_TIME / ECAT_SYNC_BASE_CNT + 1) * 500000;
     repeat (AddSubLatency) @(posedge CLK);
 
     // segment change to 1, wait for for 5 clocks, repeat 2 times
@@ -531,12 +535,13 @@ module sim_mod_swapchain ();
     `ASSERT_EQ(1, stop);
     `ASSERT_EQ(0, idx[0]);
 
-    // wait for 3 clocks
-    for (int i = 0; i < 3; i++) begin
+    // wait
+    while(1'b1) begin
       @(posedge CLK);
       @(negedge CLK);
       `ASSERT_EQ(0, segment);
       `ASSERT_EQ(1, stop);
+      if (SYS_TIME == ECAT_SYNC_BASE_CNT * 3 + 7) break;
     end
 
     // change segment

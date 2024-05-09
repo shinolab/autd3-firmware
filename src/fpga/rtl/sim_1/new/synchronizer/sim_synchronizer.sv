@@ -15,6 +15,7 @@ module sim_synchronizer ();
   logic [63:0] ecat_sync_time;  // [ns]
   settings::sync_settings_t SYNC_SETTINGS;
   assign SYNC_SETTINGS.UPDATE = set;
+  assign SYNC_SETTINGS.ECAT_SYNC_BASE_CNT = 40000 * 512 / 2000;
   assign SYNC_SETTINGS.ECAT_SYNC_TIME = ecat_sync_time;
 
   assign diff_p50 = SYS_TIME_p50 - SYS_TIME;

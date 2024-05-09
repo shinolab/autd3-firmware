@@ -10,6 +10,8 @@ package params;
   localparam bit [7:0] VersionNumMajor = 8'h91;
   localparam bit [7:0] VersionNumMinor = 8'h00;
 
+  localparam logic [31:0] ECATSyncBase = 32'd500000;  // ns
+
   typedef enum int {
     CTL_FLAG_BIT_MOD_SET = 0,
     CTL_FLAG_BIT_STM_SET = 1,
