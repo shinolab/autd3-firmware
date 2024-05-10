@@ -1,3 +1,14 @@
+# 7.0.0
+
+- Add new segment transition mode
+    - SysTime
+    - GPIO
+    - Ext
+- Return errors more strictly for invalid operations
+- Validate silencer setting only for current segment
+- Allows ultrasound frequency to be changed
+- Fix configure PulseWidthEncoder operation
+
 # 6.1.0
 
 - Add new debug output settings
