@@ -3,7 +3,7 @@
   "ip_inst": {
     "xci_name": "BRAM_ASIN",
     "component_reference": "xilinx.com:ip:blk_mem_gen:8.4",
-    "ip_revision": "7",
+    "ip_revision": "8",
     "gen_directory": "../../../../autd3-fpga.gen/sources_1/ip/BRAM_ASIN",
     "parameters": {
       "component_parameters": {
@@ -34,7 +34,7 @@
         "Assume_Synchronous_Clk": [ { "value": "false", "resolve_type": "user", "format": "bool", "usage": "all" } ],
         "Write_Width_A": [ { "value": "8", "value_src": "user", "resolve_type": "user", "format": "long", "usage": "all" } ],
         "Write_Depth_A": [ { "value": "65536", "value_src": "user", "resolve_type": "user", "format": "long", "usage": "all" } ],
-        "Read_Width_A": [ { "value": "8", "resolve_type": "user", "usage": "all" } ],
+        "Read_Width_A": [ { "value": "8", "value_src": "user", "resolve_type": "user", "usage": "all" } ],
         "Operating_Mode_A": [ { "value": "WRITE_FIRST", "resolve_type": "user", "usage": "all" } ],
         "Enable_A": [ { "value": "Always_Enabled", "value_src": "user", "resolve_type": "user", "usage": "all" } ],
         "Write_Width_B": [ { "value": "16", "value_src": "user", "resolve_type": "user", "usage": "all" } ],
@@ -162,24 +162,23 @@
         "BASE_BOARD_PART": [ { "value": "" } ],
         "BOARD_CONNECTIONS": [ { "value": "" } ],
         "DEVICE": [ { "value": "xc7a200t" } ],
+        "NEXTGEN_VERSAL": [ { "value": "0" } ],
         "PACKAGE": [ { "value": "fbg676" } ],
         "PREFHDL": [ { "value": "VERILOG" } ],
         "SILICON_REVISION": [ { "value": "" } ],
-        "SIMULATOR_LANGUAGE": [ { "value": "VERILOG" } ],
+        "SIMULATOR_LANGUAGE": [ { "value": "MIXED" } ],
         "SPEEDGRADE": [ { "value": "-2" } ],
         "STATIC_POWER": [ { "value": "" } ],
-        "TEMPERATURE_GRADE": [ { "value": "" } ],
-        "USE_RDI_CUSTOMIZATION": [ { "value": "TRUE" } ],
-        "USE_RDI_GENERATION": [ { "value": "TRUE" } ]
+        "TEMPERATURE_GRADE": [ { "value": "" } ]
       },
       "runtime_parameters": {
         "IPCONTEXT": [ { "value": "IP_Flow" } ],
-        "IPREVISION": [ { "value": "7" } ],
+        "IPREVISION": [ { "value": "8" } ],
         "MANAGED": [ { "value": "TRUE" } ],
         "OUTPUTDIR": [ { "value": "../../../../autd3-fpga.gen/sources_1/ip/BRAM_ASIN" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "." } ],
-        "SWVERSION": [ { "value": "2023.2.2" } ],
+        "SWVERSION": [ { "value": "2024.1" } ],
         "SYNTHESISFLOW": [ { "value": "GLOBAL" } ]
       }
     },
@@ -227,6 +226,7 @@
           "abstraction_type": "xilinx.com:interface:bram_rtl:1.0",
           "mode": "slave",
           "parameters": {
+            "MEM_ADDRESS_MODE": [ { "value": "BYTE_ADDRESS", "resolve_type": "user", "usage": "all" } ],
             "MEM_SIZE": [ { "value": "8192", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
             "MEM_WIDTH": [ { "value": "32", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
             "MEM_ECC": [ { "value": "NONE", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
@@ -247,6 +247,7 @@
           "abstraction_type": "xilinx.com:interface:bram_rtl:1.0",
           "mode": "slave",
           "parameters": {
+            "MEM_ADDRESS_MODE": [ { "value": "BYTE_ADDRESS", "resolve_type": "user", "usage": "all" } ],
             "MEM_SIZE": [ { "value": "8192", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
             "MEM_WIDTH": [ { "value": "32", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
             "MEM_ECC": [ { "value": "NONE", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],

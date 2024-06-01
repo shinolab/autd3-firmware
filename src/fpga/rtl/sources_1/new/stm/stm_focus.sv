@@ -118,7 +118,7 @@ module stm_focus #(
   sqrt_38 sqrt_38 (
       .aclk(CLK),
       .s_axis_cartesian_tvalid(1'b1),
-      .s_axis_cartesian_tdata({2'b00, d2}),
+      .s_axis_cartesian_tdata({4'd0, d2}),
       .m_axis_dout_tvalid(),
       .m_axis_dout_tdata(sqrt_dout)
   );
