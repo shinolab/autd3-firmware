@@ -53,12 +53,7 @@ static volatile uint8_t _ack = 0;
 volatile uint8_t _rx_data = 0;
 volatile uint16_t _fpga_flags_internal = 0;
 
-void init_app(void) {
-  clear();
-  bram_write(BRAM_SELECT_CONTROLLER, ADDR_PULSE_WIDTH_ENCODER_FULL_WIDTH_START,
-             65025);  // 255 * 255
-  set_and_wait_update(CTL_FLAG_PULSE_WIDTH_ENCODER_SET);
-}
+void init_app(void) { clear(); }
 
 uint8_t handle_payload(const volatile uint8_t* p_data) {
   switch (p_data[0]) {
