@@ -261,7 +261,7 @@ def fpga_build(args):
                 if not vivados:
                     err("Vivado is not found. Install Vivado.")
                     sys.exit(1)
-                vivado_ver = vivados[0]
+                vivado_ver = vivados[-1]
                 info(f"Vivado {vivado_ver} found")
                 vivado_dir = os.path.join(vivado_path, vivado_ver)
 
