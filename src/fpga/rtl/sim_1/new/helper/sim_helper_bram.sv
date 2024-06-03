@@ -176,7 +176,7 @@ module sim_helper_bram #(
     for (int i = 0; i < cnt; i++) begin
       base_addr = i << 5;
       for (int j = 0; j < n; j++) begin
-        addr = base_addr + j;
+        addr = base_addr + 4 * j;
         bram_write(params::BRAM_SELECT_STM, addr, x[i][j][15:0]);
         bram_write(params::BRAM_SELECT_STM, addr + 1, {y[i][j][13:0], x[i][j][17:16]});
         bram_write(params::BRAM_SELECT_STM, addr + 2, {z[i][j][11:0], y[i][j][17:14]});

@@ -6,6 +6,7 @@ package params;
   localparam int GainSTMSize = 1024;
   localparam int STMWrAddrWidth = $clog2(GainSTMSize * 256);
   localparam int STMRdAddrWidth = $clog2(GainSTMSize * 8);
+  localparam int NumFociMax = 8;
 
   localparam bit [7:0] VersionNumMajor = 8'h91;
   localparam bit [7:0] VersionNumMinor = 8'h00;
@@ -135,6 +136,8 @@ package params;
     ADDR_STM_TRANSITION_VALUE_1 = 8'h66,
     ADDR_STM_TRANSITION_VALUE_2 = 8'h67,
     ADDR_STM_TRANSITION_VALUE_3 = 8'h68,
+    ADDR_STM_NUM_FOCI0 = 8'h69,
+    ADDR_STM_NUM_FOCI1 = 8'h6A,
 
     ADDR_PULSE_WIDTH_ENCODER_TABLE_WR_PAGE = 8'hE0,
     ADDR_PULSE_WIDTH_ENCODER_FULL_WIDTH_START = 8'hE1,

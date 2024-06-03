@@ -25,6 +25,7 @@ module stm #(
   logic [12:0] idx = '0;
   logic [12:0] cycle = '0;
   logic [15:0] sound_speed = '0;
+  logic [7:0] num_foci = 8'd1;
 
   assign STM_BUS.MODE = mode;
   assign STM_BUS.SEGMENT = segment;
@@ -95,6 +96,7 @@ module stm #(
       .IDX(idx),
       .STM_BUS(STM_BUS_FOCUS),
       .SOUND_SPEED(sound_speed),
+      .NUM_FOCI(num_foci),
       .INTENSITY(intensity_focus),
       .PHASE(phase_focus),
       .DOUT_VALID(dout_valid_focus)
@@ -108,6 +110,7 @@ module stm #(
         mode <= STM_SETTINGS.MODE[swapchain_segment];
         sound_speed <= STM_SETTINGS.SOUND_SPEED[swapchain_segment];
         cycle <= STM_SETTINGS.CYCLE[swapchain_segment];
+        num_foci <= STM_SETTINGS.NUM_FOCI[swapchain_segment];
       end
       start <= 1'b1;
     end else begin

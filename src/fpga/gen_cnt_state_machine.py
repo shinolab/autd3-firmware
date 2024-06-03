@@ -75,6 +75,8 @@ stm_params = Params(
         Param("STM_SOUND_SPEED1", 16, "SOUND_SPEED[1]", 0),
         Param("STM_REP0", 32, "REP[0]", "32'hFFFFFFFF"),
         Param("STM_REP1", 32, "REP[1]", "32'hFFFFFFFF"),
+        Param("STM_NUM_FOCI0", 8, "NUM_FOCI[0]", "1"),
+        Param("STM_NUM_FOCI1", 8, "NUM_FOCI[1]", "1"),
     ],
 )
 

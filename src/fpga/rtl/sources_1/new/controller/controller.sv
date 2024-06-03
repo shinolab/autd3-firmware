@@ -82,9 +82,11 @@ module controller (
     REQ_STM_REP0_1_RD_STM_SOUND_SPEED0,
     REQ_STM_REP1_0_RD_STM_SOUND_SPEED1,
     REQ_STM_REP1_1_RD_STM_REP0_0,
-    RD_STM_REP0_1,
-    RD_STM_REP1_0,
+    REQ_STM_NUM_FOCI0_RD_STM_REP0_1,
+    REQ_STM_NUM_FOCI1_RD_STM_REP1_0,
     RD_STM_REP1_1,
+    RD_STM_NUM_FOCI0,
+    RD_STM_NUM_FOCI1,
     STM_CLR_UPDATE_SETTINGS_BIT,
     REQ_SILENCER_MODE,
     REQ_SILENCER_UPDATE_RATE_INTENSITY,
@@ -399,26 +401,36 @@ module controller (
       REQ_STM_REP1_1_RD_STM_REP0_0: begin
         addr <= params::ADDR_STM_REP1_1;
         STM_SETTINGS.REP[0][15:0] <= dout;
-        state <= RD_STM_REP0_1;
+        state <= REQ_STM_NUM_FOCI0_RD_STM_REP0_1;
       end
-      RD_STM_REP0_1: begin
+      REQ_STM_NUM_FOCI0_RD_STM_REP0_1: begin
+        addr <= params::ADDR_STM_NUM_FOCI0;
         STM_SETTINGS.REP[0][31:16] <= dout;
+        state <= REQ_STM_NUM_FOCI1_RD_STM_REP1_0;
+      end
+      REQ_STM_NUM_FOCI1_RD_STM_REP1_0: begin
+        addr <= params::ADDR_STM_NUM_FOCI1;
+        STM_SETTINGS.REP[1][15:0] <= dout;
+        state <= RD_STM_REP1_1;
+      end
+      RD_STM_REP1_1: begin
+        STM_SETTINGS.REP[1][31:16] <= dout;
         we <= 1'b1;
         addr <= params::ADDR_CTL_FLAG;
         din <= ctl_flags;
-        state <= RD_STM_REP1_0;
+        state <= RD_STM_NUM_FOCI0;
       end
-      RD_STM_REP1_0: begin
-        STM_SETTINGS.REP[1][15:0] <= dout;
+      RD_STM_NUM_FOCI0: begin
+        STM_SETTINGS.NUM_FOCI[0] <= dout[7:0];
         we <= 1'b1;
         addr <= params::ADDR_FPGA_STATE;
         din <= {
           8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO
         };
-        state <= RD_STM_REP1_1;
+        state <= RD_STM_NUM_FOCI1;
       end
-      RD_STM_REP1_1: begin
-        STM_SETTINGS.REP[1][31:16] <= dout;
+      RD_STM_NUM_FOCI1: begin
+        STM_SETTINGS.NUM_FOCI[1] <= dout[7:0];
         STM_SETTINGS.UPDATE <= 1'b1;
         we <= 1'b0;
         addr <= params::ADDR_CTL_FLAG;
@@ -692,6 +704,8 @@ module controller (
     STM_SETTINGS.SOUND_SPEED[1] = 16'd0;
     STM_SETTINGS.REP[0] = 32'hFFFFFFFF;
     STM_SETTINGS.REP[1] = 32'hFFFFFFFF;
+    STM_SETTINGS.NUM_FOCI[0] = 1;
+    STM_SETTINGS.NUM_FOCI[1] = 1;
     SILENCER_SETTINGS.UPDATE = 1'b0;
     SILENCER_SETTINGS.MODE = params::SILENCER_MODE_FIXED_COMPLETION_STEPS;
     SILENCER_SETTINGS.UPDATE_RATE_INTENSITY = 16'd256;
