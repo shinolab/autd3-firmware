@@ -6,13 +6,13 @@ module stm_focus #(
     input wire START,
     input wire [12:0] IDX,
     stm_bus_if.out_focus_port STM_BUS,
-    input wire [31:0] SOUND_SPEED,
+    input wire [15:0] SOUND_SPEED,
     output wire [7:0] INTENSITY,
     output wire [7:0] PHASE,
     output wire DOUT_VALID
 );
 
-  localparam int CalcLatency = 2 + 2 + 2 + 10 + 66 + 1;
+  localparam int CalcLatency = 2 + 2 + 2 + 11 + 34 + 1;
 
   logic [511:0] data_out;
   logic dout_valid = 1'b0;
@@ -25,8 +25,8 @@ module stm_focus #(
   logic [35:0] dx2, dy2, dz2, dxy2, d2;
   logic [23:0] sqrt_dout;
 
-  logic [63:0] quo;
-  logic [31:0] _unused_rem;
+  logic [31:0] quo;
+  logic [15:0] _unused_rem;
 
   logic [$clog2(CalcLatency + DEPTH)-1:0] cnt = '0;
 
@@ -114,7 +114,7 @@ module stm_focus #(
       .S  (d2)
   );
 
-  sqrt_38 sqrt_38 (
+  sqrt_36 sqrt_36 (
       .aclk(CLK),
       .s_axis_cartesian_tvalid(1'b1),
       .s_axis_cartesian_tdata({4'd0, d2}),
@@ -122,8 +122,8 @@ module stm_focus #(
       .m_axis_dout_tdata(sqrt_dout)
   );
 
-  div_64_32 div_64_32_quo (
-      .s_axis_dividend_tdata({22'd0, sqrt_dout, 18'd0}),
+  div_32_16 div_32_16_quo (
+      .s_axis_dividend_tdata({sqrt_dout[17:0], 14'd0}),
       .s_axis_dividend_tvalid(1'b1),
       .s_axis_divisor_tdata(SOUND_SPEED),
       .s_axis_divisor_tvalid(1'b1),

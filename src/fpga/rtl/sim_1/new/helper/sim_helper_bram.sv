@@ -248,14 +248,10 @@ module sim_helper_bram #(
     bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_REP0_1, settings.REP[0][31:16]);
     bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_REP1_0, settings.REP[1][15:0]);
     bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_REP1_1, settings.REP[1][31:16]);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_SOUND_SPEED0_0,
-               settings.SOUND_SPEED[0][15:0]);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_SOUND_SPEED0_1,
-               settings.SOUND_SPEED[0][31:16]);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_SOUND_SPEED1_0,
-               settings.SOUND_SPEED[1][15:0]);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_SOUND_SPEED1_1,
-               settings.SOUND_SPEED[1][31:16]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_SOUND_SPEED0,
+               settings.SOUND_SPEED[0]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_STM_SOUND_SPEED1,
+               settings.SOUND_SPEED[1]);
   endtask
 
   task automatic write_silencer_settings(input settings::silencer_settings_t settings);

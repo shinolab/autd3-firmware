@@ -24,7 +24,7 @@ module stm #(
   logic segment = '0;
   logic [12:0] idx = '0;
   logic [12:0] cycle = '0;
-  logic [31:0] sound_speed = '0;
+  logic [15:0] sound_speed = '0;
 
   assign STM_BUS.MODE = mode;
   assign STM_BUS.SEGMENT = segment;

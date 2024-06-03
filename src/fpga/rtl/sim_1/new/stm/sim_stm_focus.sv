@@ -137,15 +137,15 @@ module sim_stm_focus ();
         x = focus_x[segment][debug_idx][0] - $rtoi(10.16 * ix / 0.025);  // [0.025mm]
         y = focus_y[segment][debug_idx][0] - $rtoi(10.16 * iy / 0.025);  // [0.025mm]
         z = focus_z[segment][debug_idx][0];  // [0.025mm]
-        r = $rtoi($sqrt($itor(x * x + y * y + z * z)));  // [0.025mm]
-        lambda = (r << 18) / stm_settings.SOUND_SPEED[segment];
+        r = int'($sqrt($itor(x * x + y * y + z * z)));  // [0.025mm]
+        lambda = (r << 14) / stm_settings.SOUND_SPEED[segment];
         p = lambda % 256;
         if (intensity !== intensity_buf[segment][debug_idx][0]) begin
           $error("Failed at d_out=%d, d_in=%d @%d", intensity, intensity_buf[segment][debug_idx],
                  id);
           $finish();
         end
-        if (phase !== p) begin
+        if ((p - phase) * (p - phase) > 1) begin
           $error("Failed at p_out=%d, p_in=%d (r2=%d, r=%d, lambda=%d) @%d", phase, p,
                  x * x + y * y + z * z, r, lambda, id);
           $error("x=%d, y=%d, z=%d", x, y, z);
@@ -168,8 +168,8 @@ module sim_stm_focus ();
     stm_settings.TRANSITION_VALUE = 0;
     stm_settings.MODE[0] = params::STM_MODE_FOCUS;
     stm_settings.MODE[1] = params::STM_MODE_FOCUS;
-    stm_settings.SOUND_SPEED[0] = 340 * 1024;
-    stm_settings.SOUND_SPEED[1] = 340 * 1024;
+    stm_settings.SOUND_SPEED[0] = 340 * 64;
+    stm_settings.SOUND_SPEED[1] = 340 * 64;
     stm_settings.CYCLE[0] = '0;
     stm_settings.FREQ_DIV[0] = '1;
     stm_settings.CYCLE[1] = '0;

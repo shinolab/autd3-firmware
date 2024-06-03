@@ -19,7 +19,7 @@ package settings;
     logic [12:0] CYCLE[2];
     logic [31:0] FREQ_DIV[2];
     logic [31:0] REP[2];
-    logic [31:0] SOUND_SPEED[2];
+    logic [15:0] SOUND_SPEED[2];
   } stm_settings_t;
 
   typedef struct {
