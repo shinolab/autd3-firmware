@@ -7,13 +7,13 @@ module stm_swapchain (
     input wire [7:0] TRANSITION_MODE,
     input wire [63:0] TRANSITION_VALUE,
     input wire [17:0] ECAT_SYNC_BASE_CNT,
-    input wire [15:0] CYCLE[params::NumSegment],
+    input wire [12:0] CYCLE[params::NumSegment],
     input wire [31:0] REP[params::NumSegment],
-    input wire [15:0] SYNC_IDX[params::NumSegment],
+    input wire [12:0] SYNC_IDX[params::NumSegment],
     input wire GPIO_IN[4],
     output wire STOP,
     output wire SEGMENT,
-    output wire [15:0] IDX[params::NumSegment]
+    output wire [12:0] IDX[params::NumSegment]
 );
 
   logic segment = 1'b0;
@@ -24,8 +24,8 @@ module stm_swapchain (
   logic [31:0] loop_cnt;
 
   logic idx_changed[params::NumSegment];
-  logic [15:0] idx_old[params::NumSegment];
-  logic [15:0] tic_idx[params::NumSegment];
+  logic [12:0] idx_old[params::NumSegment];
+  logic [12:0] tic_idx[params::NumSegment];
 
   logic signed [64:0] time_diff;
 

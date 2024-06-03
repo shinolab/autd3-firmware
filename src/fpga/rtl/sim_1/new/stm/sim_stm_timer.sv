@@ -22,7 +22,7 @@ module sim_stm_timer ();
 
   settings::stm_settings_t stm_settings;
   logic update_settings;
-  logic [15:0] idx[2];
+  logic [12:0] idx[2];
 
   stm_timer stm_timer (
       .CLK(CLK),
@@ -34,12 +34,12 @@ module sim_stm_timer ();
       .UPDATE_SETTINGS_OUT()
   );
 
-  logic [15:0] expect_idx[2];
+  logic [12:0] expect_idx[2];
   assign expect_idx[0] = ((sys_time - DivLatency * 2) / stm_settings.FREQ_DIV[0]) % (stm_settings.CYCLE[0] + 1);
   assign expect_idx[1] = ((sys_time - DivLatency * 2) / stm_settings.FREQ_DIV[1]) % (stm_settings.CYCLE[1] + 1);
 
   task automatic check_0();
-    logic [15:0] idx_old;
+    logic [12:0] idx_old;
     idx_old = idx[0];
     for (int i = 0; i < stm_settings.CYCLE[0] + 10; i++) begin
       while (1) begin
@@ -58,7 +58,7 @@ module sim_stm_timer ();
   endtask
 
   task automatic check_1();
-    logic [14:0] idx_old;
+    logic [12:0] idx_old;
     idx_old = idx[1];
     for (int i = 0; i < stm_settings.CYCLE[0] + 1; i++) begin
       while (1) begin
@@ -82,7 +82,7 @@ module sim_stm_timer ();
 
     update_settings = 1'b0;
     stm_settings.REQ_RD_SEGMENT = 1'b0;
-    stm_settings.CYCLE[0] = 65536 - 1;
+    stm_settings.CYCLE[0] = 8192 - 1;
     stm_settings.FREQ_DIV[0] = 8;
     stm_settings.CYCLE[1] = 1000 - 1;
     stm_settings.FREQ_DIV[1] = 8 * 3;

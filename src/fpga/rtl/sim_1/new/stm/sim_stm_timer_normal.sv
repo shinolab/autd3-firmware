@@ -21,7 +21,7 @@ module sim_stm_timer_normal ();
 
   settings::stm_settings_t stm_settings;
   logic update_settings;
-  logic [15:0] idx[2];
+  logic [12:0] idx[2];
 
   stm_timer stm_timer (
       .CLK(CLK),

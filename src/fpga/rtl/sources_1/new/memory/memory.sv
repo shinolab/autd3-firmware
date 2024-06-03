@@ -150,8 +150,8 @@ module memory (
   /////////////////////////////    STM   /////////////////////////////
   logic stm_en[NumSegment];
 
-  logic [15:0] stm_idx;
-  logic [63:0] stm_value[NumSegment];
+  logic [12:0] stm_idx;
+  logic [512:0] stm_value[NumSegment];
 
   logic stm_mem_wr_segment;
   logic [3:0] stm_mem_wr_page;

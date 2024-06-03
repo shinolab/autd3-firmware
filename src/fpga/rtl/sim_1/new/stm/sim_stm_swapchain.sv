@@ -30,9 +30,9 @@ module sim_stm_swapchain ();
   logic [63:0] transition_value;
   logic gpio_in[4];
   logic [31:0] rep[2];
-  logic [15:0] cycle[2];
-  logic [15:0] sync_idx[2];
-  logic [15:0] idx[2];
+  logic [12:0] cycle[2];
+  logic [12:0] sync_idx[2];
+  logic [12:0] idx[2];
   logic segment;
   logic stop;
 

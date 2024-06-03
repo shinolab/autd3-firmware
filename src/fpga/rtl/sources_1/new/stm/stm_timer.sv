@@ -3,9 +3,9 @@ module stm_timer (
     input wire CLK,
     input wire UPDATE_SETTINGS_IN,
     input wire [63:0] SYS_TIME,
-    input wire [15:0] CYCLE[params::NumSegment],
+    input wire [12:0] CYCLE[params::NumSegment],
     input wire [31:0] FREQ_DIV[params::NumSegment],
-    output wire [15:0] IDX[params::NumSegment],
+    output wire [12:0] IDX[params::NumSegment],
     output wire UPDATE_SETTINGS_OUT
 );
 
@@ -15,7 +15,7 @@ module stm_timer (
   logic [$clog2(DivLatency*2)-1:0] cnt = '0;
 
   logic [31:0] freq_div[params::NumSegment];
-  logic [16:0] cycle[params::NumSegment];
+  logic [13:0] cycle[params::NumSegment];
 
   assign UPDATE_SETTINGS_OUT = update_settings;
 
@@ -24,7 +24,7 @@ module stm_timer (
     logic [31:0] _unused_rem;
     logic [63:0] _unused_quo;
     logic [31:0] rem;
-    assign IDX[i] = rem[15:0];
+    assign IDX[i] = rem[12:0];
     div_64_32 div_64_32_quo (
         .s_axis_dividend_tdata(SYS_TIME),
         .s_axis_dividend_tvalid(1'b1),
@@ -37,7 +37,7 @@ module stm_timer (
     div_64_32 div_64_32_rem (
         .s_axis_dividend_tdata(quo),
         .s_axis_dividend_tvalid(1'b1),
-        .s_axis_divisor_tdata({15'd0, cycle[i]}),
+        .s_axis_divisor_tdata({18'd0, cycle[i]}),
         .s_axis_divisor_tvalid(1'b1),
         .aclk(CLK),
         .m_axis_dout_tdata({_unused_quo, rem}),

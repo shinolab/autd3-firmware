@@ -15,11 +15,11 @@ module sim_stm_gain ();
 
   logic [7:0] intensity;
   logic [7:0] phase;
-  logic [15:0] debug_idx;
+  logic [12:0] debug_idx;
   logic debug_segment;
   logic dout_valid;
 
-  logic [15:0] cycle_buf[2];
+  logic [13:0] cycle_buf[2];
   logic [31:0] freq_div_buf[2];
   logic [7:0] intensity_buf[2][SIZE][DEPTH];
   logic [7:0] phase_buf[2][SIZE][DEPTH];

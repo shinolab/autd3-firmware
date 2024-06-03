@@ -360,12 +360,12 @@ module controller (
       end
       REQ_STM_FREQ_DIV0_1_RD_STM_CYCLE0: begin
         addr <= params::ADDR_STM_FREQ_DIV0_1;
-        STM_SETTINGS.CYCLE[0] <= dout;
+        STM_SETTINGS.CYCLE[0] <= dout[12:0];
         state <= REQ_STM_FREQ_DIV1_0_RD_STM_CYCLE1;
       end
       REQ_STM_FREQ_DIV1_0_RD_STM_CYCLE1: begin
         addr <= params::ADDR_STM_FREQ_DIV1_0;
-        STM_SETTINGS.CYCLE[1] <= dout;
+        STM_SETTINGS.CYCLE[1] <= dout[12:0];
         state <= REQ_STM_FREQ_DIV1_1_RD_STM_FREQ_DIV0_0;
       end
       REQ_STM_FREQ_DIV1_1_RD_STM_FREQ_DIV0_0: begin
@@ -696,8 +696,8 @@ module controller (
     STM_SETTINGS.TRANSITION_VALUE = 64'd0;
     STM_SETTINGS.MODE[0] = params::STM_MODE_GAIN;
     STM_SETTINGS.MODE[1] = params::STM_MODE_GAIN;
-    STM_SETTINGS.CYCLE[0] = 16'd0;
-    STM_SETTINGS.CYCLE[1] = 16'd0;
+    STM_SETTINGS.CYCLE[0] = 13'd0;
+    STM_SETTINGS.CYCLE[1] = 13'd0;
     STM_SETTINGS.FREQ_DIV[0] = 32'hFFFFFFFF;
     STM_SETTINGS.FREQ_DIV[1] = 32'hFFFFFFFF;
     STM_SETTINGS.SOUND_SPEED[0] = 32'd0;

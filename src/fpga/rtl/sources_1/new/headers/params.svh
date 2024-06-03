@@ -5,7 +5,7 @@ package params;
 
   localparam int GainSTMSize = 1024;
   localparam int STMWrAddrWidth = $clog2(GainSTMSize * 256);
-  localparam int STMRdAddrWidth = $clog2(GainSTMSize * 64);
+  localparam int STMRdAddrWidth = $clog2(GainSTMSize * 8);
 
   localparam bit [7:0] VersionNumMajor = 8'h91;
   localparam bit [7:0] VersionNumMinor = 8'h00;

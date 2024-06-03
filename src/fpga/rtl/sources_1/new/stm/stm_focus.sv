@@ -4,7 +4,7 @@ module stm_focus #(
 ) (
     input wire CLK,
     input wire START,
-    input wire [15:0] IDX,
+    input wire [12:0] IDX,
     stm_bus_if.out_focus_port STM_BUS,
     input wire [31:0] SOUND_SPEED,
     output wire [7:0] INTENSITY,
@@ -14,8 +14,7 @@ module stm_focus #(
 
   localparam int CalcLatency = 2 + 2 + 2 + 10 + 66 + 1;
 
-  logic [15:0] addr = '0;
-  logic [63:0] data_out;
+  logic [511:0] data_out;
   logic dout_valid = 1'b0;
 
   wire signed [17:0] focus_x = data_out[17:0];
