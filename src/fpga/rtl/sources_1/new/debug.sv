@@ -11,9 +11,9 @@ module debug #(
     input wire SYNC,
     input wire STM_SEGMENT,
     input wire MOD_SEGMENT,
-    input wire [15:0] STM_IDX,
+    input wire [12:0] STM_IDX,
     input wire [14:0] MOD_IDX,
-    input wire [15:0] STM_CYCLE,
+    input wire [12:0] STM_CYCLE,
     output wire GPIO_OUT[4]
 );
 
@@ -55,7 +55,7 @@ module debug #(
         debug_signal = STM_SEGMENT;
       end
       params::DBG_STM_IDX: begin
-        debug_signal = STM_IDX == value;
+        debug_signal = STM_IDX == value[12:0];
       end
       params::DBG_IS_STM_MODE: begin
         debug_signal = STM_CYCLE != '0;

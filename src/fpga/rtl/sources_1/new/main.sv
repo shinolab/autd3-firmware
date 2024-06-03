@@ -51,9 +51,9 @@ module main #(
   logic [7:0] phase_e;
   logic dout_valid_e;
 
-  logic [15:0] stm_idx;
+  logic [12:0] stm_idx;
   logic stm_segment;
-  logic [15:0] stm_cycle;
+  logic [12:0] stm_cycle;
   logic mod_segment;
   logic [14:0] mod_idx;
   logic gpio_in_soft[4];
