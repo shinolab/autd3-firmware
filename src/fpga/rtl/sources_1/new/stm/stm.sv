@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
 module stm #(
-    parameter int DEPTH = 249
+    parameter int DEPTH = 249,
+    parameter string MODE = "NearestEven"
 ) (
     input wire CLK,
     input wire [63:0] SYS_TIME,
@@ -89,7 +90,8 @@ module stm #(
   );
 
   stm_focus #(
-      .DEPTH(DEPTH)
+      .DEPTH(DEPTH),
+      .MODE (MODE)
   ) stm_focus (
       .CLK(CLK),
       .START(start),

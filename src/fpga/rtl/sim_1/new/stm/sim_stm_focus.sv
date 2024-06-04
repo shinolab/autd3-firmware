@@ -62,7 +62,8 @@ module sim_stm_focus ();
   );
 
   stm #(
-      .DEPTH(DEPTH)
+      .DEPTH(DEPTH),
+      .MODE ("TRUNC")
   ) stm (
       .CLK(CLK),
       .SYS_TIME(SYS_TIME),
@@ -109,11 +110,15 @@ module sim_stm_focus ();
     abs_diff = (abs < 128) ? abs : 255 - abs;
   endfunction
 
+  logic [7:0] sin_table [  256];
+  logic [7:0] atan_table[16384];
+
   task automatic check(input logic segment);
     automatic int idx, ix, iy;
     automatic logic signed [63:0] x, y, z;
     automatic logic [63:0] r, lambda;
-    automatic int p;
+    automatic logic [7:0] p, phase_expect;
+    automatic logic [7:0] cos, sin;
 
     while (1) begin
       @(posedge CLK);
@@ -139,18 +144,22 @@ module sim_stm_focus ();
         x = focus_x[segment][debug_idx][0] - int'(10.16 * ix / 0.025);  // [0.025mm]
         y = focus_y[segment][debug_idx][0] - int'(10.16 * iy / 0.025);  // [0.025mm]
         z = focus_z[segment][debug_idx][0];  // [0.025mm]
-        r = int'($sqrt($itor(x * x + y * y + z * z)));  // [0.025mm]
+        r = $rtoi($sqrt($itor(x * x + y * y + z * z)));  // [0.025mm]
         lambda = (r << 14) / stm_settings.SOUND_SPEED[segment];
         p = lambda % 256;
+        sin = sin_table[p];
+        cos = sin_table[(p+64)%256];
+        phase_expect = atan_table[{sin[7:1], cos[7:1]}];
         if (intensity !== intensity_buf[segment][debug_idx][0]) begin
           $error("Failed at d_out=%d, d_in=%d @%d", intensity, intensity_buf[segment][debug_idx],
                  id);
           $finish();
         end
-        if (abs_diff(p, phase) > 1) begin
-          $error("Failed at p_out=%d, p_in=%d (r2=%d, r=%d, lambda=%d) @%d", phase, p,
+        if (abs_diff(phase_expect, phase) > 1) begin
+          $error("Failed at p_out=%d, p_in=%d (r2=%d, r=%d, lambda=%d) @%d", phase, phase_expect,
                  x * x + y * y + z * z, r, lambda, idx);
           $error("x=%d, y=%d, z=%d", x, y, z);
+          $error("cos=%d, sin=%d", cos, sin);
           $finish();
         end
         @(posedge CLK);
@@ -159,7 +168,11 @@ module sim_stm_focus ();
     end
   endtask
 
+
   initial begin
+    $readmemh("sin.txt", sin_table);
+    $readmemh("atan.txt", atan_table);
+
     sim_helper_random.init();
 
     cycle_buf[0] = SIZE;

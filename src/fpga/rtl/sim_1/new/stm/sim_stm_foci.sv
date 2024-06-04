@@ -63,7 +63,8 @@ module sim_stm_foci ();
   );
 
   stm #(
-      .DEPTH(DEPTH)
+      .DEPTH(DEPTH),
+      .MODE ("TRUNC")
   ) stm (
       .CLK(CLK),
       .SYS_TIME(SYS_TIME),
@@ -110,11 +111,16 @@ module sim_stm_foci ();
     abs_diff = (abs < 128) ? abs : 255 - abs;
   endfunction
 
+  logic [7:0] sin_table [  256];
+  logic [7:0] atan_table[16384];
+
   task automatic check(input logic segment);
     automatic int idx, ix, iy;
     automatic logic signed [63:0] x, y, z;
     automatic logic [63:0] r, lambda;
-    automatic int p;
+    automatic logic [7:0] p, phase_expect;
+    automatic logic [10:0] cos, sin;
+    automatic logic [7:0] cos_buf[NumFoci], sin_buf[NumFoci];
 
     while (1) begin
       @(posedge CLK);
@@ -137,37 +143,54 @@ module sim_stm_foci ();
         if ((iy === 1) && (ix === 1 || ix === 2 || ix === 16)) begin
           continue;
         end
-        idx++;
-        p = 0;
         for (int k = 0; k < NumFoci; k++) begin
           x = focus_x[segment][debug_idx][k] - int'(10.16 * ix / 0.025);  // [0.025mm]
           y = focus_y[segment][debug_idx][k] - int'(10.16 * iy / 0.025);  // [0.025mm]
           z = focus_z[segment][debug_idx][k];  // [0.025mm]
-          r = int'($sqrt($itor(x * x + y * y + z * z)));  // [0.025mm]
+          r = $rtoi($sqrt($itor(x * x + y * y + z * z)));  // [0.025mm]
           lambda = (r << 14) / stm_settings.SOUND_SPEED[segment];
-          p += lambda % 256;
+          p = lambda % 256;
           if (k !== 0) begin
             p += intensity_and_offsets_buf[segment][debug_idx][k];
           end
+          sin_buf[k] = sin_table[p%256];
+          cos_buf[k] = sin_table[(p+64)%256];
         end
-        p = p % 256;
+        cos = 0;
+        sin = 0;
+        for (int k = 0; k < NumFoci; k++) begin
+          cos += cos_buf[k];
+          sin += sin_buf[k];
+        end
+        sin /= NumFoci;
+        cos /= NumFoci;
+        phase_expect = atan_table[{sin[7:1], cos[7:1]}];
         if (intensity !== intensity_and_offsets_buf[segment][debug_idx][0]) begin
           $error("Failed at d_out=%d, d_in=%d @%d", intensity,
                  intensity_and_offsets_buf[segment][debug_idx][0], id);
           $finish();
         end
-        if (abs_diff(p, phase) > NumFoci) begin
-          $error("Failed at p_out=%d, p_in=%d (r2=%d, r=%d, lambda=%d) @%d", phase, p,
-                 x * x + y * y + z * z, r, lambda, id);
-          $error("x=%d, y=%d, z=%d", x, y, z);
+        if (abs_diff(phase_expect, phase) > 1) begin
+          $error("Failed at p_out=%d, p_in=%d (r2=%d, r=%d, lambda=%d) @%d", phase, phase_expect,
+                 x * x + y * y + z * z, r, lambda, idx);
+          $display("x=%d, y=%d, z=%d", x, y, z);
+          $display("cos=%d, sin=%d", cos, sin);
+          for (int k = 0; k < NumFoci; k++) begin
+            $display("  cos[%d]=%d, sin[%d]=%d", k, cos_buf[k], k, sin_buf[k]);
+          end
           $finish();
         end
         @(posedge CLK);
+        idx++;
       end
     end
   endtask
 
+
   initial begin
+    $readmemh("sin.txt", sin_table);
+    $readmemh("atan.txt", atan_table);
+
     sim_helper_random.init();
 
     cycle_buf[0] = SIZE;
@@ -217,7 +240,7 @@ module sim_stm_foci ();
     join
     check(1);
 
-    $display("OK! sim_stm_focus");
+    $display("OK! sim_stm_foci");
     $finish();
   end
 

@@ -102,6 +102,8 @@ set file_list [glob -nocomplain -join rtl/sources_1/ip/* *.xci]
 foreach xci_file_path $file_list {
   import_ip $xci_file_path
 }
+set_property used_in_implementation false [get_files [file join $project_directory "autd3-fpga.srcs/sources_1/ip/sqrt_36_trunc/sqrt_36_trunc.xci"]]
+set_property used_in_synthesis false [get_files [file join $project_directory "autd3-fpga.srcs/sources_1/ip/sqrt_36_trunc/sqrt_36_trunc.xci"]]
 
 proc add_sim_file {fileset_name library_name file_name} {
     set file    [file normalize $file_name]
@@ -121,6 +123,9 @@ foreach sim_file_path $file_list {
 }
 set_property -name {xsim.compile.tcl.pre} -value [file join $project_directory "rtl/sim_1/new/rand.tcl"] -objects [get_filesets sim_1]
 set_property -name {xsim.simulate.runtime} -value {all} -objects [get_filesets sim_1]
+
+add_files -fileset sim_1 -norecurse [file join $project_directory "rtl/sim_1/new/stm/atan.txt"]
+add_files -fileset sim_1 -norecurse [file join $project_directory "rtl/sim_1/new/stm/sin.txt"]
 
 set_msg_config -id {Synth 8-7080} -new_severity {ADVISORY}
 set_msg_config -id {Synth 8-7129} -new_severity {ADVISORY}

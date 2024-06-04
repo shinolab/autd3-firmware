@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
 module stm_focus #(
-    parameter int DEPTH = 249
+    parameter int DEPTH = 249,
+    parameter string MODE = "NearestEven"
 ) (
     input wire CLK,
     input wire START,
@@ -20,7 +21,7 @@ module stm_focus #(
 
   logic signed [15:0] trans_x, trans_y;
 
-  logic [$clog2(CalcLatency + params::NumFociMax + DEPTH)-1:0] cnt = '0;
+  logic [$clog2(CalcLatency + 18 + 4 + DEPTH)-1:0] cnt = '0;
 
   typedef enum logic [2:0] {
     WAITING,
@@ -39,8 +40,8 @@ module stm_focus #(
       .spo({trans_x, trans_y})
   );
 
-  logic [7:0] phase[params::NumFociMax];
-  logic [7:0] intensity_or_offsets[params::NumFociMax];
+  logic [7:0] cos[params::NumFociMax];
+  logic [7:0] sin[params::NumFociMax];
   for (genvar i = 0; i < params::NumFociMax; i++) begin : gen_focus
     wire signed [17:0] focus_x = data_out[64*i+17:64*i+0];
     wire signed [17:0] focus_y = data_out[64*i+35:64*i+18];
@@ -123,13 +124,25 @@ module stm_focus #(
         .S  (d2)
     );
 
-    sqrt_36 sqrt_36 (
-        .aclk(CLK),
-        .s_axis_cartesian_tvalid(1'b1),
-        .s_axis_cartesian_tdata({4'd0, d2}),
-        .m_axis_dout_tvalid(),
-        .m_axis_dout_tdata(sqrt_dout)
-    );
+    if (MODE == "NearestEven") begin
+      sqrt_36 sqrt_36 (
+          .aclk(CLK),
+          .s_axis_cartesian_tvalid(1'b1),
+          .s_axis_cartesian_tdata({4'd0, d2}),
+          .m_axis_dout_tvalid(),
+          .m_axis_dout_tdata(sqrt_dout)
+      );
+    end else if (MODE == "TRUNC") begin
+      logic [23:0] sqrt_dout_buf;
+      sqrt_36_trunc sqrt_36_trunc (
+          .aclk(CLK),
+          .s_axis_cartesian_tvalid(1'b1),
+          .s_axis_cartesian_tdata({4'd0, d2}),
+          .m_axis_dout_tvalid(),
+          .m_axis_dout_tdata(sqrt_dout_buf)
+      );
+      always_ff @(posedge CLK) sqrt_dout <= sqrt_dout_buf;
+    end
 
     div_32_16 div_32_16_quo (
         .s_axis_dividend_tdata({sqrt_dout[17:0], 14'd0}),
@@ -141,14 +154,58 @@ module stm_focus #(
         .m_axis_dout_tvalid()
     );
 
-    assign phase[i] = i < NUM_FOCI ? quo[7:0] : 8'h0;
-    assign intensity_or_offsets[i] = i < NUM_FOCI ? data_out[64*i+61:64*i+54] : 8'h0;
+    wire [7:0] phase = i == 0 ? quo[7:0] : quo[7:0] + data_out[64*i+61:64*i+54];
+    logic [7:0] sin_out, cos_out;
+    sin_table sin_table (
+        .a(phase),
+        .d('0),
+        .dpra(phase + 8'd64),
+        .clk(CLK),
+        .we(1'b0),
+        .spo(sin_out),
+        .dpo(cos_out)
+    );
+    assign cos[i] = i < NUM_FOCI ? cos_out : 8'h0;
+    assign sin[i] = i < NUM_FOCI ? sin_out : 8'h0;
   end
 
-  logic [7:0] phase_01, phase_23, phase_45, phase_67;
-  logic [7:0] phase_0123, phase_4567;
-  assign INTENSITY = intensity_or_offsets[0];
-  assign PHASE = phase_0123 + phase_4567;
+  logic [8:0] sin_01, sin_23, sin_45, sin_67;
+  logic [8:0] cos_01, cos_23, cos_45, cos_67;
+  logic [9:0] sin_0123, sin_4567;
+  logic [9:0] cos_0123, cos_4567;
+  logic [10:0] sin_acc, cos_acc;
+  logic [7:0] sin_ave, cos_ave;
+  assign sin_acc = sin_0123 + sin_4567;
+  assign cos_acc = cos_0123 + cos_4567;
+
+  logic [7:0] _sin_quo_unuse, _cos_quo_unuse;
+  logic [7:0] _sin_rem_unuse, _cos_rem_unuse;
+  div_16_8 div_16_8_sin (
+      .s_axis_dividend_tdata({5'd0, sin_acc}),
+      .s_axis_dividend_tvalid(1'b1),
+      .s_axis_divisor_tdata(NUM_FOCI),
+      .s_axis_divisor_tvalid(1'b1),
+      .aclk(CLK),
+      .m_axis_dout_tdata({_sin_quo_unuse, sin_ave, _sin_rem_unuse}),
+      .m_axis_dout_tvalid()
+  );
+  div_16_8 div_16_8_cos (
+      .s_axis_dividend_tdata({5'd0, cos_acc}),
+      .s_axis_dividend_tvalid(1'b1),
+      .s_axis_divisor_tdata(NUM_FOCI),
+      .s_axis_divisor_tvalid(1'b1),
+      .aclk(CLK),
+      .m_axis_dout_tdata({_cos_quo_unuse, cos_ave, _cos_rem_unuse}),
+      .m_axis_dout_tvalid()
+  );
+
+  BRAM_ATAN bram_atan (
+      .clka (CLK),
+      .addra({sin_ave[7:1], cos_ave[7:1]}),
+      .douta(PHASE)
+  );
+
+  assign INTENSITY  = data_out[61:54];
   assign DOUT_VALID = dout_valid;
 
   always_ff @(posedge CLK) begin
@@ -166,20 +223,26 @@ module stm_focus #(
       end
       CALC: begin
         cnt <= cnt + 1;
-        dout_valid <= cnt > CalcLatency + 2;
-        state <= (cnt == CalcLatency + 2 + DEPTH - 1) ? WAITING : state;
+        dout_valid <= cnt > CalcLatency + 18 + 4;
+        state <= (cnt == CalcLatency + 18 + 4 + DEPTH - 1) ? WAITING : state;
       end
       default: state <= WAITING;
     endcase
   end
 
   always_ff @(posedge CLK) begin
-    phase_01   <= phase[0] + phase[1] + intensity_or_offsets[1];
-    phase_23   <= phase[2] + intensity_or_offsets[2] + phase[3] + intensity_or_offsets[3];
-    phase_45   <= phase[4] + intensity_or_offsets[4] + phase[5] + intensity_or_offsets[5];
-    phase_67   <= phase[6] + intensity_or_offsets[6] + phase[7] + intensity_or_offsets[7];
-    phase_0123 <= phase_01 + phase_23;
-    phase_4567 <= phase_45 + phase_67;
+    sin_01   <= sin[0] + sin[1];
+    sin_23   <= sin[2] + sin[3];
+    sin_45   <= sin[4] + sin[5];
+    sin_67   <= sin[6] + sin[7];
+    cos_01   <= cos[0] + cos[1];
+    cos_23   <= cos[2] + cos[3];
+    cos_45   <= cos[4] + cos[5];
+    cos_67   <= cos[6] + cos[7];
+    sin_0123 <= sin_01 + sin_23;
+    sin_4567 <= sin_45 + sin_67;
+    cos_0123 <= cos_01 + cos_23;
+    cos_4567 <= cos_45 + cos_67;
   end
 
 endmodule
