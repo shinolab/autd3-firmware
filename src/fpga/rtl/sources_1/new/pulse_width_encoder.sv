@@ -15,7 +15,7 @@ module pulse_width_encoder #(
 
   localparam int Latency = 1;
 
-  logic [15:0] addr;
+  logic [14:0] addr;
   logic [ 7:0] dout;
 
   logic full_width_in, full_width_out;
@@ -62,12 +62,12 @@ module pulse_width_encoder #(
         dout_valid <= 1'b0;
         if (DIN_VALID) begin
           cnt   <= 0;
-          addr  <= INTENSITY_IN;
+          addr  <= INTENSITY_IN[15:1];
           state <= RUN;
         end
       end
       RUN: begin
-        addr <= INTENSITY_IN;
+        addr <= INTENSITY_IN[15:1];
         cnt  <= cnt + 1;
         if (cnt > Latency) begin
           dout_valid <= 1'b1;

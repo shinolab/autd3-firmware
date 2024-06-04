@@ -17,7 +17,7 @@ module sim_pulse_width_encoder ();
   logic CLK;
   logic locked;
   sim_helper_clk sim_helper_clk (
-      .MRCC_25P6M(),
+      .MRCC_25P6M(MRCC_25P6M),
       .CLK(CLK),
       .CLOCK_BUS(clock_bus.out_port),
       .LOCKED(locked),
@@ -44,7 +44,7 @@ module sim_pulse_width_encoder ();
 
   logic [15:0] intensity_buf[DEPTH];
   logic [7:0] phase_buf[DEPTH];
-  logic [7:0] duty_table[65536];
+  logic [7:0] duty_table[32768];
 
   pulse_width_encoder #(
       .DEPTH(DEPTH)
@@ -86,7 +86,7 @@ module sim_pulse_width_encoder ();
 
     for (int i = 0; i < DEPTH; i++) begin
       expect_pulse_width = intensity_buf[i] >= pulse_width_encoder_settings.FULL_WIDTH_START ? 256 :
-          int'(($asin($itor(intensity_buf[i]) / 255.0 / 255.0) * 2.0 / `M_PI * 256.0));
+          int'(($asin($itor(intensity_buf[i] >> 1) / 32512.0) * 2.0 / `M_PI * 256.0));
       if (pulse_width_out !== expect_pulse_width) begin
         $error("At %d: i=%d, d=%d, d_m=%d", i, intensity_buf[i], expect_pulse_width,
                pulse_width_out);
@@ -113,7 +113,7 @@ module sim_pulse_width_encoder ();
     for (int i = 0; i < DEPTH; i++) begin
       expect_pulse_width = {
         intensity_buf[i] >= pulse_width_encoder_settings.FULL_WIDTH_START,
-        duty_table[intensity_buf[i]]
+        duty_table[intensity_buf[i]>>1]
       };
       if (pulse_width_out !== expect_pulse_width) begin
         $error("At %d: i=%d, d=%d, d_m=%d", i, intensity_buf[i], expect_pulse_width,
@@ -134,7 +134,7 @@ module sim_pulse_width_encoder ();
   initial begin
     din_valid = 0;
     sim_helper_random.init();
-    pulse_width_encoder_settings.FULL_WIDTH_START = 255 * 255;
+    pulse_width_encoder_settings.FULL_WIDTH_START = 65024;
 
     @(posedge locked);
 
@@ -152,7 +152,7 @@ module sim_pulse_width_encoder ();
     end
 
     // config bram
-    for (int i = 0; i < 65536; i++) begin
+    for (int i = 0; i < 32768; i++) begin
       duty_table[i] = sim_helper_random.range(8'hFF, 0);
     end
     pulse_width_encoder_settings.FULL_WIDTH_START = sim_helper_random.range(16'hFFFF, 0);

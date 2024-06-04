@@ -98,7 +98,7 @@ silencer_params = Params(
 pwe_params = Params(
     "PULSE_WIDTH_ENCODER",
     [
-        Param("PULSE_WIDTH_ENCODER_FULL_WIDTH_START", 16, "FULL_WIDTH_START", 65025),
+        Param("PULSE_WIDTH_ENCODER_FULL_WIDTH_START", 16, "FULL_WIDTH_START", 65024),
         Param("PULSE_WIDTH_ENCODER_DUMMY0", -1, "", 0),
         Param("PULSE_WIDTH_ENCODER_DUMMY1", -1, "", 0),
     ],

@@ -73,9 +73,8 @@ module memory (
 
   ///////////////////////////// Duty table ////////////////////////////
   logic duty_table_en;
-  logic duty_table_wr_page;
 
-  logic [15:0] duty_table_idx;
+  logic [14:0] duty_table_idx;
   logic [7:0] duty_table_dout;
 
   assign duty_table_en = (select == BRAM_SELECT_DUTY_TABLE) & en;
@@ -91,7 +90,7 @@ module memory (
       .clkb (bus_clk),
       .enb  (duty_table_en),
       .web  (we),
-      .addrb({duty_table_wr_page, addr[13:0]}),
+      .addrb(addr[13:0]),
       .dinb (data_in),
       .doutb()
   );
@@ -159,7 +158,6 @@ module memory (
         ADDR_MOD_MEM_WR_SEGMENT: mod_mem_wr_segment <= data_in[0];
         ADDR_STM_MEM_WR_SEGMENT: stm_mem_wr_segment <= data_in[0];
         ADDR_STM_MEM_WR_PAGE: stm_mem_wr_page <= data_in[3:0];
-        ADDR_PULSE_WIDTH_ENCODER_TABLE_WR_PAGE: duty_table_wr_page <= data_in[0];
         default: begin
         end
       endcase
