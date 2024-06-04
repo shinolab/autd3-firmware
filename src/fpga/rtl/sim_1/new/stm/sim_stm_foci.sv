@@ -32,7 +32,6 @@ module sim_stm_foci ();
   modulation_bus_if mod_bus ();
   stm_bus_if stm_bus ();
   duty_table_bus_if duty_table_bus ();
-  filter_bus_if filter_bus ();
 
   memory memory (
       .CLK(CLK),
@@ -42,8 +41,7 @@ module sim_stm_foci ();
       .CNT_BUS(cnt_bus.in_port),
       .MOD_BUS(mod_bus.in_port),
       .STM_BUS(stm_bus.in_port),
-      .DUTY_TABLE_BUS(duty_table_bus.in_port),
-      .FILTER_BUS(filter_bus.in_port)
+      .DUTY_TABLE_BUS(duty_table_bus.in_port)
   );
 
   sim_helper_clk sim_helper_clk (
@@ -106,7 +104,7 @@ module sim_stm_foci ();
       end
     end
   endtask
-  
+
   function automatic int abs_diff(input int x, input int y);
     automatic int abs = (x < y) ? y - x : x - y;
     abs_diff = (abs < 128) ? abs : 255 - abs;

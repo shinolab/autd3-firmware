@@ -13,7 +13,6 @@ module sim_pulse_width_encoder ();
   modulation_bus_if mod_bus ();
   stm_bus_if stm_bus ();
   duty_table_bus_if duty_table_bus ();
-  filter_bus_if filter_bus ();
 
   logic CLK;
   logic locked;
@@ -33,8 +32,7 @@ module sim_pulse_width_encoder ();
       .CNT_BUS(cnt_bus.in_port),
       .MOD_BUS(mod_bus.in_port),
       .STM_BUS(stm_bus.in_port),
-      .DUTY_TABLE_BUS(duty_table_bus.in_port),
-      .FILTER_BUS(filter_bus.in_port)
+      .DUTY_TABLE_BUS(duty_table_bus.in_port)
   );
 
   settings::pulse_width_encoder_settings_t pulse_width_encoder_settings;

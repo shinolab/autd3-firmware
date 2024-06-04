@@ -18,7 +18,6 @@ module sim_mod_modulation ();
   modulation_bus_if mod_bus ();
   stm_bus_if stm_bus ();
   duty_table_bus_if duty_table_bus ();
-  filter_bus_if filter_bus ();
 
   memory memory (
       .CLK(CLK),
@@ -28,8 +27,7 @@ module sim_mod_modulation ();
       .CNT_BUS(cnt_bus.in_port),
       .MOD_BUS(mod_bus.in_port),
       .STM_BUS(stm_bus.in_port),
-      .DUTY_TABLE_BUS(duty_table_bus.in_port),
-      .FILTER_BUS(filter_bus.in_port)
+      .DUTY_TABLE_BUS(duty_table_bus.in_port)
   );
 
   sim_helper_clk sim_helper_clk (
@@ -62,7 +60,6 @@ module sim_mod_modulation ();
       .PHASE_OUT(phase_out),
       .DOUT_VALID(dout_valid),
       .MOD_BUS(mod_bus.out_port),
-      .FILTER_BUS(filter_bus_if.out_port),
       .DEBUG_IDX(idx_debug),
       .DEBUG_SEGMENT(segment_debug),
       .DEBUG_STOP(stop_debug)
@@ -73,7 +70,6 @@ module sim_mod_modulation ();
   logic [7:0] mod_buf[2][SIZE];
   logic [7:0] intensity_buf[DEPTH];
   logic [7:0] phase_buf[DEPTH];
-  logic [7:0] phase_offset_buf[DEPTH];
 
   task automatic update(input logic req_segment, input logic [31:0] rep);
     @(posedge CLK);
@@ -128,7 +124,7 @@ module sim_mod_modulation ();
                expect_intensity, intensity_out);
         $finish();
       end
-      expect_phase = phase_buf[i] + phase_offset_buf[i] + 0;
+      expect_phase = phase_buf[i];
       if (phase_out !== expect_phase) begin
         $error("Phase[%d] at %d: %d !== %d", segment_debug, i, expect_phase, phase_out);
         $finish();
@@ -166,10 +162,6 @@ module sim_mod_modulation ();
       end
       sim_helper_bram.write_mod(segment, mod_buf[segment], cycle_buf[segment]);
     end
-    for (int i = 0; i < DEPTH; i++) begin
-      phase_offset_buf[i] = sim_helper_random.range(8'hFF, 0);
-    end
-    sim_helper_bram.write_phase_filter(phase_offset_buf);
 
     update(0, 32'hFFFFFFFF);
     while (1'b1) begin

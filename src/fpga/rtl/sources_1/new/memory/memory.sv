@@ -7,8 +7,7 @@ module memory (
     cnt_bus_if.in_port CNT_BUS,
     modulation_bus_if.in_port MOD_BUS,
     stm_bus_if.in_port STM_BUS,
-    duty_table_bus_if.in_port DUTY_TABLE_BUS,
-    filter_bus_if.in_port FILTER_BUS
+    duty_table_bus_if.in_port DUTY_TABLE_BUS
 );
 
   import params::*;
@@ -51,27 +50,6 @@ module memory (
       .doutb(CNT_BUS.DOUT)
   );
   ///////////////////////////// Controller ////////////////////////////
-
-  /////////////////////////////// Filter //////////////////////////////
-  logic filter_en;
-
-  assign filter_en = (cnt_sel == BRAM_CNT_SELECT_FILTER) & (select == BRAM_SELECT_CONTROLLER) & en;
-
-  BRAM_FILTER filter_bram (
-      .clka (bus_clk),
-      .ena  (filter_en),
-      .wea  (we),
-      .addra(addr[6:0]),
-      .dina (data_in),
-      .douta(),
-      .clkb (CLK),
-      .web  ('0),
-      .addrb(FILTER_BUS.ADDR),
-      .dinb ('0),
-      .doutb(FILTER_BUS.DOUT)
-  );
-  /////////////////////////////// Filter //////////////////////////////
-
 
   /////////////////////////////// Clock ///////////////////////////////
   logic clock_en;

@@ -112,16 +112,6 @@ module sim_helper_bram #(
     bram_write(params::BRAM_SELECT_CONTROLLER, {2'b00, params::BRAM_CNT_SELECT_MAIN, addr}, data);
   endtask
 
-  task automatic write_phase_filter(logic [7:0] data[DEPTH]);
-    automatic int i;
-    for (i = 0; i < DEPTH / 2; i++) begin
-      bram_write(params::BRAM_SELECT_CONTROLLER, {
-                 2'b00, params::BRAM_CNT_SELECT_FILTER, 1'b0, i[6:0]}, {data[2*i+1], data[2*i]});
-    end
-    bram_write(params::BRAM_SELECT_CONTROLLER, {2'b00, params::BRAM_CNT_SELECT_FILTER, 1'b0, i[6:0]
-               }, {8'h00, data[DEPTH-1]});
-  endtask
-
   task automatic write_duty_table(input logic [7:0] value[65536]);
     logic page = 0;
     bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_PULSE_WIDTH_ENCODER_TABLE_WR_PAGE, {

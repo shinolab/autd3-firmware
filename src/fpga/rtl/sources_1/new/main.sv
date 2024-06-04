@@ -18,7 +18,6 @@ module main #(
   modulation_bus_if mod_bus ();
   stm_bus_if stm_bus ();
   duty_table_bus_if duty_table_bus ();
-  filter_bus_if filter_bus ();
 
   settings::mod_settings_t mod_settings;
   settings::stm_settings_t stm_settings;
@@ -72,8 +71,7 @@ module main #(
       .CNT_BUS(cnt_bus.in_port),
       .MOD_BUS(mod_bus.in_port),
       .STM_BUS(stm_bus.in_port),
-      .DUTY_TABLE_BUS(duty_table_bus.in_port),
-      .FILTER_BUS(filter_bus.in_port)
+      .DUTY_TABLE_BUS(duty_table_bus.in_port)
   );
 
   clock clock (
@@ -153,7 +151,6 @@ module main #(
       .PHASE_OUT(phase_m),
       .DOUT_VALID(dout_valid_m),
       .MOD_BUS(mod_bus.out_port),
-      .FILTER_BUS(filter_bus.out_port),
       .GPIO_IN(gpio_in),
       .DEBUG_IDX(mod_idx),
       .DEBUG_SEGMENT(mod_segment),
