@@ -1,3 +1,10 @@
+# 8.0.0
+
+- Do not clear full width start param of Pulse Width Encoder
+- FocusSTM is now FociSTM with maximum 8 foci
+    - Maximum pattern size of FociSTM is now 8192
+- The unit of sound speed is now (1/64 * (ultrasound freq) / 40 [kHz]) [m/s]
+
 # 7.0.0
 
 - Add new segment transition mode

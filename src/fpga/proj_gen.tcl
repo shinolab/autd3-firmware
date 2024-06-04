@@ -22,16 +22,18 @@ if {[string equal [get_filesets -quiet sim_1] ""]} {
     create_fileset -simset sim_1
 }
 
-set synth_flow              "Vivado Synthesis 2023"
+set synth_flow              "Vivado Synthesis 2024"
 set synth_strategy_default  "Vivado Synthesis Defaults"
 set synth_strategy_perf     "Flow_PerfOptimized_high"
 set synth_strategy_area     "Flow_AreaOptimized_high"
+set synth_strategy_alter    "Flow_AlternateRoutability"
 create_run -name synth_default -flow $synth_flow -strategy $synth_strategy_default -constrset constrs_1
 create_run -name synth_perf -flow $synth_flow -strategy $synth_strategy_perf -constrset constrs_1
 create_run -name synth_area -flow $synth_flow -strategy $synth_strategy_area -constrset constrs_1
+create_run -name synth_alter -flow $synth_flow -strategy $synth_strategy_alter -constrset constrs_1
 current_run -synthesis [get_runs synth_default]
 
-set impl_flow               "Vivado Implementation 2023"
+set impl_flow               "Vivado Implementation 2024"
 set impl_strategy_default   "Vivado Implementation Defaults"
 set impl_strategy_netdelay  "Performance_NetDelay_high"
 set impl_strategy_area      "Area_ExploreWithRemap"
@@ -48,6 +50,10 @@ create_run -name impl_area_def -flow $impl_flow -strategy $impl_strategy_default
 create_run -name impl_area_netdelay -flow $impl_flow -strategy $impl_strategy_netdelay -constrset constrs_1 -parent_run synth_area
 create_run -name impl_area_area -flow $impl_flow -strategy $impl_strategy_area -constrset constrs_1 -parent_run synth_area
 create_run -name impl_area_utilslrs -flow $impl_flow -strategy $impl_strategy_utilslrs -constrset constrs_1 -parent_run synth_area
+create_run -name impl_alter_def -flow $impl_flow -strategy $impl_strategy_default -constrset constrs_1 -parent_run synth_alter
+create_run -name impl_alter_netdelay -flow $impl_flow -strategy $impl_strategy_netdelay -constrset constrs_1 -parent_run synth_alter
+create_run -name impl_alter_area -flow $impl_flow -strategy $impl_strategy_area -constrset constrs_1 -parent_run synth_alter
+create_run -name impl_alter_utilslrs -flow $impl_flow -strategy $impl_strategy_utilslrs -constrset constrs_1 -parent_run synth_alter
 current_run -implementation [get_runs impl_def_def]
 
 delete_runs "impl_1"

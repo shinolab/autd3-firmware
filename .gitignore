@@ -2,6 +2,7 @@ vivado.jou
 vivado.log
 vivado_*.jou
 vivado_*.log
+vivado*.zip
 /.Xil
 tmp/
 tmp.mcs
