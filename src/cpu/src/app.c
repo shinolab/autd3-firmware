@@ -19,15 +19,14 @@ extern uint8_t change_mod_segment(const volatile uint8_t*);
 extern uint8_t config_silencer(const volatile uint8_t*);
 extern uint8_t write_gain(const volatile uint8_t*);
 extern uint8_t change_gain_segment(const volatile uint8_t*);
-extern uint8_t write_focus_stm(const volatile uint8_t*);
-extern uint8_t change_focus_stm_segment(const volatile uint8_t*);
+extern uint8_t write_foci_stm(const volatile uint8_t*);
+extern uint8_t change_foci_stm_segment(const volatile uint8_t*);
 extern uint8_t write_gain_stm(const volatile uint8_t*);
 extern uint8_t change_gain_stm_segment(const volatile uint8_t*);
 extern uint8_t configure_force_fan(const volatile uint8_t*);
 extern uint8_t configure_reads_fpga_state(const volatile uint8_t*);
 extern uint8_t change_mod_segment(const volatile uint8_t*);
 extern uint8_t config_pwe(const volatile uint8_t*);
-extern uint8_t write_phase_filter(const volatile uint8_t*);
 extern uint8_t configure_debug(const volatile uint8_t*);
 extern uint8_t read_fpga_state(void);
 extern uint8_t emulate_gpio_in(const volatile uint8_t*);
@@ -75,22 +74,20 @@ uint8_t handle_payload(const volatile uint8_t* p_data) {
       return write_gain(p_data);
     case TAG_GAIN_CHANGE_SEGMENT:
       return change_gain_segment(p_data);
-    case TAG_FOCUS_STM:
-      return write_focus_stm(p_data);
+    case TAG_FOCI_STM:
+      return write_foci_stm(p_data);
     case TAG_GAIN_STM:
       return write_gain_stm(p_data);
     case TAG_GAIN_STM_CHANGE_SEGMENT:
       return change_gain_stm_segment(p_data);
-    case TAG_FOCUS_STM_CHANGE_SEGMENT:
-      return change_focus_stm_segment(p_data);
+    case TAG_FOCI_STM_CHANGE_SEGMENT:
+      return change_foci_stm_segment(p_data);
     case TAG_FORCE_FAN:
       return configure_force_fan(p_data);
     case TAG_READS_FPGA_STATE:
       return configure_reads_fpga_state(p_data);
     case TAG_CONFIG_PULSE_WIDTH_ENCODER:
       return config_pwe(p_data);
-    case TAG_PHASE_FILTER:
-      return write_phase_filter(p_data);
     case TAG_DEBUG:
       return configure_debug(p_data);
     case TAG_EMULATE_GPIO_IN:
@@ -107,8 +104,7 @@ void update(void) {
   volatile uint8_t* p_data;
   Header* header;
 
-  if ((ECATC.AL_STATUS_CODE.WORD == AL_STATUS_CODE_SYNC_ERR) ||
-      (ECATC.AL_STATUS_CODE.WORD == AL_STATUS_CODE_SYNC_MANAGER_WATCHDOG)) {
+  if ((ECATC.AL_STATUS_CODE.WORD == AL_STATUS_CODE_SYNC_ERR) || (ECATC.AL_STATUS_CODE.WORD == AL_STATUS_CODE_SYNC_MANAGER_WATCHDOG)) {
     if (_wdt_cnt < 0) return;
     if (_wdt_cnt == 0) clear();
     _wdt_cnt = _wdt_cnt - 1;

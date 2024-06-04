@@ -29,12 +29,9 @@ typedef int bool_t;
 
 #define FPGA_BASE (0x44000000) /* CS1 FPGA address */
 
-inline static uint16_t get_addr(uint8_t bram_select, uint16_t bram_addr) {
-  return (((uint16_t)bram_select & 0x0003) << 14) | (bram_addr & 0x3FFF);
-}
+inline static uint16_t get_addr(uint8_t bram_select, uint16_t bram_addr) { return (((uint16_t)bram_select & 0x0003) << 14) | (bram_addr & 0x3FFF); }
 
-inline static void bram_write(uint8_t bram_select, uint16_t bram_addr,
-                              uint16_t value) {
+inline static void bram_write(uint8_t bram_select, uint16_t bram_addr, uint16_t value) {
   volatile uint16_t *base = (volatile uint16_t *)FPGA_BASE;
   uint16_t addr = get_addr(bram_select, bram_addr);
   base[addr] = value;
@@ -46,50 +43,43 @@ inline static uint16_t bram_read(uint8_t bram_select, uint16_t bram_addr) {
   return base[addr];
 }
 
-inline static void bram_cpy(uint8_t bram_select, uint16_t base_bram_addr,
-                            const uint16_t *values, uint32_t cnt) {
+inline static void bram_cpy(uint8_t bram_select, uint16_t base_bram_addr, const uint16_t *values, uint32_t cnt) {
   uint16_t base_addr = get_addr(bram_select, base_bram_addr);
   volatile uint16_t *base = (volatile uint16_t *)FPGA_BASE;
   volatile uint16_t *dst = &base[base_addr];
   while (cnt-- > 0) *dst++ = *values++;
 }
 
-inline static void bram_cpy_volatile(uint8_t bram_select,
-                                     uint16_t base_bram_addr,
-                                     const volatile uint16_t *values,
-                                     uint32_t cnt) {
+inline static void bram_cpy_volatile(uint8_t bram_select, uint16_t base_bram_addr, const volatile uint16_t *values, uint32_t cnt) {
   uint16_t base_addr = get_addr(bram_select, base_bram_addr);
   volatile uint16_t *base = (volatile uint16_t *)FPGA_BASE;
   volatile uint16_t *dst = &base[base_addr];
   while (cnt-- > 0) *dst++ = *values++;
 }
 
-inline static void bram_cpy_focus_stm(uint16_t base_bram_addr,
-                                      const volatile uint16_t *values,
-                                      uint32_t cnt) {
+inline static void bram_cpy_focus_stm(uint16_t base_bram_addr, const volatile uint16_t *values, uint32_t cnt, uint8_t num_foci) {
   uint16_t base_addr = get_addr(BRAM_SELECT_STM, base_bram_addr);
   volatile uint16_t *base = (volatile uint16_t *)FPGA_BASE;
   volatile uint16_t *dst = &base[base_addr];
   while (cnt--) {
-    *dst++ = *values++;
-    *dst++ = *values++;
-    *dst++ = *values++;
-    *dst++ = *values++;
+    for (uint8_t i = 0; i < num_foci; i++) {
+      *dst++ = *values++;
+      *dst++ = *values++;
+      *dst++ = *values++;
+      *dst++ = *values++;
+    }
+    dst += 4 * (8 - num_foci);
   }
 }
 
-inline static void bram_cpy_gain_stm_phase_full(uint16_t base_bram_addr,
-                                                const volatile uint16_t *values,
-                                                const int shift, uint32_t cnt) {
+inline static void bram_cpy_gain_stm_phase_full(uint16_t base_bram_addr, const volatile uint16_t *values, const int shift, uint32_t cnt) {
   uint16_t base_addr = get_addr(BRAM_SELECT_STM, base_bram_addr);
   volatile uint16_t *base = (volatile uint16_t *)FPGA_BASE;
   volatile uint16_t *dst = &base[base_addr];
   while (cnt--) *dst++ = 0xFF00 | (((*values++) >> shift) & 0x00FF);
 }
 
-inline static void bram_cpy_gain_stm_phase_half(uint16_t base_bram_addr,
-                                                const volatile uint16_t *values,
-                                                const int shift, uint32_t cnt) {
+inline static void bram_cpy_gain_stm_phase_half(uint16_t base_bram_addr, const volatile uint16_t *values, const int shift, uint32_t cnt) {
   uint16_t base_addr = get_addr(BRAM_SELECT_STM, base_bram_addr);
   volatile uint16_t *base = (volatile uint16_t *)FPGA_BASE;
   volatile uint16_t *dst = &base[base_addr];
@@ -100,8 +90,7 @@ inline static void bram_cpy_gain_stm_phase_half(uint16_t base_bram_addr,
   }
 }
 
-inline static void bram_set(uint8_t bram_select, uint16_t base_bram_addr,
-                            uint16_t value, uint32_t cnt) {
+inline static void bram_set(uint8_t bram_select, uint16_t base_bram_addr, uint16_t value, uint32_t cnt) {
   uint16_t base_addr = get_addr(bram_select, base_bram_addr);
   volatile uint16_t *base = (volatile uint16_t *)FPGA_BASE;
   volatile uint16_t *dst = &base[base_addr];

@@ -36,7 +36,7 @@ set_source_files_properties(
   ${PROJECT_SOURCE_DIR}/../src/op/clk.c
   ${PROJECT_SOURCE_DIR}/../src/op/debug.c
   ${PROJECT_SOURCE_DIR}/../src/op/gpio_in.c
-  ${PROJECT_SOURCE_DIR}/../src/op/focus_stm.c
+  ${PROJECT_SOURCE_DIR}/../src/op/foci_stm.c
   ${PROJECT_SOURCE_DIR}/../src/op/force_fan.c
   ${PROJECT_SOURCE_DIR}/../src/op/gain_stm.c
   ${PROJECT_SOURCE_DIR}/../src/op/gain.c
@@ -46,7 +46,6 @@ set_source_files_properties(
   ${PROJECT_SOURCE_DIR}/../src/op/silencer.c
   ${PROJECT_SOURCE_DIR}/../src/op/sync.c
   ${PROJECT_SOURCE_DIR}/../src/op/pulse_width_encoder.c
-  ${PROJECT_SOURCE_DIR}/../src/op/phase_filter.c
   PROPERTIES LANGUAGE CXX
 )
 

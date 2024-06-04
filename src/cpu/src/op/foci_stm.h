@@ -7,9 +7,11 @@ typedef ALIGN2 struct {
   uint8_t tag;
   uint8_t flag;
   uint8_t send_num;
+  uint8_t segment;
   uint8_t transition_mode;
+  uint8_t num_foci;
+  uint16_t sound_speed;
   uint32_t freq_div;
-  uint32_t sound_speed;
   uint32_t rep;
   uint64_t transition_value;
 } FocusSTMHead;
@@ -18,7 +20,7 @@ typedef ALIGN2 struct {
   uint8_t tag;
   uint8_t flag;
   uint8_t send_num;
-  uint8_t _pad;
+  uint8_t segment;
 } FocusSTMSubseq;
 
 typedef union {
