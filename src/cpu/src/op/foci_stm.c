@@ -32,7 +32,7 @@ extern volatile uint32_t _min_freq_div_phase;
 extern volatile uint8_t _mod_segment;
 extern volatile uint32_t _mod_freq_div[2];
 
-volatile static uint8_t _num_foci;
+static volatile uint8_t _num_foci;
 
 uint8_t write_foci_stm(const volatile uint8_t* p_data) {
   static_assert(sizeof(FocusSTMHead) == 24, "FocusSTM is not valid.");

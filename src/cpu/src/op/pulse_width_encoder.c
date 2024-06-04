@@ -44,7 +44,6 @@ uint8_t config_pwe(const volatile uint8_t* p_data) {
   static_assert(offsetof(PWE, subseq) == 0, "PWE is not valid.");
   static_assert(sizeof(PWE) == 6, "PWE is not valid.");
 
-  uint32_t page_capacity;
   const PWE* p = (const PWE*)p_data;
   uint16_t size = p->subseq.size;
   if (size % 2 != 0) return ERR_INVALID_PWE_DATA_SIZE;
