@@ -103,7 +103,7 @@ uint8_t write_foci_stm(const volatile uint8_t* p_data) {
   }
 
   page_capacity = (_stm_cycle[segment] & ~FOCUS_STM_BUF_PAGE_SIZE_MASK) + FOCUS_STM_BUF_PAGE_SIZE - _stm_cycle[segment];
-  if (size <= page_capacity) {
+  if (size < page_capacity) {
     bram_cpy_focus_stm((_stm_cycle[segment] & FOCUS_STM_BUF_PAGE_SIZE_MASK) << 5, src, size, _num_foci);
     _stm_cycle[segment] = _stm_cycle[segment] + size;
   } else {

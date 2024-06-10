@@ -1,3 +1,7 @@
+# 8.0.1
+
+- Fixed a bug when page capacity equals write data volume in `FociSTM`
+
 # 8.0.0
 
 - Do not clear full width start param of Pulse Width Encoder
