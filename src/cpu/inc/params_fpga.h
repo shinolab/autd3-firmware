@@ -6,7 +6,7 @@
 #define GAIN_STM_SIZE (1024)
 #define NUM_FOCI_MAX (8)
 #define VERSION_NUM_MAJOR (0x92)
-#define VERSION_NUM_MINOR (0x00)
+#define VERSION_NUM_MINOR (0x01)
 #define ECAT_SYNC_BASE (0x500000)
 
 #define CTL_FLAG_BIT_MOD_SET (0)

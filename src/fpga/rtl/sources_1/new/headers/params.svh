@@ -9,7 +9,7 @@ package params;
   localparam int NumFociMax = 8;
 
   localparam bit [7:0] VersionNumMajor = 8'h92;
-  localparam bit [7:0] VersionNumMinor = 8'h00;
+  localparam bit [7:0] VersionNumMinor = 8'h01;
 
   localparam logic [31:0] ECATSyncBase = 32'd500000;  // ns
 
