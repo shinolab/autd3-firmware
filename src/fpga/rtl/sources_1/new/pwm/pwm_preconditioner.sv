@@ -4,25 +4,19 @@ module pwm_preconditioner #(
 ) (
     input wire CLK,
     input wire DIN_VALID,
-    input wire [8:0] PULSE_WIDTH,
+    input wire [7:0] PULSE_WIDTH,
     input wire [7:0] PHASE,
-    output var [8:0] RISE[DEPTH],
-    output var [8:0] FALL[DEPTH],
+    output var [7:0] RISE[DEPTH],
+    output var [7:0] FALL[DEPTH],
     output var DOUT_VALID
 );
 
-  localparam int AddSubLatency = 2;
+  logic [7:0] rise[DEPTH], fall[DEPTH];
+  logic [7:0] rise_buf[DEPTH], fall_buf[DEPTH];
 
-  logic [8:0] rise[DEPTH], fall[DEPTH];
-  logic [8:0] rise_buf[DEPTH], fall_buf[DEPTH];
+  logic [7:0] s_rise, s_fall;
 
-  logic [8:0] pulse_width_buf;
-
-  logic [8:0] s_phase;
-  logic [7:0] s_pulse_width_r;
-  logic [9:0] s_rise, s_fall;
-
-  logic [$clog2(DEPTH+1+AddSubLatency*2)-1:0] cnt;
+  logic [$clog2(DEPTH+1)-1:0] cnt;
 
   logic dout_valid;
 
@@ -30,61 +24,17 @@ module pwm_preconditioner #(
   assign RISE = rise;
   assign FALL = fall;
 
-  delay_fifo #(
-      .WIDTH(9),
-      .DEPTH(2)
-  ) pw_buf (
-      .CLK (CLK),
-      .DIN (PULSE_WIDTH),
-      .DOUT(pulse_width_buf)
-  );
-
-  addsub #(
-      .WIDTH(9)
-  ) sub_phase (
-      .CLK(CLK),
-      .A  (9'd256),
-      .B  ({1'b0, PHASE}),
-      .ADD(1'b0),
-      .S  (s_phase)
-  );
-  addsub #(
-      .WIDTH(8)
-  ) add_pulse_width_r (
-      .CLK(CLK),
-      .A  ({PULSE_WIDTH[8:1]}),
-      .B  ({7'h00, PULSE_WIDTH[0]}),
-      .ADD(1'b1),
-      .S  (s_pulse_width_r)
-  );
-
-  addsub #(
-      .WIDTH(10)
-  ) sub_rise (
-      .CLK(CLK),
-      .A  ({s_phase, 1'b0}),
-      .B  ({2'b00, pulse_width_buf[8:1]}),
-      .ADD(1'b0),
-      .S  (s_rise)
-  );
-  addsub #(
-      .WIDTH(10)
-  ) add_fall (
-      .CLK(CLK),
-      .A  ({s_phase, 1'b0}),
-      .B  ({2'b00, s_pulse_width_r}),
-      .ADD(1'b1),
-      .S  (s_fall)
-  );
-
   typedef enum logic [2:0] {
     IDLE,
-    WAIT0,
-    WAIT1,
     WAIT2,
     RUN,
     DONE
   } state_t;
+
+  always_ff @(posedge CLK) begin
+    s_rise <= {1'b1, PHASE} - {2'b00, PULSE_WIDTH[7:1]};
+    s_fall <= {1'b0, PHASE} + {2'b00, PULSE_WIDTH[7:1]} + PULSE_WIDTH[0];
+  end
 
   state_t state = IDLE;
 
@@ -94,23 +44,14 @@ module pwm_preconditioner #(
         dout_valid <= 1'b0;
         if (DIN_VALID) begin
           cnt   <= '0;
-          state <= WAIT0;
+          state <= RUN;
         end
-      end
-      WAIT0: begin
-        state <= WAIT1;
-      end
-      WAIT1: begin
-        state <= WAIT2;
-      end
-      WAIT2: begin
-        state <= RUN;
       end
       RUN: begin
         cnt <= cnt + 1;
-        rise_buf[cnt] <= s_rise[8:0];
-        fall_buf[cnt] <= s_fall[8:0];
-        state <= (cnt == AddSubLatency + AddSubLatency + DEPTH - 1) ? DONE : state;
+        rise_buf[cnt] <= s_rise[7:0];
+        fall_buf[cnt] <= s_fall[7:0];
+        state <= (cnt == DEPTH - 1) ? DONE : state;
       end
       DONE: begin
         dout_valid <= 1'b1;

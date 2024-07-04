@@ -39,7 +39,6 @@ module sim_controller ();
   settings::stm_settings_t stm_settings;
   settings::silencer_settings_t silencer_settings;
   settings::sync_settings_t sync_settings;
-  settings::pulse_width_encoder_settings_t pulse_width_encoder_settings;
   settings::debug_settings_t debug_settings;
   logic FORCE_FAN;
 
@@ -51,7 +50,6 @@ module sim_controller ();
       .STM_SETTINGS(stm_settings),
       .SILENCER_SETTINGS(silencer_settings),
       .SYNC_SETTINGS(sync_settings),
-      .PULSE_WIDTH_ENCODER_SETTINGS(pulse_width_encoder_settings),
       .DEBUG_SETTINGS(debug_settings),
       .FORCE_FAN(FORCE_FAN)
   );
@@ -60,7 +58,6 @@ module sim_controller ();
   settings::stm_settings_t stm_settings_in;
   settings::silencer_settings_t silencer_settings_in;
   settings::sync_settings_t sync_settings_in;
-  settings::pulse_width_encoder_settings_t pulse_width_encoder_settings_in;
   settings::debug_settings_t debug_settings_in;
 
   initial begin
@@ -102,9 +99,6 @@ module sim_controller ();
     sync_settings_in.UPDATE = 1'b1;
     sync_settings_in.ECAT_SYNC_TIME = sim_helper_random.range(64'hFFFFFFFFFFFFFFFF, 0);
 
-    pulse_width_encoder_settings_in.UPDATE = 1'b1;
-    pulse_width_encoder_settings_in.FULL_WIDTH_START = sim_helper_random.range(16'hFFFF, 0);
-
     debug_settings_in.UPDATE = 1'b1;
     debug_settings_in.TYPE[0] = sim_helper_random.range(8'hFF, 0);
     debug_settings_in.TYPE[1] = sim_helper_random.range(8'hFF, 0);
@@ -121,7 +115,6 @@ module sim_controller ();
     sim_helper_bram.write_stm_settings(stm_settings_in);
     sim_helper_bram.write_silencer_settings(silencer_settings_in);
     sim_helper_bram.write_sync_settings(sync_settings_in);
-    sim_helper_bram.write_pulse_width_encoder_settings(pulse_width_encoder_settings_in);
     sim_helper_bram.write_debug_settings(debug_settings_in);
     $display("memory initialized");
 
@@ -129,7 +122,6 @@ module sim_controller ();
                                (16'd1 << params::CTL_FLAG_BIT_MOD_SET)
                                | (16'd1 << params::CTL_FLAG_BIT_STM_SET)
                                | (16'd1 << params::CTL_FLAG_BIT_SILENCER_SET)
-                               | (16'd1 << params::CTL_FLAG_BIT_PULSE_WIDTH_ENCODER_SET)
                                | (16'd1 << params::CTL_FLAG_BIT_DEBUG_SET)
                                | (16'd1 << params::CTL_FLAG_BIT_SYNC_SET));
     @(posedge mod_settings.UPDATE);
@@ -147,12 +139,6 @@ module sim_controller ();
     @(posedge silencer_settings.UPDATE);
     if (silencer_settings_in !== silencer_settings) begin
       $error("SILENCER_SETTINGS mismatch");
-      $finish();
-    end
-
-    @(posedge pulse_width_encoder_settings.UPDATE);
-    if (pulse_width_encoder_settings_in !== pulse_width_encoder_settings) begin
-      $error("PULSE_WIDTH_ENCODER_SETTINGS mismatch");
       $finish();
     end
 

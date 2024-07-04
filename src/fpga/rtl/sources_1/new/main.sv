@@ -23,7 +23,6 @@ module main #(
   settings::stm_settings_t stm_settings;
   settings::silencer_settings_t silencer_settings;
   settings::sync_settings_t sync_settings;
-  settings::pulse_width_encoder_settings_t pulse_width_encoder_settings;
   settings::debug_settings_t debug_settings;
 
   logic clk;
@@ -31,7 +30,7 @@ module main #(
   logic [63:0] sys_time;
   logic skip_one_assert;
 
-  logic [8:0] time_cnt;
+  logic [7:0] time_cnt;
   logic update;
 
   logic [7:0] intensity;
@@ -46,7 +45,7 @@ module main #(
   logic [7:0] phase_s;
   logic dout_valid_s;
 
-  logic [8:0] pulse_width_e;
+  logic [7:0] pulse_width_e;
   logic [7:0] phase_e;
   logic dout_valid_e;
 
@@ -92,7 +91,6 @@ module main #(
       .STM_SETTINGS(stm_settings),
       .SILENCER_SETTINGS(silencer_settings),
       .SYNC_SETTINGS(sync_settings),
-      .PULSE_WIDTH_ENCODER_SETTINGS(pulse_width_encoder_settings),
       .DEBUG_SETTINGS(debug_settings),
       .FORCE_FAN(FORCE_FAN),
       .GPIO_IN(gpio_in_soft)
@@ -175,7 +173,6 @@ module main #(
   ) pulse_width_encoder (
       .CLK(clk),
       .DUTY_TABLE_BUS(duty_table_bus.out_port),
-      .PULSE_WIDTH_ENCODER_SETTINGS(pulse_width_encoder_settings),
       .DIN_VALID(dout_valid_s),
       .INTENSITY_IN(intensity_s),
       .PHASE_IN(phase_s),

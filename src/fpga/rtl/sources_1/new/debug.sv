@@ -4,7 +4,7 @@ module debug #(
 ) (
     input wire CLK,
     settings::debug_settings_t DEBUG_SETTINGS,
-    input wire [8:0] TIME_CNT,
+    input wire [7:0] TIME_CNT,
     input wire PWM_OUT[DEPTH],
     input wire THERMO,
     input wire FORCE_FAN,
@@ -34,7 +34,7 @@ module debug #(
         debug_signal = 1'b0;
       end
       params::DBG_BASE_SIG: begin
-        debug_signal = TIME_CNT[8] == 1'b0;
+        debug_signal = TIME_CNT[7] == 1'b0;
       end
       params::DBG_THERMO: begin
         debug_signal = THERMO;

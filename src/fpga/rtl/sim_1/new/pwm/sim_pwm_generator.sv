@@ -13,10 +13,10 @@ module sim_pwm_generator ();
       .SYS_TIME(SYS_TIME)
   );
 
-  logic [8:0] time_cnt;
-  assign time_cnt = SYS_TIME[8:0];
+  logic [7:0] time_cnt;
+  assign time_cnt = SYS_TIME[7:0];
 
-  logic [8:0] rise, fall;
+  logic [7:0] rise, fall;
 
   logic pwm_out;
 
@@ -28,8 +28,8 @@ module sim_pwm_generator ();
       .PWM_OUT(pwm_out)
   );
 
-  task automatic set(logic [8:0] r, logic [8:0] f);
-    while (time_cnt !== 512 - 1) @(posedge CLK);
+  task automatic set(logic [7:0] r, logic [7:0] f);
+    while (time_cnt !== 256 - 1) @(posedge CLK);
     rise = r;
     fall = f;
     @(posedge CLK);
@@ -41,7 +41,7 @@ module sim_pwm_generator ();
         $error("At v=%u, t=%d, R=%d, F=%d", pwm_out, time_cnt, rise, fall);
         $finish();
       end
-      if (time_cnt === 512 - 1) begin
+      if (time_cnt === 256 - 1) begin
         break;
       end
     end
@@ -53,16 +53,16 @@ module sim_pwm_generator ();
     fall = 0;
     @(posedge locked);
 
-    set(512 / 2 - 512 / 4, 512 / 2 + 512 / 4);  // normal, D=512/2
-    set(0, 512);  // normal, D=512
-    set(512 / 2, 512 / 2);  // normal, D=0
-    set(0, 512 / 2);  // normal, D=512/2, left edge
-    set(512 - 512 / 2, 512);  // normal, D=512/2, right edge
+    set(256 / 2 - 256 / 4, 256 / 2 + 256 / 4);  // normal, D=T/2
+    set(0, 256);  // normal, D=T
+    set(256 / 2, 256 / 2);  // normal, D=0
+    set(0, 256 / 2);  // normal, D=T/2, left edge
+    set(256 - 256 / 2, 256);  // normal, D=T/2, right edge
 
-    set(512 - 512 / 4, 512 / 4);  // over, D=512/2
-    set(512, 0);  // over, D=0
-    set(512, 512 / 2);  // over, D=512/2, right edge
-    set(512 - 512 / 2, 0);  // over, D=512/2, left edge
+    set(256 - 256 / 4, 256 / 4);  // over, D=T/2
+    set(256, 0);  // over, D=0
+    set(256, 256 / 2);  // over, D=T/2, right edge
+    set(256 - 256 / 2, 0);  // over, D=T/2, left edge
 
     set(0, 0);
 

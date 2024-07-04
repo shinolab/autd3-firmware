@@ -259,12 +259,6 @@ module sim_helper_bram #(
                settings.ECAT_SYNC_TIME[63:48]);
   endtask
 
-  task automatic write_pulse_width_encoder_settings(
-      input settings::pulse_width_encoder_settings_t settings);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_PULSE_WIDTH_ENCODER_FULL_WIDTH_START,
-               settings.FULL_WIDTH_START);
-  endtask
-
   task automatic write_debug_settings(input settings::debug_settings_t settings);
     bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_DEBUG_TYPE0, settings.TYPE[0]);
     bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_DEBUG_TYPE1, settings.TYPE[1]);

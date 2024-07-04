@@ -16,14 +16,14 @@ module sim_pwm_preconditioner ();
 
   localparam int DEPTH = 249;
 
-  logic [8:0] pulse_width;
+  logic [7:0] pulse_width;
   logic [7:0] phase;
 
-  logic [8:0] rise[DEPTH];
-  logic [8:0] fall[DEPTH];
+  logic [7:0] rise[DEPTH];
+  logic [7:0] fall[DEPTH];
   logic din_valid, dout_valid;
 
-  logic [8:0] pulse_width_buf[DEPTH];
+  logic [7:0] pulse_width_buf[DEPTH];
   logic [7:0] phase_buf[DEPTH];
 
   pwm_preconditioner #(
@@ -38,7 +38,7 @@ module sim_pwm_preconditioner ();
       .DOUT_VALID(dout_valid)
   );
 
-  task automatic set(int idx, logic [8:0] d, logic [7:0] p);
+  task automatic set(int idx, logic [7:0] d, logic [7:0] p);
     for (int i = 0; i < DEPTH; i++) begin
       if (i === idx) begin
         pulse_width_buf[i] = d;
@@ -58,8 +58,7 @@ module sim_pwm_preconditioner ();
     din_valid <= 1'b0;
   endtask
 
-
-  task automatic check_manual(int idx, logic [8:0] rise_e, logic [8:0] fall_e);
+  task automatic check_manual(int idx, logic [7:0] rise_e, logic [7:0] fall_e);
     while (1) begin
       @(posedge CLK);
       if (dout_valid) begin
@@ -84,7 +83,7 @@ module sim_pwm_preconditioner ();
 
   task automatic set_random();
     for (int i = 0; i < DEPTH; i++) begin
-      pulse_width_buf[i] = sim_helper_random.range(256, 0);
+      pulse_width_buf[i] = sim_helper_random.range(255, 0);
       phase_buf[i] = sim_helper_random.range(255, 0);
     end
     for (int i = 0; i < DEPTH; i++) begin
@@ -106,8 +105,8 @@ module sim_pwm_preconditioner ();
     end
 
     for (int i = 0; i < DEPTH; i++) begin
-      if ((rise[i] !== ((512-phase_buf[i]*2-pulse_width_buf[i]/2+512)%512))
-        | (fall[i] !== ((512-phase_buf[i]*2+(pulse_width_buf[i]+1)/2)%512))) begin
+      if ((rise[i] !== ((256+phase_buf[i]-pulse_width_buf[i]/2)%256))
+        | (fall[i] !== ((phase_buf[i]+(pulse_width_buf[i]+1)/2)%256))) begin
         $error("At idx=%d, d=%d, p=%d, R=%d, F=%d", i, pulse_width_buf[i], phase_buf[i], rise[i],
                fall[i]);
         $finish();
@@ -119,43 +118,43 @@ module sim_pwm_preconditioner ();
     @(posedge locked);
 
     fork
-      set(0, 256, 128);  // normal, D=256
-      check_manual(0, 128, 384);
+      set(0, 128, 128);  // normal, D=T/2
+      check_manual(0, 64, 192);
+    join
+
+    fork
+      set(0, 127, 128);  // normal, D=T/2-1
+      check_manual(0, 65, 192);
     join
 
     fork
       set(0, 1, 128);  // normal, D=1
-      check_manual(0, 256, 257);
-    join
-
-    fork
-      set(0, 255, 128);  // normal, D=255
-      check_manual(0, 129, 384);
+      check_manual(0, 128, 129);
     join
 
     fork
       set(0, 0, 128);  // normal, D=0
-      check_manual(0, 256, 256);
+      check_manual(0, 128, 128);
     join
 
     fork
-      set(0, 256, 64);  // normal, D=256, left edge
-      check_manual(0, 256, 0);
+      set(0, 128, 64);  // normal, D=T/2, left edge
+      check_manual(0, 0, 128);
     join
 
     fork
-      set(0, 256, 192);  // normal, D=256, right edge
-      check_manual(0, 0, 256);
+      set(0, 128, 192);  // normal, D=T/2, right edge
+      check_manual(0, 128, 0);
     join
 
     fork
-      set(0, 256, 255);  // over, D=256
-      check_manual(0, 386, 130);
+      set(0, 128, 1);  // left over, D=T/2
+      check_manual(0, 193, 65);
     join
 
     fork
-      set(0, 256, 1);  // over, D=256
-      check_manual(0, 382, 126);
+      set(0, 128, 255);  // right over, D=T/2
+      check_manual(0, 191, 63);
     join
 
     // at random

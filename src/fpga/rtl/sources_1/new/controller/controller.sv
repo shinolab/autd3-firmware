@@ -10,7 +10,6 @@ module controller (
     output var settings::stm_settings_t STM_SETTINGS,
     output var settings::silencer_settings_t SILENCER_SETTINGS,
     output var settings::sync_settings_t SYNC_SETTINGS,
-    output var settings::pulse_width_encoder_settings_t PULSE_WIDTH_ENCODER_SETTINGS,
     output var settings::debug_settings_t DEBUG_SETTINGS,
     output var FORCE_FAN,
     output var GPIO_IN[4]
@@ -97,11 +96,6 @@ module controller (
     RD_SILENCER_COMPLETION_STEPS_INTENSITY,
     RD_SILENCER_COMPLETION_STEPS_PHASE,
     SILENCER_CLR_UPDATE_SETTINGS_BIT,
-    REQ_PULSE_WIDTH_ENCODER_FULL_WIDTH_START,
-    REQ_PULSE_WIDTH_ENCODER_DUMMY0,
-    REQ_PULSE_WIDTH_ENCODER_DUMMY1,
-    RD_PULSE_WIDTH_ENCODER_FULL_WIDTH_START,
-    PULSE_WIDTH_ENCODER_CLR_UPDATE_SETTINGS_BIT,
     REQ_DEBUG_TYPE0,
     REQ_DEBUG_VALUE0,
     REQ_DEBUG_TYPE1,
@@ -173,9 +167,6 @@ module controller (
         end else if (ctl_flags[params::CTL_FLAG_BIT_SILENCER_SET]) begin
           ctl_flags <= ctl_flags & ~(1 << params::CTL_FLAG_BIT_SILENCER_SET);
           state <= REQ_SILENCER_MODE;
-        end else if (ctl_flags[params::CTL_FLAG_BIT_PULSE_WIDTH_ENCODER_SET]) begin
-          ctl_flags <= ctl_flags & ~(1 << params::CTL_FLAG_BIT_PULSE_WIDTH_ENCODER_SET);
-          state <= REQ_PULSE_WIDTH_ENCODER_FULL_WIDTH_START;
         end else if (ctl_flags[params::CTL_FLAG_BIT_DEBUG_SET]) begin
           ctl_flags <= ctl_flags & ~(1 << params::CTL_FLAG_BIT_DEBUG_SET);
           state <= REQ_DEBUG_TYPE0;
@@ -504,43 +495,6 @@ module controller (
         state <= WAIT_1;
       end
 
-      REQ_PULSE_WIDTH_ENCODER_FULL_WIDTH_START: begin
-        we <= 1'b0;
-        addr <= params::ADDR_PULSE_WIDTH_ENCODER_FULL_WIDTH_START;
-        state <= REQ_PULSE_WIDTH_ENCODER_DUMMY0;
-      end
-      REQ_PULSE_WIDTH_ENCODER_DUMMY0: begin
-        we <= 1'b1;
-        addr <= params::ADDR_CTL_FLAG;
-        din <= ctl_flags;
-        state <= REQ_PULSE_WIDTH_ENCODER_DUMMY1;
-      end
-      REQ_PULSE_WIDTH_ENCODER_DUMMY1: begin
-        we <= 1'b1;
-        addr <= params::ADDR_FPGA_STATE;
-        din <= {
-          8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO
-        };
-        state <= RD_PULSE_WIDTH_ENCODER_FULL_WIDTH_START;
-      end
-      RD_PULSE_WIDTH_ENCODER_FULL_WIDTH_START: begin
-        PULSE_WIDTH_ENCODER_SETTINGS.FULL_WIDTH_START <= dout;
-        PULSE_WIDTH_ENCODER_SETTINGS.UPDATE <= 1'b1;
-        we <= 1'b0;
-        addr <= params::ADDR_CTL_FLAG;
-        state <= PULSE_WIDTH_ENCODER_CLR_UPDATE_SETTINGS_BIT;
-      end
-      PULSE_WIDTH_ENCODER_CLR_UPDATE_SETTINGS_BIT: begin
-        we <= 1'b1;
-        addr <= params::ADDR_FPGA_STATE;
-        din <= {
-          8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO
-        };
-        ctl_flags <= dout;
-        PULSE_WIDTH_ENCODER_SETTINGS.UPDATE <= 1'b0;
-        state <= WAIT_1;
-      end
-
       REQ_DEBUG_TYPE0: begin
         we <= 1'b0;
         addr <= params::ADDR_DEBUG_TYPE0;
@@ -712,8 +666,6 @@ module controller (
     SILENCER_SETTINGS.UPDATE_RATE_PHASE = 16'd256;
     SILENCER_SETTINGS.COMPLETION_STEPS_INTENSITY = 16'd10;
     SILENCER_SETTINGS.COMPLETION_STEPS_PHASE = 16'd40;
-    PULSE_WIDTH_ENCODER_SETTINGS.UPDATE = 1'b0;
-    PULSE_WIDTH_ENCODER_SETTINGS.FULL_WIDTH_START = 16'd65024;
     DEBUG_SETTINGS.UPDATE = 1'b0;
     DEBUG_SETTINGS.TYPE[0] = params::DBG_NONE;
     DEBUG_SETTINGS.VALUE[0] = 16'd0;

@@ -40,11 +40,6 @@ package settings;
 
   typedef struct {
     logic UPDATE;
-    logic [15:0] FULL_WIDTH_START;
-  } pulse_width_encoder_settings_t;
-
-  typedef struct {
-    logic UPDATE;
     logic [7:0] TYPE[4];
     logic [15:0] VALUE[4];
   } debug_settings_t;

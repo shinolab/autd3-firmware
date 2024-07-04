@@ -8,8 +8,8 @@ package params;
   localparam int STMRdAddrWidth = $clog2(GainSTMSize * 8);
   localparam int NumFociMax = 8;
 
-  localparam bit [7:0] VersionNumMajor = 8'h92;
-  localparam bit [7:0] VersionNumMinor = 8'h01;
+  localparam bit [7:0] VersionNumMajor = 8'h93;
+  localparam bit [7:0] VersionNumMinor = 8'h00;
 
   localparam logic [31:0] ECATSyncBase = 32'd500000;  // ns
 
@@ -17,7 +17,7 @@ package params;
     CTL_FLAG_BIT_MOD_SET = 0,
     CTL_FLAG_BIT_STM_SET = 1,
     CTL_FLAG_BIT_SILENCER_SET = 2,
-    CTL_FLAG_BIT_PULSE_WIDTH_ENCODER_SET = 3,
+    //
     CTL_FLAG_BIT_DEBUG_SET = 4,
     CTL_FLAG_BIT_SYNC_SET = 5,
     CTL_FLAG_BIT_GPIO_IN_0 = 8,
@@ -137,8 +137,6 @@ package params;
     ADDR_STM_TRANSITION_VALUE_3 = 8'h68,
     ADDR_STM_NUM_FOCI0 = 8'h69,
     ADDR_STM_NUM_FOCI1 = 8'h6A,
-
-    ADDR_PULSE_WIDTH_ENCODER_FULL_WIDTH_START = 8'hE1,
 
     ADDR_DEBUG_TYPE0  = 8'hF0,
     ADDR_DEBUG_VALUE0 = 8'hF1,

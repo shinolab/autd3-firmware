@@ -95,15 +95,6 @@ silencer_params = Params(
     ],
 )
 
-pwe_params = Params(
-    "PULSE_WIDTH_ENCODER",
-    [
-        Param("PULSE_WIDTH_ENCODER_FULL_WIDTH_START", 16, "FULL_WIDTH_START", 65024),
-        Param("PULSE_WIDTH_ENCODER_DUMMY0", -1, "", 0),
-        Param("PULSE_WIDTH_ENCODER_DUMMY1", -1, "", 0),
-    ],
-)
-
 debug_params = Params(
     "DEBUG",
     [
@@ -130,7 +121,6 @@ all_params: list[Params] = [
     mod_params,
     stm_params,
     silencer_params,
-    pwe_params,
     debug_params,
     sync_params,
 ]
@@ -211,7 +201,6 @@ module controller (
     output var settings::stm_settings_t STM_SETTINGS,
     output var settings::silencer_settings_t SILENCER_SETTINGS,
     output var settings::sync_settings_t SYNC_SETTINGS,
-    output var settings::pulse_width_encoder_settings_t PULSE_WIDTH_ENCODER_SETTINGS,
     output var settings::debug_settings_t DEBUG_SETTINGS,
     output var FORCE_FAN,
     output var GPIO_IN[4]
