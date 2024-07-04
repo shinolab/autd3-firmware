@@ -12,8 +12,6 @@ module pulse_width_encoder #(
     output var DOUT_VALID
 );
 
-  localparam int Latency = 2;
-
   logic [14:0] addr;
   logic [7:0] dout;
 
