@@ -17,7 +17,6 @@ module top (
     output wire GPIO_OUT[4]
 );
 
-  logic clk;
   logic reset;
 
   logic PWM_OUT[params::NumTransducers];

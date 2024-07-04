@@ -14,7 +14,7 @@ module interpolator #(
 );
 
   logic [15:0] intensity_out;
-  logic dout_valid_intensity, dout_valid_phase;
+  logic dout_valid_phase;
 
   assign DOUT_VALID = dout_valid_phase;
 
@@ -26,7 +26,7 @@ module interpolator #(
       .UPDATE_RATE(UPDATE_RATE_INTENSITY),
       .INTENSITY_IN(INTENSITY_IN),
       .INTENSITY_OUT(intensity_out),
-      .DOUT_VALID(dout_valid_intensity)
+      .DOUT_VALID()
   );
 
   delay_fifo #(

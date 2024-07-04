@@ -17,7 +17,6 @@ module pulse_width_encoder #(
   logic [14:0] addr;
   logic [7:0] dout;
 
-  logic [7:0] pulse_width_out;
   logic dout_valid;
 
   logic [$clog2(DEPTH)-1:0] cnt;
