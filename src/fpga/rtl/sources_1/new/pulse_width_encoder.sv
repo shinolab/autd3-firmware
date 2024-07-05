@@ -3,7 +3,7 @@ module pulse_width_encoder #(
     parameter int DEPTH = 249
 ) (
     input wire CLK,
-    duty_table_bus_if.out_port DUTY_TABLE_BUS,
+    pwe_table_bus_if.out_port PWE_TABLE_BUS,
     input wire DIN_VALID,
     input wire [15:0] INTENSITY_IN,
     input wire [7:0] PHASE_IN,
@@ -37,8 +37,8 @@ module pulse_width_encoder #(
       .DOUT(PHASE_OUT)
   );
 
-  assign DUTY_TABLE_BUS.IDX = addr;
-  assign dout = DUTY_TABLE_BUS.VALUE;
+  assign PWE_TABLE_BUS.IDX = addr;
+  assign dout = PWE_TABLE_BUS.VALUE;
 
   assign PULSE_WIDTH_OUT = dout;
   assign DOUT_VALID = dout_valid;

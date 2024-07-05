@@ -49,20 +49,24 @@ uint8_t config_pwe(const volatile uint8_t* p_data) {
   if (size % 2 != 0) return ERR_INVALID_PWE_DATA_SIZE;
 
   const uint16_t* data;
-  if ((p->subseq.flag & PULSE_WIDTH_ENCODER_FLAG_BEGIN) == PULSE_WIDTH_ENCODER_FLAG_BEGIN) {
+  if ((p->subseq.flag & PULSE_WIDTH_ENCODER_FLAG_BEGIN) ==
+      PULSE_WIDTH_ENCODER_FLAG_BEGIN) {
     _pwe_write = 0;
 
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_PULSE_WIDTH_ENCODER_FULL_WIDTH_START, p->head.full_width_start);
+    bram_write(BRAM_SELECT_CONTROLLER,
+               ADDR_PULSE_WIDTH_ENCODER_FULL_WIDTH_START,
+               p->head.full_width_start);
 
     data = (const uint16_t*)(&p_data[sizeof(PWEHead)]);
   } else {
     data = (const uint16_t*)(&p_data[sizeof(PWESubseq)]);
   }
 
-  bram_cpy(BRAM_SELECT_DUTY_TABLE, _pwe_write >> 1, data, (size >> 1));
+  bram_cpy(BRAM_SELECT_PWE_TABLE, _pwe_write >> 1, data, (size >> 1));
   _pwe_write = _pwe_write + size;
 
-  if ((p->subseq.flag & PULSE_WIDTH_ENCODER_FLAG_END) == PULSE_WIDTH_ENCODER_FLAG_END) {
+  if ((p->subseq.flag & PULSE_WIDTH_ENCODER_FLAG_END) ==
+      PULSE_WIDTH_ENCODER_FLAG_END) {
     if (_pwe_write != 32768) return ERR_PWE_INCOMPLETE_DATA;
     set_and_wait_update(CTL_FLAG_PULSE_WIDTH_ENCODER_SET);
   }

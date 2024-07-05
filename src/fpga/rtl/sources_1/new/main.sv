@@ -17,7 +17,7 @@ module main #(
   cnt_bus_if cnt_bus ();
   modulation_bus_if mod_bus ();
   stm_bus_if stm_bus ();
-  duty_table_bus_if duty_table_bus ();
+  pwe_table_bus_if pwe_table_bus ();
 
   settings::mod_settings_t mod_settings;
   settings::stm_settings_t stm_settings;
@@ -70,7 +70,7 @@ module main #(
       .CNT_BUS(cnt_bus.in_port),
       .MOD_BUS(mod_bus.in_port),
       .STM_BUS(stm_bus.in_port),
-      .DUTY_TABLE_BUS(duty_table_bus.in_port)
+      .PWE_TABLE_BUS(pwe_table_bus.in_port)
   );
 
   clock clock (
@@ -172,7 +172,7 @@ module main #(
       .DEPTH(DEPTH)
   ) pulse_width_encoder (
       .CLK(clk),
-      .DUTY_TABLE_BUS(duty_table_bus.out_port),
+      .PWE_TABLE_BUS(pwe_table_bus.out_port),
       .DIN_VALID(dout_valid_s),
       .INTENSITY_IN(intensity_s),
       .PHASE_IN(phase_s),

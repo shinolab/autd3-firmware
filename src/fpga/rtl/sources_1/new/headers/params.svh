@@ -35,7 +35,7 @@ package params;
   typedef enum logic [1:0] {
     BRAM_SELECT_CONTROLLER = 2'h0,
     BRAM_SELECT_MOD = 2'h1,
-    BRAM_SELECT_DUTY_TABLE = 2'h2,
+    BRAM_SELECT_PWE_TABLE = 2'h2,
     BRAM_SELECT_STM = 2'h3
   } bram_select_t;
 

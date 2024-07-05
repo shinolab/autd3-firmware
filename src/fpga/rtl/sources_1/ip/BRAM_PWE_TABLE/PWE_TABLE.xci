@@ -1,13 +1,13 @@
 {
   "schema": "xilinx.com:schema:json_instance:1.0",
   "ip_inst": {
-    "xci_name": "BRAM_ASIN",
+    "xci_name": "PWE_TABLE",
     "component_reference": "xilinx.com:ip:blk_mem_gen:8.4",
     "ip_revision": "8",
-    "gen_directory": "../../../../autd3-fpga.gen/sources_1/ip/BRAM_ASIN",
+    "gen_directory": "../../../../autd3-fpga.gen/sources_1/ip/PWE_TABLE",
     "parameters": {
       "component_parameters": {
-        "Component_Name": [ { "value": "BRAM_ASIN", "resolve_type": "user", "usage": "all" } ],
+        "Component_Name": [ { "value": "PWE_TABLE", "resolve_type": "user", "usage": "all" } ],
         "Interface_Type": [ { "value": "Native", "resolve_type": "user", "usage": "all" } ],
         "AXI_Type": [ { "value": "AXI4_Full", "resolve_type": "user", "usage": "all" } ],
         "AXI_Slave_Type": [ { "value": "Memory_Slave", "resolve_type": "user", "usage": "all" } ],
@@ -97,8 +97,8 @@
         "C_ALGORITHM": [ { "value": "1", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "C_PRIM_TYPE": [ { "value": "1", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "C_LOAD_INIT_FILE": [ { "value": "1", "resolve_type": "generated", "format": "long", "usage": "all" } ],
-        "C_INIT_FILE_NAME": [ { "value": "BRAM_ASIN.mif", "resolve_type": "generated", "usage": "all" } ],
-        "C_INIT_FILE": [ { "value": "BRAM_ASIN.mem", "resolve_type": "generated", "usage": "all" } ],
+        "C_INIT_FILE_NAME": [ { "value": "PWE_TABLE.mif", "resolve_type": "generated", "usage": "all" } ],
+        "C_INIT_FILE": [ { "value": "PWE_TABLE.mem", "resolve_type": "generated", "usage": "all" } ],
         "C_USE_DEFAULT_DATA": [ { "value": "0", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "C_DEFAULT_DATA": [ { "value": "0", "resolve_type": "generated", "usage": "all" } ],
         "C_HAS_RSTA": [ { "value": "0", "resolve_type": "generated", "format": "long", "usage": "all" } ],
@@ -175,7 +175,7 @@
         "IPCONTEXT": [ { "value": "IP_Flow" } ],
         "IPREVISION": [ { "value": "8" } ],
         "MANAGED": [ { "value": "TRUE" } ],
-        "OUTPUTDIR": [ { "value": "../../../../autd3-fpga.gen/sources_1/ip/BRAM_ASIN" } ],
+        "OUTPUTDIR": [ { "value": "../../../../autd3-fpga.gen/sources_1/ip/PWE_TABLE" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "." } ],
         "SWVERSION": [ { "value": "2024.1" } ],

@@ -37,7 +37,8 @@ TEST(Op, PulseWidthEncoder) {
     } else {
       data_body[1] = 0;
     }
-    auto send = std::min(32768 - cnt, sizeof(RX_STR) - sizeof(Header) - offset) & ~0x1;
+    auto send =
+        std::min(32768 - cnt, sizeof(RX_STR) - sizeof(Header) - offset) & ~0x1;
     *reinterpret_cast<uint16_t*>(data_body + 2) = static_cast<uint16_t>(send);
 
     for (size_t i = 0; i < send; i++) data_body[offset + i] = buf[cnt + i];
@@ -55,9 +56,10 @@ TEST(Op, PulseWidthEncoder) {
     ASSERT_EQ(ack, header->msg_id);
   }
 
-  ASSERT_EQ(full_width_start, bram_read_controller(ADDR_PULSE_WIDTH_ENCODER_FULL_WIDTH_START));
+  ASSERT_EQ(full_width_start,
+            bram_read_controller(ADDR_PULSE_WIDTH_ENCODER_FULL_WIDTH_START));
   for (size_t i = 0; i < 32768; i += 2) {
-    ASSERT_EQ(buf[i], bram_read_duty_table(i / 2) & 0xFF);
-    ASSERT_EQ(buf[i + 1], bram_read_duty_table(i / 2) >> 8);
+    ASSERT_EQ(buf[i], bram_read_pwe_table(i / 2) & 0xFF);
+    ASSERT_EQ(buf[i + 1], bram_read_pwe_table(i / 2) >> 8);
   }
 }

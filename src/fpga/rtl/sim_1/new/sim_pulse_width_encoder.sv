@@ -13,7 +13,7 @@ module sim_pulse_width_encoder ();
   cnt_bus_if cnt_bus ();
   modulation_bus_if mod_bus ();
   stm_bus_if stm_bus ();
-  duty_table_bus_if duty_table_bus ();
+  pwe_table_bus_if pwe_table_bus ();
 
   logic CLK;
   logic locked;
@@ -33,7 +33,7 @@ module sim_pulse_width_encoder ();
       .CNT_BUS(cnt_bus.in_port),
       .MOD_BUS(mod_bus.in_port),
       .STM_BUS(stm_bus.in_port),
-      .DUTY_TABLE_BUS(duty_table_bus.in_port)
+      .PWE_TABLE_BUS(pwe_table_bus.in_port)
   );
 
   logic din_valid, dout_valid;
@@ -44,13 +44,13 @@ module sim_pulse_width_encoder ();
 
   logic [15:0] intensity_buf[DEPTH];
   logic [7:0] phase_buf[DEPTH];
-  logic [7:0] duty_table[TABLE_SIZE];
+  logic [7:0] pwe_table[TABLE_SIZE];
 
   pulse_width_encoder #(
       .DEPTH(DEPTH)
   ) pulse_width_encoder (
       .CLK(CLK),
-      .DUTY_TABLE_BUS(duty_table_bus.out_port),
+      .PWE_TABLE_BUS(pwe_table_bus.out_port),
       .DIN_VALID(din_valid),
       .INTENSITY_IN(intensity_in),
       .PHASE_IN(phase),
@@ -110,7 +110,7 @@ module sim_pulse_width_encoder ();
     end
 
     for (int i = 0; i < DEPTH; i++) begin
-      expect_pulse_width = duty_table[intensity_buf[i]>>1];
+      expect_pulse_width = pwe_table[intensity_buf[i]>>1];
       if (pulse_width_out !== expect_pulse_width) begin
         $error("At %d: i=%d, d=%d, d_m=%d", i, intensity_buf[i], expect_pulse_width,
                pulse_width_out);
@@ -148,9 +148,9 @@ module sim_pulse_width_encoder ();
 
     // config bram
     for (int i = 0; i < TABLE_SIZE; i++) begin
-      duty_table[i] = sim_helper_random.range(8'hFF, 0);
+      pwe_table[i] = sim_helper_random.range(8'hFF, 0);
     end
-    sim_helper_bram.write_duty_table(duty_table);
+    sim_helper_bram.write_pwe_table(pwe_table);
 
     for (int i = 0; i <= TABLE_SIZE;) begin
       $display("Check config %d/%d", i, TABLE_SIZE);

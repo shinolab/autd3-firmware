@@ -11,7 +11,7 @@ module sim_clock ();
   cnt_bus_if cnt_bus ();
   modulation_bus_if mod_bus ();
   stm_bus_if stm_bus ();
-  duty_table_bus_if duty_table_bus ();
+  pwe_table_bus_if pwe_table_bus ();
 
   memory memory (
       .CLK(CLK),
@@ -21,7 +21,7 @@ module sim_clock ();
       .CNT_BUS(cnt_bus.in_port),
       .MOD_BUS(mod_bus.in_port),
       .STM_BUS(stm_bus.in_port),
-      .DUTY_TABLE_BUS(duty_table_bus.in_port)
+      .PWE_TABLE_BUS(pwe_table_bus.in_port)
   );
 
   sim_helper_clk sim_helper_clk (

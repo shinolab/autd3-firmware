@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-module sim_mem_duty_table ();
+module sim_mem_pwe_table ();
 
   localparam int DEPTH = 249;
   localparam int SIZE = 65536;
@@ -14,7 +14,7 @@ module sim_mem_duty_table ();
   cnt_bus_if cnt_bus ();
   modulation_bus_if mod_bus ();
   stm_bus_if stm_bus ();
-  duty_table_bus_if duty_table_bus ();
+  pwe_table_bus_if pwe_table_bus ();
 
   memory memory (
       .CLK(CLK),
@@ -24,7 +24,7 @@ module sim_mem_duty_table ();
       .CNT_BUS(cnt_bus.in_port),
       .MOD_BUS(mod_bus.in_port),
       .STM_BUS(stm_bus.in_port),
-      .DUTY_TABLE_BUS(duty_table_bus.in_port)
+      .PWE_TABLE_BUS(pwe_table_bus.in_port)
   );
 
   sim_helper_clk sim_helper_clk (
@@ -40,8 +40,8 @@ module sim_mem_duty_table ();
   logic [15:0] idx;
   logic [ 7:0] value;
 
-  assign duty_table_bus.out_port.IDX = idx;
-  assign value = duty_table_bus.out_port.VALUE;
+  assign pwe_table_bus.out_port.IDX = idx;
+  assign value = pwe_table_bus.out_port.VALUE;
 
   task automatic progress();
     for (int i = 0; i < SIZE + 3; i++) begin
@@ -98,14 +98,14 @@ module sim_mem_duty_table ();
     for (int i = 0; i < SIZE; i++) begin
       buffer[i] = sim_helper_random.range(8'hFF, 0);
     end
-    sim_helper_bram.write_duty_table(buffer);
+    sim_helper_bram.write_pwe_table(buffer);
     $display("memory initialized");
     fork
       progress();
       check();
     join
 
-    $display("OK! sim_mem_duty_table");
+    $display("OK! sim_mem_pwe_table");
     $finish();
   end
 

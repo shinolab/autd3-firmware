@@ -41,13 +41,16 @@ uint16_t fpga_read(uint16_t bram_addr);
 void fpga_write(uint16_t bram_addr, uint16_t value);
 uint16_t bram_read_controller(uint32_t bram_addr);
 uint16_t bram_read_mod(uint32_t segment, uint32_t bram_addr);
-uint16_t bram_read_duty_table(uint32_t bram_addr);
+uint16_t bram_read_pwe_table(uint32_t bram_addr);
 uint16_t bram_read_clk(uint32_t bram_addr);
 uint16_t bram_read_stm(uint32_t segment, uint32_t bram_addr);
 
-inline static uint16_t get_addr(uint8_t bram_select, uint16_t bram_addr) { return (((uint16_t)bram_select & 0x0003) << 14) | (bram_addr & 0x3FFF); }
+inline static uint16_t get_addr(uint8_t bram_select, uint16_t bram_addr) {
+  return (((uint16_t)bram_select & 0x0003) << 14) | (bram_addr & 0x3FFF);
+}
 
-inline static void bram_write(uint8_t bram_select, uint16_t bram_addr, uint16_t value) {
+inline static void bram_write(uint8_t bram_select, uint16_t bram_addr,
+                              uint16_t value) {
   const auto addr = get_addr(bram_select, bram_addr);
   fpga_write(addr, value);
 }
@@ -57,17 +60,23 @@ inline static uint16_t bram_read(uint8_t bram_select, uint16_t bram_addr) {
   return fpga_read(addr);
 }
 
-inline static void bram_cpy(uint8_t bram_select, uint16_t base_bram_addr, const uint16_t *values, uint32_t cnt) {
+inline static void bram_cpy(uint8_t bram_select, uint16_t base_bram_addr,
+                            const uint16_t *values, uint32_t cnt) {
   uint16_t addr = get_addr(bram_select, base_bram_addr);
   for (auto i = 0; i < cnt; i++) fpga_write(addr++, *(values + i));
 }
 
-inline static void bram_cpy_volatile(uint8_t bram_select, uint16_t base_bram_addr, const volatile uint16_t *values, uint32_t cnt) {
+inline static void bram_cpy_volatile(uint8_t bram_select,
+                                     uint16_t base_bram_addr,
+                                     const volatile uint16_t *values,
+                                     uint32_t cnt) {
   uint16_t addr = get_addr(bram_select, base_bram_addr);
   for (auto i = 0; i < cnt; i++) fpga_write(addr++, *(values + i));
 }
 
-inline static void bram_cpy_focus_stm(uint16_t base_bram_addr, const volatile uint16_t *values, uint32_t cnt, uint8_t num_foci) {
+inline static void bram_cpy_focus_stm(uint16_t base_bram_addr,
+                                      const volatile uint16_t *values,
+                                      uint32_t cnt, uint8_t num_foci) {
   uint16_t base_addr = get_addr(BRAM_SELECT_STM, base_bram_addr);
   while (cnt--) {
     fpga_write(base_addr++, *values++);
@@ -78,12 +87,17 @@ inline static void bram_cpy_focus_stm(uint16_t base_bram_addr, const volatile ui
   }
 }
 
-inline static void bram_cpy_gain_stm_phase_full(uint16_t base_bram_addr, const volatile uint16_t *values, const int shift, uint32_t cnt) {
+inline static void bram_cpy_gain_stm_phase_full(uint16_t base_bram_addr,
+                                                const volatile uint16_t *values,
+                                                const int shift, uint32_t cnt) {
   uint16_t base_addr = get_addr(BRAM_SELECT_STM, base_bram_addr);
-  while (cnt--) fpga_write(base_addr++, 0xFF00 | (((*values++) >> shift) & 0x00FF));
+  while (cnt--)
+    fpga_write(base_addr++, 0xFF00 | (((*values++) >> shift) & 0x00FF));
 }
 
-inline static void bram_cpy_gain_stm_phase_half(uint16_t base_bram_addr, const volatile uint16_t *values, const int shift, uint32_t cnt) {
+inline static void bram_cpy_gain_stm_phase_half(uint16_t base_bram_addr,
+                                                const volatile uint16_t *values,
+                                                const int shift, uint32_t cnt) {
   uint16_t base_addr = get_addr(BRAM_SELECT_STM, base_bram_addr);
   uint16_t phase;
   while (cnt--) {
@@ -92,7 +106,8 @@ inline static void bram_cpy_gain_stm_phase_half(uint16_t base_bram_addr, const v
   }
 }
 
-inline static void bram_set(uint8_t bram_select, uint16_t base_bram_addr, uint16_t value, uint32_t cnt) {
+inline static void bram_set(uint8_t bram_select, uint16_t base_bram_addr,
+                            uint16_t value, uint32_t cnt) {
   auto addr = get_addr(bram_select, base_bram_addr);
   for (auto i = 0; i < cnt; i++) fpga_write(addr++, value);
 }

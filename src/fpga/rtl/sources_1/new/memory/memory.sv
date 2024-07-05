@@ -7,7 +7,7 @@ module memory (
     cnt_bus_if.in_port CNT_BUS,
     modulation_bus_if.in_port MOD_BUS,
     stm_bus_if.in_port STM_BUS,
-    duty_table_bus_if.in_port DUTY_TABLE_BUS
+    pwe_table_bus_if.in_port PWE_TABLE_BUS
 );
 
   import params::*;
@@ -72,23 +72,23 @@ module memory (
   /////////////////////////////// Clock ///////////////////////////////
 
   ///////////////////////////// Duty table ////////////////////////////
-  logic duty_table_en;
+  logic pwe_table_en;
 
-  logic [14:0] duty_table_idx;
-  logic [7:0] duty_table_dout;
+  logic [14:0] pwe_table_idx;
+  logic [7:0] pwe_table_dout;
 
-  assign duty_table_en = (select == BRAM_SELECT_DUTY_TABLE) & en;
-  assign duty_table_idx = DUTY_TABLE_BUS.IDX;
-  assign DUTY_TABLE_BUS.VALUE = duty_table_dout;
+  assign pwe_table_en = (select == BRAM_SELECT_PWE_TABLE) & en;
+  assign pwe_table_idx = PWE_TABLE_BUS.IDX;
+  assign PWE_TABLE_BUS.VALUE = pwe_table_dout;
 
-  BRAM_ASIN duty_table_bram (
+  BRAM_ASIN pwe_table_bram (
       .clka (CLK),
       .wea  (1'b0),
-      .addra(duty_table_idx),
+      .addra(pwe_table_idx),
       .dina (),
-      .douta(duty_table_dout),
+      .douta(pwe_table_dout),
       .clkb (bus_clk),
-      .enb  (duty_table_en),
+      .enb  (pwe_table_en),
       .web  (we),
       .addrb(addr[13:0]),
       .dinb (data_in),

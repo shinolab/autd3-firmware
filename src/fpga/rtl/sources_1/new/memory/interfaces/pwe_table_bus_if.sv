@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-interface duty_table_bus_if ();
+interface pwe_table_bus_if ();
 
   logic [14:0] IDX;
   logic [ 7:0] VALUE;
