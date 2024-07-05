@@ -4,7 +4,7 @@ module sim_pulse_width_encoder ();
   `define M_PI 3.14159265358979323846
 
   localparam int DEPTH = 249;
-  localparam int TABLE_SIZE = 32768;
+  localparam int TABLE_SIZE = 256;
 
   sim_helper_random sim_helper_random ();
   sim_helper_bram sim_helper_bram ();
@@ -37,12 +37,12 @@ module sim_pulse_width_encoder ();
   );
 
   logic din_valid, dout_valid;
-  logic [15:0] intensity_in;
+  logic [7:0] intensity_in;
   logic [7:0] pulse_width_out;
   logic [7:0] phase;
   logic [7:0] phase_out;
 
-  logic [15:0] intensity_buf[DEPTH];
+  logic [7:0] intensity_buf[DEPTH];
   logic [7:0] phase_buf[DEPTH];
   logic [7:0] pwe_table[TABLE_SIZE];
 
@@ -59,7 +59,7 @@ module sim_pulse_width_encoder ();
       .DOUT_VALID(dout_valid)
   );
 
-  task automatic set(logic [15:0] intensity[DEPTH], logic [7:0] p[DEPTH]);
+  task automatic set(logic [7:0] intensity[DEPTH], logic [7:0] p[DEPTH]);
     for (int i = 0; i < DEPTH; i++) begin
       intensity_buf[i] = intensity[i];
       phase_buf[i] = p[i];
@@ -84,8 +84,7 @@ module sim_pulse_width_encoder ();
     end
 
     for (int i = 0; i < DEPTH; i++) begin
-      expect_pulse_width =
-          int'(($asin($itor(intensity_buf[i] >> 1) / 32512.0) * 2.0 / `M_PI * 128.0));
+      expect_pulse_width = int'(($asin($itor(intensity_buf[i]) / 255.0) * 2.0 / `M_PI * 128.0));
       if (pulse_width_out !== expect_pulse_width) begin
         $error("At %d: i=%d, d=%d, d_m=%d", i, intensity_buf[i], expect_pulse_width,
                pulse_width_out);
@@ -110,7 +109,7 @@ module sim_pulse_width_encoder ();
     end
 
     for (int i = 0; i < DEPTH; i++) begin
-      expect_pulse_width = pwe_table[intensity_buf[i]>>1];
+      expect_pulse_width = pwe_table[intensity_buf[i]];
       if (pulse_width_out !== expect_pulse_width) begin
         $error("At %d: i=%d, d=%d, d_m=%d", i, intensity_buf[i], expect_pulse_width,
                pulse_width_out);
@@ -125,7 +124,7 @@ module sim_pulse_width_encoder ();
     end
   endtask
 
-  logic [15:0] intensity_tmp[DEPTH];
+  logic [7:0] intensity_tmp[DEPTH];
   logic [7:0] phase_tmp[DEPTH];
   initial begin
     din_valid = 0;

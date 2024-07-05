@@ -4,30 +4,30 @@ module step_calculator_phase #(
 ) (
     input var CLK,
     input var DIN_VALID,
-    input var [15:0] COMPLETION_STEPS,
+    input var [7:0] COMPLETION_STEPS,
     input var [7:0] PHASE,
-    output var [15:0] UPDATE_RATE,
+    output var [7:0] UPDATE_RATE,
     output var DOUT_VALID
 );
 
   localparam int AddSubLatency = 2;
-  localparam int DivLatency = 18;
+  localparam int DivLatency = 8;
 
   logic dout_valid = 0;
   logic [7:0] phase_buf;
 
-  logic [15:0] update_rate;
+  logic [7:0] update_rate;
 
   logic [8:0] cnt;
   logic [7:0] diff_addr, target_set_cnt, remainds_load_cnt, remainds_set_cnt;
 
-  logic [15:0] completion_steps;
+  logic [7:0] completion_steps;
   logic [7:0] current_target;
   logic current_target_web;
   logic [7:0] diff, diff_din;
-  logic [15:0] step_remainds, remainds_din;
+  logic [7:0] step_remainds, remainds_din;
   logic [7:0] diff_b, diff_tmp;
-  logic [15:0] step_quo, step_rem;
+  logic [7:0] step_quo, step_rem;
   logic [8:0] fold_a, fold_b, fold_s;
   logic reset_in, reset_out;
 
@@ -93,8 +93,8 @@ module step_calculator_phase #(
       .S  (fold_s)
   );
 
-  div_16_16 div_16_16 (
-      .s_axis_dividend_tdata({fold_s[7:0], 8'h00}),
+  div_8_8 div_8_8 (
+      .s_axis_dividend_tdata(fold_s[7:0]),
       .s_axis_dividend_tvalid(1'b1),
       .s_axis_divisor_tdata(completion_steps),
       .s_axis_divisor_tvalid(1'b1),

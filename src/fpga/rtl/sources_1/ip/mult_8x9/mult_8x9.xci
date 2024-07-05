@@ -1,25 +1,25 @@
 {
   "schema": "xilinx.com:schema:json_instance:1.0",
   "ip_inst": {
-    "xci_name": "mult_8x8",
+    "xci_name": "mult_8x9",
     "component_reference": "xilinx.com:ip:mult_gen:12.0",
     "ip_revision": "21",
-    "gen_directory": "../../../../autd3-fpga.gen/sources_1/ip/mult_8x8",
+    "gen_directory": "../../../../autd3-fpga.gen/sources_1/ip/mult_8x9",
     "parameters": {
       "component_parameters": {
         "InternalUser": [ { "value": "0", "resolve_type": "user", "format": "long", "usage": "all" } ],
-        "Component_Name": [ { "value": "mult_8x8", "resolve_type": "user", "usage": "all" } ],
+        "Component_Name": [ { "value": "mult_8x9", "resolve_type": "user", "usage": "all" } ],
         "MultType": [ { "value": "Parallel_Multiplier", "resolve_type": "user", "usage": "all" } ],
         "PortAType": [ { "value": "Unsigned", "value_src": "user", "resolve_type": "user", "usage": "all" } ],
         "PortAWidth": [ { "value": "8", "value_src": "user", "resolve_type": "user", "format": "long", "usage": "all" } ],
         "PortBType": [ { "value": "Unsigned", "value_src": "user", "resolve_type": "user", "usage": "all" } ],
-        "PortBWidth": [ { "value": "8", "value_src": "user", "resolve_type": "user", "format": "long", "usage": "all" } ],
+        "PortBWidth": [ { "value": "9", "value_src": "user", "resolve_type": "user", "format": "long", "usage": "all" } ],
         "ConstValue": [ { "value": "129", "resolve_type": "user", "enabled": false, "usage": "all" } ],
         "CcmImp": [ { "value": "Distributed_Memory", "resolve_type": "user", "usage": "all" } ],
         "Multiplier_Construction": [ { "value": "Use_Mults", "value_src": "user", "resolve_type": "user", "usage": "all" } ],
         "OptGoal": [ { "value": "Area", "value_src": "user", "resolve_type": "user", "usage": "all" } ],
         "Use_Custom_Output_Width": [ { "value": "false", "resolve_type": "user", "format": "bool", "usage": "all" } ],
-        "OutputWidthHigh": [ { "value": "15", "value_src": "user", "resolve_type": "user", "format": "long", "enabled": false, "usage": "all" } ],
+        "OutputWidthHigh": [ { "value": "16", "value_src": "user", "resolve_type": "user", "format": "long", "enabled": false, "usage": "all" } ],
         "OutputWidthLow": [ { "value": "0", "resolve_type": "user", "format": "long", "enabled": false, "usage": "all" } ],
         "UseRounding": [ { "value": "false", "resolve_type": "user", "format": "bool", "enabled": false, "usage": "all" } ],
         "RoundPoint": [ { "value": "0", "resolve_type": "user", "format": "long", "enabled": false, "usage": "all" } ],
@@ -39,9 +39,9 @@
         "C_LATENCY": [ { "value": "3", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "C_A_WIDTH": [ { "value": "8", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "C_A_TYPE": [ { "value": "1", "resolve_type": "generated", "format": "long", "usage": "all" } ],
-        "C_B_WIDTH": [ { "value": "8", "resolve_type": "generated", "format": "long", "usage": "all" } ],
+        "C_B_WIDTH": [ { "value": "9", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "C_B_TYPE": [ { "value": "1", "resolve_type": "generated", "format": "long", "usage": "all" } ],
-        "C_OUT_HIGH": [ { "value": "15", "resolve_type": "generated", "format": "long", "usage": "all" } ],
+        "C_OUT_HIGH": [ { "value": "16", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "C_OUT_LOW": [ { "value": "0", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "C_MULT_TYPE": [ { "value": "1", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "C_CE_OVERRIDES_SCLR": [ { "value": "0", "resolve_type": "generated", "format": "long", "usage": "all" } ],
@@ -69,7 +69,7 @@
         "IPCONTEXT": [ { "value": "IP_Flow" } ],
         "IPREVISION": [ { "value": "21" } ],
         "MANAGED": [ { "value": "TRUE" } ],
-        "OUTPUTDIR": [ { "value": "../../../../autd3-fpga.gen/sources_1/ip/mult_8x8" } ],
+        "OUTPUTDIR": [ { "value": "../../../../autd3-fpga.gen/sources_1/ip/mult_8x9" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "." } ],
         "SWVERSION": [ { "value": "2024.1" } ],
@@ -80,8 +80,8 @@
       "ports": {
         "CLK": [ { "direction": "in", "driver_value": "0x1" } ],
         "A": [ { "direction": "in", "size_left": "7", "size_right": "0", "driver_value": "0" } ],
-        "B": [ { "direction": "in", "size_left": "7", "size_right": "0", "driver_value": "0" } ],
-        "P": [ { "direction": "out", "size_left": "15", "size_right": "0", "driver_value": "0" } ]
+        "B": [ { "direction": "in", "size_left": "8", "size_right": "0", "driver_value": "0" } ],
+        "P": [ { "direction": "out", "size_left": "16", "size_right": "0", "driver_value": "0" } ]
       },
       "interfaces": {
         "a_intf": {

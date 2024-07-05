@@ -8,7 +8,7 @@ module modulation #(
     input wire settings::sync_settings_t SYNC_SETTINGS,
     input wire DIN_VALID,
     input wire [7:0] INTENSITY_IN,
-    output wire [15:0] INTENSITY_OUT,
+    output wire [7:0] INTENSITY_OUT,
     input wire [7:0] PHASE_IN,
     output wire [7:0] PHASE_OUT,
     output wire DOUT_VALID,

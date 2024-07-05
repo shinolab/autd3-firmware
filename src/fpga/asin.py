@@ -5,9 +5,9 @@ import numpy as np
 path = pathlib.Path(__file__).parent / "asin.coe"
 
 T = 256
-DEPTH = 15
+DEPTH = 8
 N = 2**DEPTH
-FULL = 255 * 255 // 2
+FULL = 255
 
 with open(path, "w") as f:
     f.write("memory_initialization_radix = 16 ;\n")

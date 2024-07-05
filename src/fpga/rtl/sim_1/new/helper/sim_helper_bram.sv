@@ -112,9 +112,9 @@ module sim_helper_bram #(
     bram_write(params::BRAM_SELECT_CONTROLLER, {2'b00, params::BRAM_CNT_SELECT_MAIN, addr}, data);
   endtask
 
-  task automatic write_pwe_table(input logic [7:0] value[65536]);
-    for (int i = 0; i < 32768; i++) begin
-      bram_write(params::BRAM_SELECT_PWE_TABLE, i[13:0], {value[2*i+1], value[2*i]});
+  task automatic write_pwe_table(input logic [7:0] value[256]);
+    for (int i = 0; i < 128; i++) begin
+      bram_write(params::BRAM_SELECT_PWE_TABLE, i[6:0], {value[2*i+1], value[2*i]});
     end
   endtask
 

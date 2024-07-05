@@ -4,22 +4,22 @@ module interpolator_intensity #(
 ) (
     input var CLK,
     input var DIN_VALID,
-    input var [15:0] UPDATE_RATE,
-    input var [15:0] INTENSITY_IN,
-    output var [15:0] INTENSITY_OUT,
+    input var [7:0] UPDATE_RATE,
+    input var [7:0] INTENSITY_IN,
+    output var [7:0] INTENSITY_OUT,
     output var DOUT_VALID
 );
 
   `RAM
-  logic [15:0] current_mem[256] = '{256{16'h0000}};
+  logic [7:0] current_mem[256] = '{256{8'h00}};
 
-  logic [15:0] current, current_0;
-  logic signed [16:0] update_rate_p, update_rate_n;
-  logic signed [16:0] step;
+  logic [7:0] current, current_0;
+  logic signed [8:0] update_rate_p, update_rate_n;
+  logic signed [8:0] step;
 
   logic [7:0] cnt;
   logic dout_valid = 0;
-  logic [15:0] intensity_out;
+  logic [7:0] intensity_out;
 
   assign current = current_mem[cnt];
   assign INTENSITY_OUT = intensity_out;
@@ -37,7 +37,7 @@ module interpolator_intensity #(
     current_0 <= current;
     update_rate_p <= $signed({1'b0, UPDATE_RATE});
     update_rate_n <= -$signed({1'b0, UPDATE_RATE});
-    if (step < 17'sd0) begin
+    if (step < 9'sd0) begin
       intensity_out <= $signed({1'b0, current_0}) + ((update_rate_n < step) ? step : update_rate_n);
     end else begin
       intensity_out <= $signed({1'b0, current_0}) + ((step < update_rate_p) ? step : update_rate_p);
@@ -50,7 +50,7 @@ module interpolator_intensity #(
         dout_valid <= 1'b0;
         if (DIN_VALID) begin
           state <= RUN;
-          cnt   <= 8'h1;
+          cnt   <= 1;
         end else begin
           cnt <= '0;
         end

@@ -43,7 +43,7 @@ module sim_mod_modulation ();
   logic [7:0] phase_in;
 
   logic dout_valid;
-  logic [15:0] intensity_out;
+  logic [7:0] intensity_out;
   logic [7:0] phase_out;
   logic [14:0] idx_debug;
 
@@ -104,8 +104,8 @@ module sim_mod_modulation ();
     din_valid <= 1'b0;
   endtask
 
-  logic [15:0] expect_intensity;
-  logic [ 7:0] expect_phase;
+  logic [7:0] expect_intensity;
+  logic [7:0] expect_phase;
   task automatic check();
     while (1) begin
       @(posedge CLK);
@@ -115,9 +115,9 @@ module sim_mod_modulation ();
     end
     for (int i = 0; i < DEPTH; i++) begin
       if (stop_debug == 1'b0) begin
-        expect_intensity = int'(intensity_buf[i]) * mod_buf[segment_debug][(idx_debug+cycle_buf[segment_debug])%cycle_buf[segment_debug]];
+        expect_intensity = (int'(intensity_buf[i]) * (mod_buf[segment_debug][(idx_debug+cycle_buf[segment_debug])%cycle_buf[segment_debug]]+1)) / 256;
       end else begin
-        expect_intensity = int'(intensity_buf[i]) * mod_buf[segment_debug][cycle_buf[segment_debug]-1];
+        expect_intensity = (int'(intensity_buf[i]) * (mod_buf[segment_debug][cycle_buf[segment_debug]-1]+1)) / 256;
       end
       if (intensity_out !== expect_intensity) begin
         $error("Intensity[%d] at %d: d=%d, %d !== %d", segment_debug, i, intensity_buf[i],

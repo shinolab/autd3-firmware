@@ -37,11 +37,11 @@ module main #(
   logic [7:0] phase;
   logic dout_valid;
 
-  logic [15:0] intensity_m;
+  logic [7:0] intensity_m;
   logic [7:0] phase_m;
   logic dout_valid_m;
 
-  logic [15:0] intensity_s;
+  logic [7:0] intensity_s;
   logic [7:0] phase_s;
   logic dout_valid_s;
 

@@ -5,7 +5,7 @@ module modulation_multiplier #(
     input wire CLK,
     input wire DIN_VALID,
     input wire [7:0] INTENSITY_IN,
-    output wire [15:0] INTENSITY_OUT,
+    output wire [7:0] INTENSITY_OUT,
     output wire DOUT_VALID,
     modulation_bus_if.out_port MOD_BUS,
     input wire [14:0] IDX[params::NumSegment],
@@ -28,7 +28,7 @@ module modulation_multiplier #(
   logic stop_buf = 1'b0, segment_buf = 1'b0;
   logic [$clog2(DEPTH+(Latency+1))-1:0] cnt;
   logic [7:0] intensity_buf;
-  logic [15:0] p;
+  logic [16:0] p;
 
   assign segment = SEGMENT;
   assign stop = STOP;
@@ -37,7 +37,7 @@ module modulation_multiplier #(
   assign mod = MOD_BUS.VALUE;
   assign MOD_BUS.SEGMENT = segment_buf;
 
-  assign INTENSITY_OUT = p;
+  assign INTENSITY_OUT = p[15:8];
   assign DOUT_VALID = dout_valid;
 
   assign DEBUG_IDX = idx;
@@ -53,10 +53,10 @@ module modulation_multiplier #(
       .DOUT(intensity_buf)
   );
 
-  mult_8x8 mult (
+  mult_8x9 mult (
       .CLK(CLK),
       .A  (intensity_buf),
-      .B  (mod),
+      .B  ({1'b0, mod} + 9'd1),
       .P  (p)
   );
 

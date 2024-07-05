@@ -4,20 +4,17 @@ module step_calculator #(
 ) (
     input var CLK,
     input var DIN_VALID,
-    input var [15:0] COMPLETION_STEPS_INTENSITY,
-    input var [15:0] COMPLETION_STEPS_PHASE,
-    input var [15:0] INTENSITY,
+    input var [7:0] COMPLETION_STEPS_INTENSITY,
+    input var [7:0] COMPLETION_STEPS_PHASE,
+    input var [7:0] INTENSITY,
     input var [7:0] PHASE,
-    output var [15:0] UPDATE_RATE_INTENSITY,
-    output var [15:0] UPDATE_RATE_PHASE,
+    output var [7:0] UPDATE_RATE_INTENSITY,
+    output var [7:0] UPDATE_RATE_PHASE,
     output var DOUT_VALID
 );
 
-  localparam int AddSubLatency = 2;
-  localparam int DivLatency = 18;
-
   logic dout_valid_intensity, dout_valid_phase;
-  logic [15:0] update_rate_intensity;
+  logic [7:0] update_rate_intensity;
 
   assign DOUT_VALID = dout_valid_phase;
 
@@ -43,7 +40,7 @@ module step_calculator #(
       .DOUT_VALID(dout_valid_intensity)
   );
   delay_fifo #(
-      .WIDTH(16),
+      .WIDTH(8),
       .DEPTH(1)
   ) fifo_intensity (
       .CLK (CLK),

@@ -17,15 +17,15 @@ module sim_silencer_fixed_update_rate ();
   sim_helper_random sim_helper_random ();
 
   settings::silencer_settings_t silencer_settings;
-  logic [15:0] intensity;
+  logic [7:0] intensity;
   logic [7:0] phase;
-  logic [15:0] intensity_s;
+  logic [7:0] intensity_s;
   logic [7:0] phase_s;
   logic din_valid, dout_valid;
 
-  logic [15:0] intensity_buf[DEPTH];
+  logic [7:0] intensity_buf[DEPTH];
   logic [7:0] phase_buf[DEPTH];
-  logic [15:0] intensity_s_buf[DEPTH];
+  logic [7:0] intensity_s_buf[DEPTH];
   logic [7:0] phase_s_buf[DEPTH];
 
   silencer #(
@@ -69,7 +69,7 @@ module sim_silencer_fixed_update_rate ();
     end
   endtask
 
-  task automatic check_manual(logic [15:0] expect_intensity, logic [7:0] expect_phase);
+  task automatic check_manual(logic [7:0] expect_intensity, logic [7:0] expect_phase);
     for (int i = 0; i < DEPTH; i++) begin
       if (phase_s_buf[i] !== expect_phase) begin
         $display("ERR: PHASE(%d) !== %d in %d-th transducer, step = %d", phase_s_buf[i],
@@ -113,7 +113,7 @@ module sim_silencer_fixed_update_rate ();
 
     //////////////// Manual check ////////////////
     silencer_settings.UPDATE_RATE_INTENSITY = 1;
-    silencer_settings.UPDATE_RATE_PHASE = 256;
+    silencer_settings.UPDATE_RATE_PHASE = 1;
 
     for (int i = 0; i < DEPTH; i++) begin
       phase_buf[i] = 1;
@@ -127,7 +127,7 @@ module sim_silencer_fixed_update_rate ();
 
     for (int i = 0; i < DEPTH; i++) begin
       phase_buf[i] = 255;
-      intensity_buf[i] = 256;
+      intensity_buf[i] = 255;
     end
     fork
       set();
@@ -141,8 +141,8 @@ module sim_silencer_fixed_update_rate ();
     join
     check_manual(3, 255);
 
-    silencer_settings.UPDATE_RATE_INTENSITY = 16'd65535;
-    silencer_settings.UPDATE_RATE_PHASE = 16'd65535;
+    silencer_settings.UPDATE_RATE_INTENSITY = 8'hFF;
+    silencer_settings.UPDATE_RATE_PHASE = 8'hFF;
     for (int i = 0; i < DEPTH; i++) begin
       phase_buf[i] = 0;
       intensity_buf[i] = 0;
@@ -156,13 +156,13 @@ module sim_silencer_fixed_update_rate ();
     // Full jump
     for (int i = 0; i < DEPTH; i++) begin
       phase_buf[i] = 128;
-      intensity_buf[i] = 255 * 255;
+      intensity_buf[i] = 255;
     end
     fork
       set();
       wait_calc();
     join
-    check_manual(255 * 255, 128);
+    check_manual(255, 128);
 
     for (int i = 0; i < DEPTH; i++) begin
       phase_buf[i] = 0;
@@ -178,14 +178,14 @@ module sim_silencer_fixed_update_rate ();
     // from random to random with random step
     for (int i = 0; i < 100; i++) begin
       $display("Random test %d/100", i);
-      silencer_settings.UPDATE_RATE_INTENSITY = sim_helper_random.range(65535, 1);
-      silencer_settings.UPDATE_RATE_PHASE = sim_helper_random.range(65535, 1);
+      silencer_settings.UPDATE_RATE_INTENSITY = sim_helper_random.range(8'hFF, 1);
+      silencer_settings.UPDATE_RATE_PHASE = sim_helper_random.range(8'hFF, 1);
       n_repeat = silencer_settings.UPDATE_RATE_INTENSITY < silencer_settings.UPDATE_RATE_PHASE ?
-                      int'(65536 / silencer_settings.UPDATE_RATE_INTENSITY) + 1 :
-                      int'(65536 / silencer_settings.UPDATE_RATE_PHASE) + 1;
+                      int'(8'hFF / silencer_settings.UPDATE_RATE_INTENSITY) + 1 :
+                      int'(8'hFF / silencer_settings.UPDATE_RATE_PHASE) + 1;
       for (int i = 0; i < DEPTH; i++) begin
-        intensity_buf[i] = sim_helper_random.range(255 * 255, 0);
-        phase_buf[i] = sim_helper_random.range(255, 0);
+        intensity_buf[i] = sim_helper_random.range(8'hFF, 0);
+        phase_buf[i] = sim_helper_random.range(8'hFF, 0);
       end
       repeat (n_repeat) begin
         fork
@@ -201,13 +201,13 @@ module sim_silencer_fixed_update_rate ();
     end
 
     // disable
-    silencer_settings.UPDATE_RATE_INTENSITY = 16'd65535;
-    silencer_settings.UPDATE_RATE_PHASE = 16'd65535;
+    silencer_settings.UPDATE_RATE_INTENSITY = 8'hFF;
+    silencer_settings.UPDATE_RATE_PHASE = 8'hFF;
     n_repeat = 1;
 
     for (int i = 0; i < DEPTH; i++) begin
-      intensity_buf[i] = sim_helper_random.range(255 * 255, 0);
-      phase_buf[i] = sim_helper_random.range(255, 0);
+      intensity_buf[i] = sim_helper_random.range(8'hFF, 0);
+      phase_buf[i] = sim_helper_random.range(8'hFF, 0);
     end
     repeat (n_repeat) begin
       fork

@@ -4,16 +4,16 @@ module interpolator #(
 ) (
     input var CLK,
     input var DIN_VALID,
-    input var [15:0] UPDATE_RATE_INTENSITY,
-    input var [15:0] UPDATE_RATE_PHASE,
-    input var [15:0] INTENSITY_IN,
+    input var [7:0] UPDATE_RATE_INTENSITY,
+    input var [7:0] UPDATE_RATE_PHASE,
+    input var [7:0] INTENSITY_IN,
     input var [7:0] PHASE_IN,
-    output var [15:0] INTENSITY_OUT,
+    output var [7:0] INTENSITY_OUT,
     output var [7:0] PHASE_OUT,
     output var DOUT_VALID
 );
 
-  logic [15:0] intensity_out;
+  logic [7:0] intensity_out;
   logic dout_valid_phase;
 
   assign DOUT_VALID = dout_valid_phase;
@@ -30,7 +30,7 @@ module interpolator #(
   );
 
   delay_fifo #(
-      .WIDTH(16),
+      .WIDTH(8),
       .DEPTH(1)
   ) fifo_intensity (
       .CLK (CLK),

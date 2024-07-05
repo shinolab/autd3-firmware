@@ -71,17 +71,17 @@ module memory (
   );
   /////////////////////////////// Clock ///////////////////////////////
 
-  ///////////////////////////// Duty table ////////////////////////////
+  ///////////////////////////// PWE table ////////////////////////////
   logic pwe_table_en;
 
-  logic [14:0] pwe_table_idx;
+  logic [7:0] pwe_table_idx;
   logic [7:0] pwe_table_dout;
 
   assign pwe_table_en = (select == BRAM_SELECT_PWE_TABLE) & en;
   assign pwe_table_idx = PWE_TABLE_BUS.IDX;
   assign PWE_TABLE_BUS.VALUE = pwe_table_dout;
 
-  BRAM_ASIN pwe_table_bram (
+  BRAM_PWE_TABLE pwe_table_bram (
       .clka (CLK),
       .wea  (1'b0),
       .addra(pwe_table_idx),
@@ -90,11 +90,11 @@ module memory (
       .clkb (bus_clk),
       .enb  (pwe_table_en),
       .web  (we),
-      .addrb(addr[13:0]),
+      .addrb(addr[6:0]),
       .dinb (data_in),
       .doutb()
   );
-  ///////////////////////////// Duty table ////////////////////////////
+  ///////////////////////////// PWE table ////////////////////////////
 
   ///////////////////////////// Modulator /////////////////////////////
   logic mod_en[NumSegment];

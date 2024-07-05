@@ -4,30 +4,30 @@ module step_calculator_intensity #(
 ) (
     input var CLK,
     input var DIN_VALID,
-    input var [15:0] COMPLETION_STEPS,
-    input var [15:0] INTENSITY,
-    output var [15:0] UPDATE_RATE,
+    input var [7:0] COMPLETION_STEPS,
+    input var [7:0] INTENSITY,
+    output var [7:0] UPDATE_RATE,
     output var DOUT_VALID
 );
 
   localparam int AddSubLatency = 2;
-  localparam int DivLatency = 18;
+  localparam int DivLatency = 8;
 
   logic dout_valid = 0;
-  logic [15:0] intensity, intensity_buf;
+  logic [7:0] intensity, intensity_buf;
 
-  logic [15:0] update_rate;
+  logic [7:0] update_rate;
 
-  logic [ 8:0] cnt;
+  logic [8:0] cnt;
   logic [7:0] diff_addr, target_set_cnt, remainds_load_cnt, remainds_set_cnt;
 
-  logic [15:0] completion_steps;
-  logic [15:0] current_target;
+  logic [7:0] completion_steps;
+  logic [7:0] current_target;
   logic current_target_web;
-  logic [15:0] diff, diff_din;
-  logic [15:0] step_remainds, remainds_din;
-  logic [15:0] diff_a, diff_b, diff_tmp, diff_s;
-  logic [15:0] step_quo, step_rem;
+  logic [7:0] diff, diff_din;
+  logic [7:0] step_remainds, remainds_din;
+  logic [7:0] diff_a, diff_b, diff_tmp, diff_s;
+  logic [7:0] step_quo, step_rem;
   logic reset_in, reset_out;
 
   assign UPDATE_RATE = update_rate;
@@ -73,7 +73,7 @@ module step_calculator_intensity #(
   );
 
   addsub #(
-      .WIDTH(16)
+      .WIDTH(8)
   ) addsub_diff (
       .CLK(CLK),
       .A  (diff_a),
@@ -82,7 +82,7 @@ module step_calculator_intensity #(
       .S  (diff_tmp)
   );
 
-  div_16_16 div_16_16 (
+  div_8_8 div_8_8 (
       .s_axis_dividend_tdata(diff_s),
       .s_axis_dividend_tvalid(1'b1),
       .s_axis_divisor_tdata(completion_steps),
@@ -93,7 +93,7 @@ module step_calculator_intensity #(
   );
 
   delay_fifo #(
-      .WIDTH(16),
+      .WIDTH(8),
       .DEPTH(2)
   ) fifo_intensity (
       .CLK (CLK),
@@ -102,7 +102,7 @@ module step_calculator_intensity #(
   );
 
   delay_fifo #(
-      .WIDTH(16),
+      .WIDTH(8),
       .DEPTH(1 + AddSubLatency + AddSubLatency + 1)
   ) fifo_intensity_target (
       .CLK (CLK),

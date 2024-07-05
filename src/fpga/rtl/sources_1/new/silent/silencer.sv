@@ -5,24 +5,24 @@ module silencer #(
     input var CLK,
     input var DIN_VALID,
     input settings::silencer_settings_t SILENCER_SETTINGS,
-    input var [15:0] INTENSITY_IN,
+    input var [7:0] INTENSITY_IN,
     input var [7:0] PHASE_IN,
-    output var [15:0] INTENSITY_OUT,
+    output var [7:0] INTENSITY_OUT,
     output var [7:0] PHASE_OUT,
     output var DOUT_VALID
 );
 
   localparam int AddSubLatency = 2;
-  localparam int DivLatency = 18;
+  localparam int DivLatency = 8;
   localparam int StepCalcLatency = AddSubLatency + 1 + AddSubLatency + 1 + DivLatency + 1 + 1;
 
   logic is_fixed_update_rate;
 
-  logic [15:0] update_rate_intensity, update_rate_phase;
-  logic [15:0] var_update_rate_intensity, var_update_rate_phase;
+  logic [7:0] update_rate_intensity, update_rate_phase;
+  logic [7:0] var_update_rate_intensity, var_update_rate_phase;
   logic dout_valid;
 
-  logic [15:0] intensity;
+  logic [7:0] intensity;
   logic [7:0] phase;
 
   assign is_fixed_update_rate = SILENCER_SETTINGS.MODE == params::SILENCER_MODE_FIXED_UPDATE_RATE;
@@ -45,7 +45,7 @@ module silencer #(
   );
 
   delay_fifo #(
-      .WIDTH(16),
+      .WIDTH(8),
       .DEPTH(StepCalcLatency)
   ) fifo_intensity (
       .CLK (CLK),

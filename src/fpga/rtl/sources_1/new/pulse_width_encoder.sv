@@ -5,21 +5,21 @@ module pulse_width_encoder #(
     input wire CLK,
     pwe_table_bus_if.out_port PWE_TABLE_BUS,
     input wire DIN_VALID,
-    input wire [15:0] INTENSITY_IN,
+    input wire [7:0] INTENSITY_IN,
     input wire [7:0] PHASE_IN,
     output var [7:0] PULSE_WIDTH_OUT,
     output var [7:0] PHASE_OUT,
     output var DOUT_VALID
 );
 
-  logic [14:0] addr;
+  logic [7:0] addr;
   logic [7:0] dout;
 
   logic dout_valid;
 
   logic [$clog2(DEPTH)-1:0] cnt;
 
-  assign addr = INTENSITY_IN[15:1];
+  assign addr = INTENSITY_IN;
 
   typedef enum logic {
     WAITING,
