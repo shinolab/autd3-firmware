@@ -31,7 +31,7 @@ module interpolator #(
 
   delay_fifo #(
       .WIDTH(16),
-      .DEPTH(3)
+      .DEPTH(1)
   ) fifo_intensity (
       .CLK (CLK),
       .DIN (intensity_out),

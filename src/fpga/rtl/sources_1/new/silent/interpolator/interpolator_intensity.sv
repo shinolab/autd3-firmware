@@ -10,124 +10,64 @@ module interpolator_intensity #(
     output var DOUT_VALID
 );
 
-  localparam int AddSubLatency = 2;
-  localparam int TotalLatency = 1 + AddSubLatency + AddSubLatency;
+  `RAM
+  logic [15:0] current_mem[256] = '{256{16'h0000}};
 
-  logic [15:0] intensity_in;
-  logic [15:0] current;
-
-  logic [15:0] update_rate;
+  logic [15:0] current, current_0;
   logic signed [16:0] update_rate_p, update_rate_n;
-  assign update_rate_p = $signed({1'b0, update_rate});
-  assign update_rate_n = -$signed({1'b0, update_rate});
-
   logic signed [16:0] step;
-  logic [15:0] a;
-  logic signed [16:0] b, s;
-  logic [7:0] cnt, set_cnt;
 
+  logic [7:0] cnt;
   logic dout_valid = 0;
   logic [15:0] intensity_out;
 
+  assign current = current_mem[cnt];
   assign INTENSITY_OUT = intensity_out;
   assign DOUT_VALID = dout_valid;
 
-  typedef enum logic [1:0] {
-    WAITING,
-    WAIT0,
+  typedef enum logic {
+    IDLE,
     RUN
   } state_t;
 
-  state_t state = WAITING;
+  state_t state = IDLE;
 
-  BRAM16x256 bram_current (
-      .clka (CLK),
-      .addra(cnt),
-      .dina ('0),
-      .douta(current),
-      .wea  ('0),
-      .clkb (CLK),
-      .addrb(set_cnt),
-      .dinb (intensity_out),
-      .doutb(),
-      .web  (dout_valid)
-  );
-
-  delay_fifo #(
-      .WIDTH(16),
-      .DEPTH(2)
-  ) fifo_intensity_in (
-      .CLK (CLK),
-      .DIN (INTENSITY_IN),
-      .DOUT(intensity_in)
-  );
-
-  delay_fifo #(
-      .WIDTH(16),
-      .DEPTH(4)
-  ) fifo_update_rate (
-      .CLK (CLK),
-      .DIN (UPDATE_RATE),
-      .DOUT(update_rate)
-  );
-
-  addsub #(
-      .WIDTH(17)
-  ) sub_step (
-      .CLK(CLK),
-      .A  ({1'b0, intensity_in}),
-      .B  ({1'b0, current}),
-      .ADD(1'b0),
-      .S  (step)
-  );
-
-  delay_fifo #(
-      .WIDTH(16),
-      .DEPTH(3)
-  ) fifo_current (
-      .CLK (CLK),
-      .DIN (current),
-      .DOUT(a)
-  );
-
-  addsub #(
-      .WIDTH(17)
-  ) add (
-      .CLK(CLK),
-      .A  ({1'b0, a}),
-      .B  (b),
-      .ADD(1'b1),
-      .S  (s)
-  );
+  always_ff @(posedge CLK) begin
+    step <= $signed({1'b0, INTENSITY_IN}) - $signed({1'b0, current});
+    current_0 <= current;
+    update_rate_p <= $signed({1'b0, UPDATE_RATE});
+    update_rate_n <= -$signed({1'b0, UPDATE_RATE});
+    if (step < 17'sd0) begin
+      intensity_out <= $signed({1'b0, current_0}) + ((update_rate_n < step) ? step : update_rate_n);
+    end else begin
+      intensity_out <= $signed({1'b0, current_0}) + ((step < update_rate_p) ? step : update_rate_p);
+    end
+  end
 
   always_ff @(posedge CLK) begin
     case (state)
-      WAITING: begin
+      IDLE: begin
         dout_valid <= 1'b0;
-        cnt <= '0;
-        set_cnt <= 8'hFF - TotalLatency;
-        state <= DIN_VALID ? WAIT0 : state;
-      end
-      WAIT0: begin
-        cnt   <= cnt + 1;
-        state <= RUN;
+        if (DIN_VALID) begin
+          state <= RUN;
+          cnt   <= 8'h1;
+        end else begin
+          cnt <= '0;
+        end
       end
       RUN: begin
+        dout_valid <= 1'b1;
         cnt <= cnt + 1;
-
-        if (step[16]) begin
-          b <= (update_rate_n < step) ? step : update_rate_n;
-        end else begin
-          b <= (step < update_rate_p) ? step : update_rate_p;
-        end
-
-        intensity_out <= s[15:0];
-        dout_valid <= cnt > TotalLatency;
-        set_cnt <= set_cnt + 1;
-        state <= (cnt == TotalLatency + DEPTH) ? WAITING : state;
+        state <= (cnt == DEPTH) ? IDLE : state;
       end
-      default: state <= WAITING;
+      default: state <= IDLE;
     endcase
+  end
+
+  always_ff @(posedge CLK) begin
+    if (dout_valid) begin
+      current_mem[cnt-2] <= intensity_out;
+    end
   end
 
 endmodule

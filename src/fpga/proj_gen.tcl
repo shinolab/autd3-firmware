@@ -91,6 +91,10 @@ set file_list [glob -nocomplain rtl/sources_1/new/headers/*.svh]
 foreach header_file_path $file_list {
   add_header_file sources_1 xil_defaultlib $header_file_path
 }
+set file_list [glob -nocomplain rtl/sources_1/new/headers/*.vh]
+foreach header_file_path $file_list {
+  add_header_file sources_1 xil_defaultlib $header_file_path
+}
 
 set file_list [glob -nocomplain -join rtl/sources_1/ip/* *.xci]
 foreach xci_file_path $file_list {
@@ -134,4 +138,10 @@ set header_list [glob -nocomplain rtl/sources_1/new/headers/*.svh]
 foreach header_file $header_list {
   set_property is_global_include true [get_files $header_file]
   set_property file_type SystemVerilog [get_files $header_file]
+}
+
+set header_list [glob -nocomplain rtl/sources_1/new/headers/*.vh]
+foreach header_file $header_list {
+  set_property is_global_include true [get_files $header_file]
+  set_property file_type {Verilog Header} [get_files $header_file]
 }

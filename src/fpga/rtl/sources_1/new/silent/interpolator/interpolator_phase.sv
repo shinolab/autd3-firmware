@@ -10,158 +10,90 @@ module interpolator_phase #(
     output var DOUT_VALID
 );
 
-  localparam int AddSubLatency = 2;
-  localparam int TotalLatency = 2 + AddSubLatency + AddSubLatency + AddSubLatency;
+  `RAM
+  logic [15:0] current_mem[256] = '{256{16'h0000}};
 
-  logic [ 7:0] phase_in;
-  logic [15:0] current;
-
+  logic [15:0] current, current_0, current_1;
   logic [15:0] update_rate;
   logic signed [16:0] update_rate_p, update_rate_n;
-  assign update_rate_p = $signed({1'b0, update_rate});
-  assign update_rate_n = -$signed({1'b0, update_rate});
+  logic signed [16:0] step, step_wrapped;
 
-  logic signed [16:0] step;
-  logic signed [17:0] a_fg, b_fg, s_fg;
-  logic add_fg = 1'b0;
-  logic [15:0] a;
-  logic signed [16:0] b, s;
-  logic [8:0] cnt;
-  logic [7:0] set_cnt;
-
+  logic [7:0] cnt;
   logic dout_valid = 0;
   logic [15:0] phase_out;
 
-  assign PHASE_OUT  = phase_out[15:8];
+  assign current = current_mem[cnt];
+  assign PHASE_OUT = phase_out[15:8];
   assign DOUT_VALID = dout_valid;
 
   typedef enum logic [1:0] {
-    WAITING,
-    WAIT0,
+    IDLE,
+    WAIT,
     RUN
   } state_t;
 
-  state_t state = WAITING;
+  state_t state = IDLE;
 
-  BRAM16x256 bram_current (
-      .clka (CLK),
-      .addra(cnt[7:0]),
-      .dina ('0),
-      .douta(current),
-      .wea  ('0),
-      .clkb (CLK),
-      .addrb(set_cnt),
-      .dinb (phase_out),
-      .doutb(),
-      .web  (dout_valid)
-  );
+  always_ff @(posedge CLK) begin
+    step <= $signed({1'b0, PHASE_IN, 8'h00}) - $signed({1'b0, current});
+    current_0 <= current;
+    update_rate <= UPDATE_RATE;
 
-  delay_fifo #(
-      .WIDTH(8),
-      .DEPTH(2)
-  ) fifo_phase_in (
-      .CLK (CLK),
-      .DIN (PHASE_IN),
-      .DOUT(phase_in)
-  );
+    // If abs(step) is greater than π, phase goes in the opposite direction.
+    if (step < 17'sd0) begin
+      if (-17'sd32768 <= step) begin
+        step_wrapped <= step;
+      end else begin
+        step_wrapped <= {1'b1, step} + 18'sd65536;
+      end
+    end else begin
+      if (step <= 17'sd32768) begin
+        step_wrapped <= step;
+      end else begin
+        step_wrapped <= {1'b0, step} - 18'sd65536;
+      end
+    end
+    current_1 <= current_0;
+    update_rate_p <= $signed({1'b0, update_rate});
+    update_rate_n <= -$signed({1'b0, update_rate});
 
-  delay_fifo #(
-      .WIDTH(16),
-      .DEPTH(7)
-  ) fifo_update_rate (
-      .CLK (CLK),
-      .DIN (UPDATE_RATE),
-      .DOUT(update_rate)
-  );
-
-  addsub #(
-      .WIDTH(17)
-  ) sub_step (
-      .CLK(CLK),
-      .A  ({1'b0, phase_in, 8'h00}),
-      .B  ({1'b0, current}),
-      .ADD(1'b0),
-      .S  (step)
-  );
-
-  addsub #(
-      .WIDTH(18)
-  ) fg (
-      .CLK(CLK),
-      .A  (a_fg),
-      .B  (b_fg),
-      .ADD(add_fg),
-      .S  (s_fg)
-  );
-
-  delay_fifo #(
-      .WIDTH(16),
-      .DEPTH(6)
-  ) fifo_current (
-      .CLK (CLK),
-      .DIN (current),
-      .DOUT(a)
-  );
-
-  addsub #(
-      .WIDTH(17)
-  ) addsub (
-      .CLK(CLK),
-      .A  ({1'b0, a}),
-      .B  (b),
-      .ADD(1'b1),
-      .S  (s)
-  );
+    if (step_wrapped < 17'sd0) begin
+      phase_out <= $signed({1'b0, current_1}) +
+          ((update_rate_n < step_wrapped) ? step_wrapped : update_rate_n);
+    end else begin
+      phase_out <= $signed({1'b0, current_1}) +
+          ((step_wrapped < update_rate_p) ? step_wrapped : update_rate_p);
+    end
+  end
 
   always_ff @(posedge CLK) begin
     case (state)
-      WAITING: begin
+      IDLE: begin
         dout_valid <= 1'b0;
-        cnt <= '0;
-        set_cnt <= 8'hFF - TotalLatency;
-        state <= DIN_VALID ? WAIT0 : state;
+        if (DIN_VALID) begin
+          state <= WAIT;
+          cnt   <= cnt + 1;
+        end else begin
+          cnt <= '0;
+        end
       end
-      WAIT0: begin
+      WAIT: begin
         cnt   <= cnt + 1;
         state <= RUN;
       end
       RUN: begin
-        cnt  <= cnt + 1;
-
-        // step 1: should phase go forward or back?
-        a_fg <= {step[16], step};
-        if (step[16]) begin
-          if (-17'sd32768 <= step) begin
-            b_fg <= '0;
-          end else begin
-            b_fg   <= 18'sd65536;
-            add_fg <= 1'b1;
-          end
-        end else begin
-          if (step <= 17'sd32768) begin
-            b_fg <= '0;
-          end else begin
-            b_fg   <= 18'sd65536;
-            add_fg <= 1'b0;
-          end
-        end
-
-        // step 2: calculate next phase
-        if (s_fg[17]) begin
-          b <= (update_rate_n < s_fg) ? s_fg[16:0] : update_rate_n;
-        end else begin
-          b <= (s_fg < update_rate_p) ? s_fg[16:0] : update_rate_p;
-        end
-
-        phase_out <= s[15:0];
-        dout_valid <= cnt > TotalLatency;
-        set_cnt <= set_cnt + 1;
-        state <= (cnt == TotalLatency + DEPTH) ? WAITING : state;
+        cnt <= cnt + 1;
+        dout_valid <= 1'b1;
+        state <= (cnt == DEPTH + 1) ? IDLE : state;
       end
-      default: begin
-        state <= WAITING;
-      end
+      default: state <= IDLE;
     endcase
+  end
+
+  always_ff @(posedge CLK) begin
+    if (dout_valid) begin
+      current_mem[cnt-3] <= phase_out;
+    end
   end
 
 endmodule
