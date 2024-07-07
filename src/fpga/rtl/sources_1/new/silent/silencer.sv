@@ -12,9 +12,7 @@ module silencer #(
     output var DOUT_VALID
 );
 
-  localparam int AddSubLatency = 2;
-  localparam int DivLatency = 8;
-  localparam int StepCalcLatency = AddSubLatency + 1 + AddSubLatency + 1 + DivLatency + 1 + 1;
+  localparam int StepCalcLatency = 9;
 
   logic is_fixed_update_rate;
 

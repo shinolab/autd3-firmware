@@ -14,9 +14,8 @@ module step_calculator #(
 );
 
   logic dout_valid_intensity, dout_valid_phase;
-  logic [7:0] update_rate_intensity;
 
-  assign DOUT_VALID = dout_valid_phase;
+  assign DOUT_VALID = dout_valid_intensity & dout_valid_phase;
 
   step_calculator_phase #(
       .DEPTH(DEPTH)
@@ -36,16 +35,8 @@ module step_calculator #(
       .DIN_VALID(DIN_VALID),
       .COMPLETION_STEPS(COMPLETION_STEPS_INTENSITY),
       .INTENSITY(INTENSITY),
-      .UPDATE_RATE(update_rate_intensity),
+      .UPDATE_RATE(UPDATE_RATE_INTENSITY),
       .DOUT_VALID(dout_valid_intensity)
-  );
-  delay_fifo #(
-      .WIDTH(8),
-      .DEPTH(1)
-  ) fifo_intensity (
-      .CLK (CLK),
-      .DIN (update_rate_intensity),
-      .DOUT(UPDATE_RATE_INTENSITY)
   );
 
 endmodule

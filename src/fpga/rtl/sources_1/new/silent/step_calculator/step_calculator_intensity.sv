@@ -10,104 +10,34 @@ module step_calculator_intensity #(
     output var DOUT_VALID
 );
 
-  localparam int AddSubLatency = 2;
-  localparam int DivLatency = 8;
+  localparam int DivLatency = 6;
+
+  `RAM
+  logic [7:0] current_target_mem[256] = '{256{8'h00}};
+  `RAM
+  logic [7:0] diff_mem[256] = '{256{8'h00}};
+  `RAM
+  logic [7:0] step_remainds_mem[256] = '{256{8'h00}};
+
+  logic [7:0] cnt;
+  logic reset_in, reset_out;
+  logic [7:0] diff_tmp, diff_s;
+  logic [7:0] step_quo, step_rem;
 
   logic dout_valid = 0;
-  logic [7:0] intensity, intensity_buf;
-
   logic [7:0] update_rate;
-
-  logic [8:0] cnt;
-  logic [7:0] diff_addr, target_set_cnt, remainds_load_cnt, remainds_set_cnt;
-
-  logic [7:0] completion_steps;
-  logic [7:0] current_target;
-  logic current_target_web;
-  logic [7:0] diff, diff_din;
-  logic [7:0] step_remainds, remainds_din;
-  logic [7:0] diff_a, diff_b, diff_tmp, diff_s;
-  logic [7:0] step_quo, step_rem;
-  logic reset_in, reset_out;
 
   assign UPDATE_RATE = update_rate;
   assign DOUT_VALID  = dout_valid;
 
-  BRAM16x256 bram_current_target (
-      .clka (CLK),
-      .addra(cnt[7:0]),
-      .dina ('0),
-      .douta(current_target),
-      .wea  ('0),
-      .clkb (CLK),
-      .addrb(target_set_cnt),
-      .dinb (intensity_buf),
-      .doutb(),
-      .web  (current_target_web)
-  );
-
-  BRAM16x256 bram_diff (
-      .clka (CLK),
-      .addra(diff_addr),
-      .dina ('0),
-      .douta(diff),
-      .wea  ('0),
-      .clkb (CLK),
-      .addrb(target_set_cnt),
-      .dinb (diff_din),
-      .doutb(),
-      .web  (current_target_web)
-  );
-
-  BRAM16x256 bram_remainds (
-      .clka (CLK),
-      .addra(remainds_load_cnt),
-      .dina ('0),
-      .douta(step_remainds),
-      .wea  ('0),
-      .clkb (CLK),
-      .addrb(remainds_set_cnt),
-      .dinb (remainds_din),
-      .doutb(),
-      .web  (dout_valid)
-  );
-
-  addsub #(
-      .WIDTH(8)
-  ) addsub_diff (
-      .CLK(CLK),
-      .A  (diff_a),
-      .B  (diff_b),
-      .ADD(1'b0),
-      .S  (diff_tmp)
-  );
-
   div_8_8 div_8_8 (
       .s_axis_dividend_tdata(diff_s),
       .s_axis_dividend_tvalid(1'b1),
-      .s_axis_divisor_tdata(completion_steps),
+      .s_axis_divisor_tdata(COMPLETION_STEPS),
       .s_axis_divisor_tvalid(1'b1),
       .aclk(CLK),
       .m_axis_dout_tdata({step_quo, step_rem}),
       .m_axis_dout_tvalid()
-  );
-
-  delay_fifo #(
-      .WIDTH(8),
-      .DEPTH(2)
-  ) fifo_intensity (
-      .CLK (CLK),
-      .DIN (INTENSITY),
-      .DOUT(intensity)
-  );
-
-  delay_fifo #(
-      .WIDTH(8),
-      .DEPTH(1 + AddSubLatency + AddSubLatency + 1)
-  ) fifo_intensity_target (
-      .CLK (CLK),
-      .DIN (INTENSITY),
-      .DOUT(intensity_buf)
   );
 
   delay_fifo #(
@@ -119,83 +49,69 @@ module step_calculator_intensity #(
       .DOUT(reset_out)
   );
 
-  typedef enum logic {
-    WAITING,
+  typedef enum logic [1:0] {
+    IDLE,
+    WAIT_DIV,
     RUN
   } state_t;
 
-  state_t state = WAITING;
+  state_t state = IDLE;
+
+  always_ff @(posedge CLK) begin
+    if (DIN_VALID) begin
+      current_target_mem[cnt] <= INTENSITY;
+    end
+  end
+
+  always_ff @(posedge CLK) begin
+    diff_tmp <= (INTENSITY < current_target_mem[cnt]) ? current_target_mem[cnt] - INTENSITY :  INTENSITY - current_target_mem[cnt];
+
+    // diff_mem's index is shifted by 1
+    if (diff_tmp == 8'd0) begin
+      reset_in <= 1'b0;
+      diff_s   <= diff_mem[cnt];
+    end else begin
+      reset_in <= 1'b1;
+      diff_s <= diff_tmp;
+      diff_mem[cnt] <= diff_tmp;
+    end
+
+    // step_remainds_mem's index is shifted by DivLatency
+    if (reset_out) begin
+      update_rate <= step_quo;
+      step_remainds_mem[cnt] <= step_rem;
+    end else begin
+      if (step_remainds_mem[cnt] == '0) begin
+        update_rate <= step_quo;
+      end else begin
+        update_rate <= step_quo + 1;
+        step_remainds_mem[cnt] <= step_remainds_mem[cnt] - 1;
+      end
+    end
+  end
 
   always_ff @(posedge CLK) begin
     case (state)
-      WAITING: begin
+      IDLE: begin
         dout_valid <= 1'b0;
         if (DIN_VALID) begin
-          cnt <= 0;
-          diff_addr <= 8'hFF - AddSubLatency;
-          target_set_cnt <= 8'hFF - 1;
-          remainds_set_cnt <= 8'hFF;
-          remainds_load_cnt <= 8'hFF - DivLatency - AddSubLatency - 1;
-
-          completion_steps <= COMPLETION_STEPS;
-
-          state <= RUN;
+          cnt   <= 8'd1;
+          state <= WAIT_DIV;
+        end else begin
+          cnt <= '0;
         end
+      end
+      WAIT_DIV: begin
+        cnt   <= cnt + 1;
+        state <= cnt == DivLatency + 1 ? RUN : state;
       end
       RUN: begin
         cnt <= cnt + 1;
-        diff_addr <= diff_addr + 1;
-        remainds_load_cnt <= remainds_load_cnt + 1;
-
-        if (intensity < current_target) begin
-          diff_a <= current_target;
-          diff_b <= intensity;
-        end else begin
-          diff_a <= intensity;
-          diff_b <= current_target;
-        end
-
-        if (cnt > AddSubLatency) begin
-          target_set_cnt <= (target_set_cnt == DEPTH) ? target_set_cnt : target_set_cnt + 1;
-          if (diff_tmp != 0) begin
-            reset_in <= 1'b1;
-            diff_din <= diff_tmp;
-            diff_s <= diff_tmp;
-            current_target_web <= 1'b1;
-          end else begin
-            reset_in <= 1'b0;
-            diff_din <= '0;
-            diff_s <= diff;
-            current_target_web <= 1'b0;
-          end
-        end
-
-        if (cnt > AddSubLatency + AddSubLatency + DivLatency) begin
-          if (reset_out) begin
-            update_rate  <= step_quo;
-            remainds_din <= step_rem;
-          end else begin
-            if (step_remainds == 0) begin
-              update_rate  <= step_quo;
-              remainds_din <= 0;
-            end else begin
-              update_rate  <= step_quo + 1;
-              remainds_din <= step_remainds - 1;
-            end
-          end
-          remainds_set_cnt <= remainds_set_cnt + 1;
-
-          dout_valid <= 1'b1;
-          if (cnt == DEPTH + AddSubLatency + AddSubLatency + DivLatency) begin
-            state <= WAITING;
-          end
-        end
+        dout_valid <= 1'b1;
+        state <= (cnt == 1 + DivLatency + DEPTH - 1) ? IDLE : state;
       end
-      default: begin
-        state <= WAITING;
-      end
+      default: state <= IDLE;
     endcase
   end
-
 
 endmodule
