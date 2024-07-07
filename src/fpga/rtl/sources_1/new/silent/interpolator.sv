@@ -13,40 +13,103 @@ module interpolator #(
     output var DOUT_VALID
 );
 
+  `RAM
+  logic [15:0] current_mem[256] = '{256{16'h00}};
+
+  logic [15:0] current_0, current_1;
+  logic [7:0] update_rate_i, update_rate_p;
+  logic signed [8:0] update_rate_i_p, update_rate_i_n, update_rate_p_p, update_rate_p_n;
+  logic signed [8:0] step_i, step_i_buf, step_p, step_p_wrapped;
+
+  logic [7:0] cnt;
+  logic dout_valid = 0;
   logic [7:0] intensity_out;
-  logic dout_valid_phase;
+  logic [7:0] phase_out;
 
-  assign DOUT_VALID = dout_valid_phase;
+  assign INTENSITY_OUT = intensity_out;
+  assign PHASE_OUT = phase_out;
+  assign DOUT_VALID = dout_valid;
 
-  interpolator_intensity #(
-      .DEPTH(DEPTH)
-  ) interpolator_intensity (
-      .CLK(CLK),
-      .DIN_VALID(DIN_VALID),
-      .UPDATE_RATE(UPDATE_RATE_INTENSITY),
-      .INTENSITY_IN(INTENSITY_IN),
-      .INTENSITY_OUT(intensity_out),
-      .DOUT_VALID()
-  );
+  typedef enum logic [1:0] {
+    IDLE,
+    WAIT,
+    RUN
+  } state_t;
 
-  delay_fifo #(
-      .WIDTH(8),
-      .DEPTH(1)
-  ) fifo_intensity (
-      .CLK (CLK),
-      .DIN (intensity_out),
-      .DOUT(INTENSITY_OUT)
-  );
+  state_t state = IDLE;
 
-  interpolator_phase #(
-      .DEPTH(DEPTH)
-  ) interpolator_phase (
-      .CLK(CLK),
-      .DIN_VALID(DIN_VALID),
-      .UPDATE_RATE(UPDATE_RATE_PHASE),
-      .PHASE_IN(PHASE_IN),
-      .PHASE_OUT(PHASE_OUT),
-      .DOUT_VALID(dout_valid_phase)
-  );
+  always_ff @(posedge CLK) begin
+    step_i <= $signed({1'b0, INTENSITY_IN}) - $signed({1'b0, current_mem[cnt][15:8]});
+    step_p <= $signed({1'b0, PHASE_IN}) - $signed({1'b0, current_mem[cnt][7:0]});
+    current_0 <= current_mem[cnt];
+    update_rate_i <= UPDATE_RATE_INTENSITY;
+    update_rate_p <= UPDATE_RATE_PHASE;
+
+    step_i_buf <= step_i;
+    // If abs(step) is greater than π, phase goes in the opposite direction.
+    if (step_p < 9'sd0) begin
+      if (-9'sd128 <= step_p) begin
+        step_p_wrapped <= step_p;
+      end else begin
+        step_p_wrapped <= {1'b1, step_p} + 10'sd256;
+      end
+    end else begin
+      if (step_p <= 17'sd128) begin
+        step_p_wrapped <= step_p;
+      end else begin
+        step_p_wrapped <= {1'b0, step_p} - 10'sd256;
+      end
+    end
+    current_1 <= current_0;
+    update_rate_i_p <= $signed({1'b0, update_rate_i});
+    update_rate_i_n <= -$signed({1'b0, update_rate_i});
+    update_rate_p_p <= $signed({1'b0, update_rate_p});
+    update_rate_p_n <= -$signed({1'b0, update_rate_p});
+
+    if (step_i_buf < 9'sd0) begin
+      intensity_out <= $signed({1'b0, current_1[15:8]}) +
+          ((update_rate_i_n < step_i_buf) ? step_i_buf : update_rate_i_n);
+    end else begin
+      intensity_out <= $signed({1'b0, current_1[15:8]}) +
+          ((step_i_buf < update_rate_i_p) ? step_i_buf : update_rate_i_p);
+    end
+    if (step_p_wrapped < 17'sd0) begin
+      phase_out <= $signed({1'b0, current_1[7:0]}) +
+          ((update_rate_p_n < step_p_wrapped) ? step_p_wrapped : update_rate_p_n);
+    end else begin
+      phase_out <= $signed({1'b0, current_1[7:0]}) +
+          ((step_p_wrapped < update_rate_p_p) ? step_p_wrapped : update_rate_p_p);
+    end
+  end
+
+  always_ff @(posedge CLK) begin
+    case (state)
+      IDLE: begin
+        dout_valid <= 1'b0;
+        if (DIN_VALID) begin
+          state <= WAIT;
+          cnt   <= 1;
+        end else begin
+          cnt <= '0;
+        end
+      end
+      WAIT: begin
+        cnt   <= cnt + 1;
+        state <= RUN;
+      end
+      RUN: begin
+        cnt <= cnt + 1;
+        dout_valid <= 1'b1;
+        state <= (cnt == DEPTH + 1) ? IDLE : state;
+      end
+      default: state <= IDLE;
+    endcase
+  end
+
+  always_ff @(posedge CLK) begin
+    if (dout_valid) begin
+      current_mem[cnt-3] <= {intensity_out, phase_out};
+    end
+  end
 
 endmodule
