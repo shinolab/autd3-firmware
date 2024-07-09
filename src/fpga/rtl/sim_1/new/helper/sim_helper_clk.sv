@@ -26,9 +26,8 @@ module sim_helper_clk (
   assign SYS_TIME = sys_time;
 
   initial begin
-    mrcc_25p6m = 0;
-    #1000;
-    sys_time = 1;
+    mrcc_25p6m = '0;
+    sys_time   = '0;
   end
 
   // main clock 25.6MHz
@@ -40,6 +39,5 @@ module sim_helper_clk (
   end
 
   always @(posedge clk) sys_time <= sys_time + 1;
-
 
 endmodule
