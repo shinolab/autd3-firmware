@@ -14,7 +14,7 @@ module synchronizer (
 
   logic [63:0] ecat_sync_time;
   logic [63:0] lap;
-  logic [31:0] lap_rem_unused;
+  logic [23:0] lap_rem_unused;
   logic [63:0] sync_time;
 
   logic [2:0] sync_tri;
@@ -36,10 +36,10 @@ module synchronizer (
   logic skip_one_assert;
   assign SKIP_ONE_ASSERT = skip_one_assert;
 
-  div_64_32 div_64_32_lap (
+  div_64_19 div_lap (
       .s_axis_dividend_tdata(ecat_sync_time),
       .s_axis_dividend_tvalid(1'b1),
-      .s_axis_divisor_tdata(params::ECATSyncBase),
+      .s_axis_divisor_tdata({5'd0, params::ECATSyncBase}),
       .s_axis_divisor_tvalid(1'b1),
       .aclk(CLK),
       .m_axis_dout_tdata({lap, lap_rem_unused}),
