@@ -15,22 +15,26 @@ module stm_focus #(
 );
 
   localparam int CalcLatency = 2 + 2 + 2 + 11 + 34 + 1;
+  localparam int AccLatency = 8 + 4;
 
   logic [511:0] data_out;
-  logic dout_valid = 1'b0;
+  logic dout_valid;
 
   logic signed [15:0] trans_x, trans_y;
 
-  logic [$clog2(CalcLatency + 18 + 4 + DEPTH)-1:0] cnt = '0;
+  logic start_output;
+  logic [7:0] intensity;
+  logic [7:0] offset[7];
+  logic [$clog2(CalcLatency+AccLatency+1)-1:0] calc_wait_cnt;
+  logic [$clog2(DEPTH)-1:0] cnt, output_cnt;
 
-  typedef enum logic [2:0] {
-    WAITING,
-    BRAM_WAIT_0,
-    BRAM_WAIT_1,
-    CALC
+  typedef enum logic {
+    IDLE,
+    RUN
   } state_t;
 
-  state_t state = WAITING;
+  state_t input_state = IDLE;
+  state_t output_state = IDLE;
 
   assign STM_BUS.FOCUS_IDX = IDX;
   assign data_out = STM_BUS.VALUE;
@@ -154,7 +158,7 @@ module stm_focus #(
         .m_axis_dout_tvalid()
     );
 
-    wire [7:0] phase = i == 0 ? quo[7:0] : quo[7:0] + data_out[64*i+61:64*i+54];
+    wire [7:0] phase = i == 0 ? quo[7:0] : quo[7:0] + offset[i-1];
     logic [7:0] sin_out, cos_out;
     sin_table sin_table (
         .a(phase),
@@ -205,28 +209,51 @@ module stm_focus #(
       .douta(PHASE)
   );
 
-  assign INTENSITY  = data_out[61:54];
+  assign INTENSITY  = intensity;
   assign DOUT_VALID = dout_valid;
 
   always_ff @(posedge CLK) begin
-    case (state)
-      WAITING: begin
-        cnt <= 0;
-        dout_valid <= 1'b0;
-        state <= START ? BRAM_WAIT_0 : state;
+    case (input_state)
+      IDLE: begin
+        start_output  <= 1'b0;
+        calc_wait_cnt <= '0;
+        input_state   <= START ? RUN : input_state;
       end
-      BRAM_WAIT_0: begin
-        state <= BRAM_WAIT_1;
+      RUN: begin
+        calc_wait_cnt <= calc_wait_cnt + 1;
+        if (calc_wait_cnt == CalcLatency - 1) begin
+          offset[0] <= data_out[125:118];
+          offset[1] <= data_out[189:182];
+          offset[2] <= data_out[253:246];
+          offset[3] <= data_out[317:310];
+          offset[4] <= data_out[381:374];
+          offset[5] <= data_out[445:438];
+          offset[6] <= data_out[509:502];
+        end else if (calc_wait_cnt == CalcLatency + AccLatency) begin
+          intensity <= data_out[61:54];
+          input_state <= IDLE;
+          start_output <= 1'b1;
+        end
       end
-      BRAM_WAIT_1: begin
-        state <= CALC;
+      default: input_state <= IDLE;
+    endcase
+  end
+
+  always_ff @(posedge CLK) cnt <= START ? 8'hFF : cnt + 1;
+
+  always_ff @(posedge CLK) begin
+    case (output_state)
+      IDLE: begin
+        output_cnt   <= '0;
+        dout_valid   <= 1'b0;
+        output_state <= start_output ? RUN : output_state;
       end
-      CALC: begin
-        cnt <= cnt + 1;
-        dout_valid <= cnt > CalcLatency + 18 + 4;
-        state <= (cnt == CalcLatency + 18 + 4 + DEPTH - 1) ? WAITING : state;
+      RUN: begin
+        output_cnt   <= output_cnt + 1;
+        dout_valid   <= 1'b1;
+        output_state <= (output_cnt == DEPTH - 1) ? IDLE : output_state;
       end
-      default: state <= WAITING;
+      default: output_state <= IDLE;
     endcase
   end
 

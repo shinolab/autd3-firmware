@@ -6,9 +6,8 @@ module stm_swapchain (
     input wire REQ_RD_SEGMENT,
     input wire [7:0] TRANSITION_MODE,
     input wire [63:0] TRANSITION_VALUE,
-    input wire [17:0] ECAT_SYNC_BASE_CNT,
     input wire [12:0] CYCLE[params::NumSegment],
-    input wire [31:0] REP[params::NumSegment],
+    input wire [15:0] REP[params::NumSegment],
     input wire [12:0] SYNC_IDX[params::NumSegment],
     input wire GPIO_IN[4],
     output wire STOP,
@@ -16,12 +15,14 @@ module stm_swapchain (
     output wire [12:0] IDX[params::NumSegment]
 );
 
+  localparam int Latency = 5;
+
   logic segment = 1'b0;
   logic req_segment;
   logic stop = 1'b0;
   logic ext_mode = 1'b0;
-  logic [31:0] rep;
-  logic [31:0] loop_cnt;
+  logic [15:0] rep;
+  logic [15:0] loop_cnt;
 
   logic idx_changed[params::NumSegment];
   logic [12:0] idx_old[params::NumSegment];
@@ -46,59 +47,33 @@ module stm_swapchain (
   idx_mode_t idx_mode = IDX_MODE_SYNC_IDX;
   state_t state = INFINITE_LOOP;
 
-  localparam int LATENCY = 66 + 4 + 1;
-  logic [$clog2(LATENCY)-1:0] diff_latency;
-  logic [63:0] lap;
-  logic [31:0] lap_rem_unused;
-  logic [63:0] transition_time;
-  div_64_32 div_64_32_lap (
-      .s_axis_dividend_tdata(TRANSITION_VALUE),
-      .s_axis_dividend_tvalid(1'b1),
-      .s_axis_divisor_tdata(params::ECATSyncBase),
-      .s_axis_divisor_tvalid(1'b1),
-      .aclk(CLK),
-      .m_axis_dout_tdata({lap, lap_rem_unused}),
-      .m_axis_dout_tvalid()
-  );
-  mult_sync_base mult_sync_base_time (
+  logic [$clog2(Latency)-1:0] diff_latency;
+  sub64_64 addsub_diff_time (
       .CLK(CLK),
-      .A  (lap),
-      .B  (ECAT_SYNC_BASE_CNT),
-      .P  (transition_time)
-  );
-  addsub_64_64 addsub_diff_time (
-      .CLK(CLK),
-      .A  ({1'b0, transition_time}),
-      .B  ({1'b0, SYS_TIME}),
-      .ADD(1'b0),
+      .A  (SYS_TIME),
+      .B  (TRANSITION_VALUE),
       .S  (time_diff)
   );
 
   for (genvar i = 0; i < params::NumSegment; i++) begin : gen_stm_swapchain
+    always_ff @(posedge CLK) idx_old[i] <= SYNC_IDX[i];
     assign idx_changed[i] = idx_old[i] != SYNC_IDX[i];
     assign IDX[i] = (idx_mode == IDX_MODE_SYNC_IDX) ? idx_old[i] : tic_idx[i];
   end
 
   always_ff @(posedge CLK) begin
     if (UPDATE_SETTINGS) begin
-      if (REQ_RD_SEGMENT == segment) begin
+      if (REP[REQ_RD_SEGMENT] == 16'hFFFF) begin
         stop <= 1'b0;
+        segment <= REQ_RD_SEGMENT;
         idx_mode <= IDX_MODE_SYNC_IDX;
         ext_mode <= TRANSITION_MODE == params::TRANSITION_MODE_EXT;
         state <= INFINITE_LOOP;
       end else begin
-        if (REP[REQ_RD_SEGMENT] == 32'hFFFFFFFF) begin
-          stop <= 1'b0;
-          segment <= REQ_RD_SEGMENT;
-          idx_mode <= IDX_MODE_SYNC_IDX;
-          ext_mode <= TRANSITION_MODE == params::TRANSITION_MODE_EXT;
-          state <= INFINITE_LOOP;
-        end else begin
-          rep <= REP[REQ_RD_SEGMENT];
-          req_segment <= REQ_RD_SEGMENT;
-          diff_latency <= '0;
-          state <= WAIT_START;
-        end
+        rep <= REP[REQ_RD_SEGMENT];
+        req_segment <= REQ_RD_SEGMENT;
+        diff_latency <= Latency - 1;
+        state <= WAIT_START;
       end
     end else begin
       case (state)
@@ -114,8 +89,8 @@ module stm_swapchain (
               end
             end
             params::TRANSITION_MODE_SYS_TIME: begin
-              if (diff_latency == LATENCY - 1) begin
-                if (time_diff[64]) begin
+              if (diff_latency == '0) begin
+                if (~time_diff[64]) begin
                   stop <= 1'b0;
                   loop_cnt <= '0;
                   segment <= req_segment;
@@ -124,7 +99,7 @@ module stm_swapchain (
                   state <= FINITE_LOOP;
                 end
               end else begin
-                diff_latency <= diff_latency + 1;
+                diff_latency <= diff_latency - 1;
                 state <= WAIT_START;
               end
             end
@@ -181,7 +156,5 @@ module stm_swapchain (
       endcase
     end
   end
-
-  always_ff @(posedge CLK) idx_old <= SYNC_IDX;
 
 endmodule

@@ -1,6 +1,12 @@
 `timescale 1ns / 1ps
 module sim_stm_foci ();
 
+  `define ASSERT_EQ(expected, actual) \
+  if (expected !== actual) begin \
+    $error("%s:%d: expected is %s, but actual is %s", `__FILE__, `__LINE__, $sformatf("%0d", expected), $sformatf("%0d", actual));\
+    $finish();\
+  end
+
   logic CLK;
   logic locked;
   logic [63:0] SYS_TIME;
@@ -85,14 +91,8 @@ module sim_stm_foci ();
     stm_settings.UPDATE <= 1'b1;
     stm_settings.REQ_RD_SEGMENT <= req_segment;
     stm_settings.REP[req_segment] <= rep;
-    if (req_segment === 1'b0) begin
-      stm_settings.CYCLE[0] = cycle_buf[req_segment] - 1;
-      stm_settings.FREQ_DIV[0] = 512 * freq_div_buf[req_segment];
-    end else begin
-      stm_settings.CYCLE[1] = cycle_buf[req_segment] - 1;
-      stm_settings.FREQ_DIV[1] = 512 * freq_div_buf[req_segment];
-    end
-
+    stm_settings.CYCLE[req_segment] = cycle_buf[req_segment] - 1;
+    stm_settings.FREQ_DIV[req_segment] = freq_div_buf[req_segment];
     @(posedge CLK);
     stm_settings.UPDATE <= 1'b0;
   endtask
@@ -116,6 +116,7 @@ module sim_stm_foci ();
 
   task automatic check(input logic segment);
     automatic int idx, ix, iy;
+    automatic int debug_idx_buf;
     automatic logic signed [63:0] x, y, z;
     automatic logic [63:0] r, lambda;
     automatic logic [7:0] p, phase_expect;
@@ -137,6 +138,7 @@ module sim_stm_foci ();
       end
       $display("check %d @%d", debug_idx, SYS_TIME);
       idx = 0;
+      debug_idx_buf = debug_idx;
       for (int id = 0; idx < DEPTH; id++) begin
         ix = id % 18;
         iy = id / 18;
@@ -144,14 +146,14 @@ module sim_stm_foci ();
           continue;
         end
         for (int k = 0; k < NumFoci; k++) begin
-          x = focus_x[segment][debug_idx][k] - int'(10.16 * ix / 0.025);  // [0.025mm]
-          y = focus_y[segment][debug_idx][k] - int'(10.16 * iy / 0.025);  // [0.025mm]
-          z = focus_z[segment][debug_idx][k];  // [0.025mm]
+          x = focus_x[segment][debug_idx_buf][k] - int'(10.16 * ix / 0.025);  // [0.025mm]
+          y = focus_y[segment][debug_idx_buf][k] - int'(10.16 * iy / 0.025);  // [0.025mm]
+          z = focus_z[segment][debug_idx_buf][k];  // [0.025mm]
           r = $rtoi($sqrt($itor(x * x + y * y + z * z)));  // [0.025mm]
           lambda = (r << 14) / stm_settings.SOUND_SPEED[segment];
           p = lambda % 256;
           if (k !== 0) begin
-            p += intensity_and_offsets_buf[segment][debug_idx][k];
+            p += intensity_and_offsets_buf[segment][debug_idx_buf][k];
           end
           sin_buf[k] = sin_table[p%256];
           cos_buf[k] = sin_table[(p+64)%256];
@@ -165,27 +167,13 @@ module sim_stm_foci ();
         sin /= NumFoci;
         cos /= NumFoci;
         phase_expect = atan_table[{sin[7:1], cos[7:1]}];
-        if (intensity !== intensity_and_offsets_buf[segment][debug_idx][0]) begin
-          $error("Failed at d_out=%d, d_in=%d @%d", intensity,
-                 intensity_and_offsets_buf[segment][debug_idx][0], id);
-          $finish();
-        end
-        if (abs_diff(phase_expect, phase) > 1) begin
-          $error("Failed at p_out=%d, p_in=%d (r2=%d, r=%d, lambda=%d) @%d", phase, phase_expect,
-                 x * x + y * y + z * z, r, lambda, idx);
-          $display("x=%d, y=%d, z=%d", x, y, z);
-          $display("cos=%d, sin=%d", cos, sin);
-          for (int k = 0; k < NumFoci; k++) begin
-            $display("  cos[%d]=%d, sin[%d]=%d", k, cos_buf[k], k, sin_buf[k]);
-          end
-          $finish();
-        end
+        `ASSERT_EQ(intensity_and_offsets_buf[segment][debug_idx_buf][0], intensity);
+        `ASSERT_EQ(phase_expect, phase);
         @(posedge CLK);
         idx++;
       end
     end
   endtask
-
 
   initial begin
     $readmemh("sin.txt", sin_table);

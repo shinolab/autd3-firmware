@@ -1,6 +1,13 @@
 `timescale 1ns / 1ps
 module sim_stm_focus ();
 
+  `define ASSERT_EQ(expected, actual) \
+  if (expected !== actual) begin \
+    $error("%s:%d: expected is %s, but actual is %s", `__FILE__, `__LINE__, $sformatf("%0d", expected), $sformatf("%0d", actual));\
+    $finish();\
+  end
+
+
   logic CLK;
   logic locked;
   logic [63:0] SYS_TIME;
@@ -14,7 +21,7 @@ module sim_stm_focus ();
   settings::stm_settings_t stm_settings;
 
   logic [13:0] cycle_buf[2];
-  logic [31:0] freq_div_buf[2];
+  logic [15:0] freq_div_buf[2];
   logic signed [17:0] focus_x[2][SIZE][8];
   logic signed [17:0] focus_y[2][SIZE][8];
   logic signed [17:0] focus_z[2][SIZE][8];
@@ -79,19 +86,13 @@ module sim_stm_focus ();
       .DEBUG_SEGMENT(debug_segment)
   );
 
-  task automatic update(input logic req_segment, input logic [31:0] rep);
+  task automatic update(input logic req_segment, input logic [15:0] rep);
     @(posedge CLK);
     stm_settings.UPDATE <= 1'b1;
     stm_settings.REQ_RD_SEGMENT <= req_segment;
     stm_settings.REP[req_segment] <= rep;
-    if (req_segment === 1'b0) begin
-      stm_settings.CYCLE[0] = cycle_buf[req_segment] - 1;
-      stm_settings.FREQ_DIV[0] = 512 * freq_div_buf[req_segment];
-    end else begin
-      stm_settings.CYCLE[1] = cycle_buf[req_segment] - 1;
-      stm_settings.FREQ_DIV[1] = 512 * freq_div_buf[req_segment];
-    end
-
+    stm_settings.CYCLE[req_segment] = cycle_buf[req_segment] - 1;
+    stm_settings.FREQ_DIV[req_segment] = freq_div_buf[req_segment];
     @(posedge CLK);
     stm_settings.UPDATE <= 1'b0;
   endtask
@@ -105,16 +106,12 @@ module sim_stm_focus ();
     end
   endtask
 
-  function automatic int abs_diff(input int x, input int y);
-    automatic int abs = (x < y) ? y - x : x - y;
-    abs_diff = (abs < 128) ? abs : 255 - abs;
-  endfunction
-
   logic [7:0] sin_table [  256];
   logic [7:0] atan_table[16384];
 
   task automatic check(input logic segment);
     automatic int idx, ix, iy;
+    automatic int debug_idx_buf;
     automatic logic signed [63:0] x, y, z;
     automatic logic [63:0] r, lambda;
     automatic logic [7:0] p, phase_expect;
@@ -135,33 +132,25 @@ module sim_stm_focus ();
       end
       $display("check %d @%d", debug_idx, SYS_TIME);
       idx = 0;
+      debug_idx_buf = debug_idx;
       for (int id = 0; idx < DEPTH; id++) begin
         ix = id % 18;
         iy = id / 18;
         if ((iy === 1) && (ix === 1 || ix === 2 || ix === 16)) begin
           continue;
         end
-        x = focus_x[segment][debug_idx][0] - int'(10.16 * ix / 0.025);  // [0.025mm]
-        y = focus_y[segment][debug_idx][0] - int'(10.16 * iy / 0.025);  // [0.025mm]
-        z = focus_z[segment][debug_idx][0];  // [0.025mm]
+        x = focus_x[segment][debug_idx_buf][0] - int'(10.16 * ix / 0.025);  // [0.025mm]
+        y = focus_y[segment][debug_idx_buf][0] - int'(10.16 * iy / 0.025);  // [0.025mm]
+        z = focus_z[segment][debug_idx_buf][0];  // [0.025mm]
         r = $rtoi($sqrt($itor(x * x + y * y + z * z)));  // [0.025mm]
         lambda = (r << 14) / stm_settings.SOUND_SPEED[segment];
         p = lambda % 256;
         sin = sin_table[p];
         cos = sin_table[(p+64)%256];
         phase_expect = atan_table[{sin[7:1], cos[7:1]}];
-        if (intensity !== intensity_buf[segment][debug_idx][0]) begin
-          $error("Failed at d_out=%d, d_in=%d @%d", intensity, intensity_buf[segment][debug_idx],
-                 id);
-          $finish();
-        end
-        if (abs_diff(phase_expect, phase) > 1) begin
-          $error("Failed at p_out=%d, p_in=%d (r2=%d, r=%d, lambda=%d) @%d", phase, phase_expect,
-                 x * x + y * y + z * z, r, lambda, idx);
-          $error("x=%d, y=%d, z=%d", x, y, z);
-          $error("cos=%d, sin=%d", cos, sin);
-          $finish();
-        end
+
+        `ASSERT_EQ(intensity_buf[segment][debug_idx_buf][0], intensity);
+        `ASSERT_EQ(phase_expect, phase);
         @(posedge CLK);
         idx++;
       end

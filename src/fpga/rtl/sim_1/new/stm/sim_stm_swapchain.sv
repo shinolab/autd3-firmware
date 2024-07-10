@@ -9,13 +9,11 @@ module sim_stm_swapchain ();
 
   localparam int AddSubLatency = 6;
   localparam int DEPTH = 249;
-  localparam int ECAT_SYNC_BASE_CNT = 40000 * 512 / 2000;
 
   logic CLK;
   logic locked;
   logic [63:0] SYS_TIME;
   clock_bus_if clock_bus ();
-
   sim_helper_clk sim_helper_clk (
       .MRCC_25P6M(),
       .CLK(CLK),
@@ -29,7 +27,7 @@ module sim_stm_swapchain ();
   logic [7:0] transition_mode;
   logic [63:0] transition_value;
   logic gpio_in[4];
-  logic [31:0] rep[2];
+  logic [15:0] rep[2];
   logic [12:0] cycle[2];
   logic [12:0] sync_idx[2];
   logic [12:0] idx[2];
@@ -43,7 +41,6 @@ module sim_stm_swapchain ();
       .REQ_RD_SEGMENT(req_rd_segment),
       .TRANSITION_MODE(transition_mode),
       .TRANSITION_VALUE(transition_value),
-      .ECAT_SYNC_BASE_CNT(ECAT_SYNC_BASE_CNT),
       .CYCLE(cycle),
       .REP(rep),
       .SYNC_IDX(sync_idx),
@@ -57,8 +54,8 @@ module sim_stm_swapchain ();
     @(posedge CLK);
     sync_idx[0] <= 0;
     sync_idx[1] <= 0;
-    rep[0] <= 32'hFFFFFFFF;
-    rep[1] <= 32'hFFFFFFFF;
+    rep[0] <= 16'hFFFF;
+    rep[1] <= 16'hFFFF;
     transition_mode <= params::TRANSITION_MODE_SYNC_IDX;
     transition_value <= 0;
     req_rd_segment <= 0;
@@ -98,7 +95,7 @@ module sim_stm_swapchain ();
     // segment change to 1, immidiate
     @(posedge CLK);
     sync_idx[1] <= 1;
-    rep[1] <= 32'hFFFFFFFF;
+    rep[1] <= 16'hFFFF;
     req_rd_segment <= 1;
     update_settings <= 1;
     @(posedge CLK);
@@ -112,7 +109,7 @@ module sim_stm_swapchain ();
     // segment change to 0, wait for idx[0] == 0, repeat one time
     @(posedge CLK);
     sync_idx[1] <= 1;
-    rep[0] <= 32'h0;
+    rep[0] <= 16'h0000;
     req_rd_segment <= 0;
     update_settings <= 1;
     @(posedge CLK);
@@ -229,7 +226,7 @@ module sim_stm_swapchain ();
 
     // segment change to 1, immidiate
     @(posedge CLK);
-    rep[1] <= 32'hFFFFFFFF;
+    rep[1] <= 16'hFFFF;
     req_rd_segment <= 1;
     update_settings <= 1;
     @(posedge CLK);
@@ -267,7 +264,7 @@ module sim_stm_swapchain ();
     // segment change to 1, immidiate
     @(posedge CLK);
     sync_idx[1] <= 1;
-    rep[1] <= 32'hFFFFFFFF;
+    rep[1] <= 16'hFFFF;
     req_rd_segment <= 1;
     update_settings <= 1;
     @(posedge CLK);
@@ -281,7 +278,7 @@ module sim_stm_swapchain ();
     // segment change to 0, wait for GPIO[0] and idx[0] changed, repeat one time
     @(posedge CLK);
     sync_idx[1] <= 1;
-    rep[0] <= 32'h0;
+    rep[0] <= 16'h0000;
     req_rd_segment <= 0;
     gpio_in[0] <= 1'b1;
     update_settings <= 1;
@@ -410,7 +407,7 @@ module sim_stm_swapchain ();
     @(posedge CLK);
     sync_idx[0] <= 0;
     sync_idx[1] <= 0;
-    rep[1] <= 32'hFFFFFFFF;
+    rep[1] <= 16'hFFFF;
     req_rd_segment <= 1;
     update_settings <= 1;
     @(posedge CLK);
@@ -449,7 +446,7 @@ module sim_stm_swapchain ();
     // segment change to 1, immidiate
     @(posedge CLK);
     sync_idx[1] <= 1;
-    rep[1] <= 32'hFFFFFFFF;
+    rep[1] <= 16'hFFFF;
     req_rd_segment <= 1;
     update_settings <= 1;
     @(posedge CLK);
@@ -461,13 +458,13 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(1, idx[1]);
 
     @(posedge CLK);
-    transition_value <= (SYS_TIME / ECAT_SYNC_BASE_CNT + 1) * 500000;
+    transition_value <= SYS_TIME + 10;
     repeat (AddSubLatency) @(posedge CLK);
 
-    // segment change to 0, wait for 5 clocks, repeat one time
+    // segment change to 0, repeat one time
     @(posedge CLK);
     sync_idx[1] <= sync_idx[1] + 1;
-    rep[0] <= 32'h0;
+    rep[0] <= 16'h0000;
     req_rd_segment <= 0;
     update_settings <= 1;
     @(posedge CLK);
@@ -483,7 +480,7 @@ module sim_stm_swapchain ();
       @(negedge CLK);
       `ASSERT_EQ(1, segment);
       `ASSERT_EQ(0, stop);
-      if (SYS_TIME == ECAT_SYNC_BASE_CNT * 2 + 7) break;
+      if (SYS_TIME == transition_value + 6) break;
     end
 
     // change segment
@@ -521,7 +518,7 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(0, idx[0]);
 
     @(posedge CLK);
-    transition_value <= (SYS_TIME / ECAT_SYNC_BASE_CNT + 1) * 500000;
+    transition_value <= SYS_TIME + 10;
     repeat (AddSubLatency) @(posedge CLK);
 
     // segment change to 1, wait for for 5 clocks, repeat 2 times
@@ -542,7 +539,7 @@ module sim_stm_swapchain ();
       @(negedge CLK);
       `ASSERT_EQ(0, segment);
       `ASSERT_EQ(1, stop);
-      if (SYS_TIME == ECAT_SYNC_BASE_CNT * 3 + 7) break;
+      if (SYS_TIME == transition_value + 6) break;
     end
 
     // change segment
@@ -610,7 +607,7 @@ module sim_stm_swapchain ();
     @(posedge CLK);
     sync_idx[0] <= 0;
     sync_idx[1] <= 0;
-    rep[1] <= 32'hFFFFFFFF;
+    rep[1] <= 16'hFFFF;
     req_rd_segment <= 1;
     update_settings <= 1;
     @(posedge CLK);
@@ -648,7 +645,7 @@ module sim_stm_swapchain ();
     // segment change to 1, immidiate
     @(posedge CLK);
     sync_idx[1] <= 1;
-    rep[1] <= 32'hFFFFFFFF;
+    rep[1] <= 16'hFFFF;
     req_rd_segment <= 1;
     update_settings <= 1;
     @(posedge CLK);
@@ -743,8 +740,8 @@ module sim_stm_swapchain ();
     sync_idx[1] = 0;
     cycle[0] = 3 - 1;
     cycle[1] = 3 - 1;
-    rep[0] = 32'hFFFFFFFF;
-    rep[1] = 32'hFFFFFFFF;
+    rep[0] = 16'hFFFF;
+    rep[1] = 16'hFFFF;
     gpio_in = {1'b0, 1'b0, 1'b0, 1'b0};
 
     @(posedge locked);

@@ -122,7 +122,6 @@ module main #(
       .SYS_TIME(sys_time),
       .UPDATE(update),
       .STM_SETTINGS(stm_settings),
-      .SYNC_SETTINGS(sync_settings),
       .STM_BUS(stm_bus.stm_port),
       .STM_BUS_FOCUS(stm_bus.out_focus_port),
       .STM_BUS_GAIN(stm_bus.out_gain_port),

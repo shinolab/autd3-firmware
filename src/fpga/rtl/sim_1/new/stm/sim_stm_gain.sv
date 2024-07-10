@@ -1,6 +1,12 @@
 `timescale 1ns / 1ps
 module sim_stm_gain ();
 
+  `define ASSERT_EQ(expected, actual) \
+  if (expected !== actual) begin \
+    $error("%s:%d: expected is %s, but actual is %s", `__FILE__, `__LINE__, $sformatf("%0d", expected), $sformatf("%0d", actual));\
+    $finish();\
+  end
+
   logic CLK;
   logic locked;
   logic [63:0] SYS_TIME;
@@ -20,7 +26,7 @@ module sim_stm_gain ();
   logic dout_valid;
 
   logic [13:0] cycle_buf[2];
-  logic [31:0] freq_div_buf[2];
+  logic [15:0] freq_div_buf[2];
   logic [7:0] intensity_buf[2][SIZE][DEPTH];
   logic [7:0] phase_buf[2][SIZE][DEPTH];
 
@@ -76,18 +82,13 @@ module sim_stm_gain ();
       .DEBUG_SEGMENT(debug_segment)
   );
 
-  task automatic update(input logic req_segment, input logic [31:0] rep);
+  task automatic update(input logic req_segment, input logic [15:0] rep);
     @(posedge CLK);
     stm_settings.UPDATE <= 1'b1;
     stm_settings.REQ_RD_SEGMENT <= req_segment;
     stm_settings.REP[req_segment] <= rep;
-    if (req_segment === 1'b0) begin
-      stm_settings.CYCLE[0] <= cycle_buf[req_segment] - 1;
-      stm_settings.FREQ_DIV[0] <= 512 * freq_div_buf[req_segment];
-    end else begin
-      stm_settings.CYCLE[1] <= cycle_buf[req_segment] - 1;
-      stm_settings.FREQ_DIV[1] <= 512 * freq_div_buf[req_segment];
-    end
+    stm_settings.CYCLE[req_segment] <= cycle_buf[req_segment] - 1;
+    stm_settings.FREQ_DIV[req_segment] <= freq_div_buf[req_segment];
     @(posedge CLK);
     stm_settings.UPDATE <= 1'b0;
   endtask
@@ -118,15 +119,8 @@ module sim_stm_gain ();
       end
       $display("check %d/%d", j + 1, cycle_buf[segment]);
       for (int i = 0; i < DEPTH; i++) begin
-        if (intensity_buf[segment][debug_idx][i] !== intensity) begin
-          $display("%d: Intensity[%d], %d!=%d", segment, i, intensity_buf[segment][debug_idx][i],
-                   intensity);
-          $finish();
-        end
-        if (phase_buf[segment][debug_idx][i] !== phase) begin
-          $display("%d: Phase[%d], %d!=%d", segment, i, phase_buf[segment][debug_idx][i], phase);
-          $finish();
-        end
+        `ASSERT_EQ(intensity_buf[segment][debug_idx][i], intensity);
+        `ASSERT_EQ(phase_buf[segment][debug_idx][i], phase);
         @(posedge CLK);
       end
     end

@@ -27,7 +27,7 @@ module sim_helper_clk (
 
   initial begin
     mrcc_25p6m = '0;
-    sys_time   = '0;
+    sys_time   = 1;  // start with 1 to to prevent `time_cnt_generator::UPDATE` from being asserted 
   end
 
   // main clock 25.6MHz
@@ -38,6 +38,6 @@ module sim_helper_clk (
     #19.532 mrcc_25p6m = !mrcc_25p6m;
   end
 
-  always @(posedge clk) sys_time <= sys_time + 1;
+  always @(posedge clk) sys_time <= locked ? sys_time + 1 : sys_time;
 
 endmodule

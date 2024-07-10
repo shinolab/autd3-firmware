@@ -67,19 +67,15 @@ module controller (
     REQ_STM_MODE1_RD_STM_TRANSITION_VALUE_2,
     REQ_STM_CYCLE0_RD_STM_TRANSITION_VALUE_3,
     REQ_STM_CYCLE1_RD_STM_MODE0,
-    REQ_STM_FREQ_DIV0_0_RD_STM_MODE1,
-    REQ_STM_FREQ_DIV0_1_RD_STM_CYCLE0,
-    REQ_STM_FREQ_DIV1_0_RD_STM_CYCLE1,
-    REQ_STM_FREQ_DIV1_1_RD_STM_FREQ_DIV0_0,
-    REQ_STM_SOUND_SPEED0_RD_STM_FREQ_DIV0_1,
-    REQ_STM_SOUND_SPEED1_RD_STM_FREQ_DIV1_0,
-    REQ_STM_REP0_0_RD_STM_FREQ_DIV1_1,
-    REQ_STM_REP0_1_RD_STM_SOUND_SPEED0,
-    REQ_STM_REP1_0_RD_STM_SOUND_SPEED1,
-    REQ_STM_REP1_1_RD_STM_REP0_0,
-    REQ_STM_NUM_FOCI0_RD_STM_REP0_1,
-    REQ_STM_NUM_FOCI1_RD_STM_REP1_0,
-    RD_STM_REP1_1,
+    REQ_STM_FREQ_DIV0_RD_STM_MODE1,
+    REQ_STM_FREQ_DIV1_RD_STM_CYCLE0,
+    REQ_STM_SOUND_SPEED0_RD_STM_CYCLE1,
+    REQ_STM_SOUND_SPEED1_RD_STM_FREQ_DIV0,
+    REQ_STM_REP0_RD_STM_FREQ_DIV1,
+    REQ_STM_REP1_RD_STM_SOUND_SPEED0,
+    REQ_STM_NUM_FOCI0_RD_STM_SOUND_SPEED1,
+    REQ_STM_NUM_FOCI1_RD_STM_REP0,
+    RD_STM_REP1,
     RD_STM_NUM_FOCI0,
     RD_STM_NUM_FOCI1,
     STM_CLR_UPDATE_SETTINGS_BIT,
@@ -318,70 +314,50 @@ module controller (
       REQ_STM_CYCLE1_RD_STM_MODE0: begin
         addr <= params::ADDR_STM_CYCLE1;
         STM_SETTINGS.MODE[0] <= dout[0];
-        state <= REQ_STM_FREQ_DIV0_0_RD_STM_MODE1;
+        state <= REQ_STM_FREQ_DIV0_RD_STM_MODE1;
       end
-      REQ_STM_FREQ_DIV0_0_RD_STM_MODE1: begin
-        addr <= params::ADDR_STM_FREQ_DIV0_0;
+      REQ_STM_FREQ_DIV0_RD_STM_MODE1: begin
+        addr <= params::ADDR_STM_FREQ_DIV0;
         STM_SETTINGS.MODE[1] <= dout[0];
-        state <= REQ_STM_FREQ_DIV0_1_RD_STM_CYCLE0;
+        state <= REQ_STM_FREQ_DIV1_RD_STM_CYCLE0;
       end
-      REQ_STM_FREQ_DIV0_1_RD_STM_CYCLE0: begin
-        addr <= params::ADDR_STM_FREQ_DIV0_1;
+      REQ_STM_FREQ_DIV1_RD_STM_CYCLE0: begin
+        addr <= params::ADDR_STM_FREQ_DIV1;
         STM_SETTINGS.CYCLE[0] <= dout[12:0];
-        state <= REQ_STM_FREQ_DIV1_0_RD_STM_CYCLE1;
+        state <= REQ_STM_SOUND_SPEED0_RD_STM_CYCLE1;
       end
-      REQ_STM_FREQ_DIV1_0_RD_STM_CYCLE1: begin
-        addr <= params::ADDR_STM_FREQ_DIV1_0;
-        STM_SETTINGS.CYCLE[1] <= dout[12:0];
-        state <= REQ_STM_FREQ_DIV1_1_RD_STM_FREQ_DIV0_0;
-      end
-      REQ_STM_FREQ_DIV1_1_RD_STM_FREQ_DIV0_0: begin
-        addr <= params::ADDR_STM_FREQ_DIV1_1;
-        STM_SETTINGS.FREQ_DIV[0][15:0] <= dout;
-        state <= REQ_STM_SOUND_SPEED0_RD_STM_FREQ_DIV0_1;
-      end
-      REQ_STM_SOUND_SPEED0_RD_STM_FREQ_DIV0_1: begin
+      REQ_STM_SOUND_SPEED0_RD_STM_CYCLE1: begin
         addr <= params::ADDR_STM_SOUND_SPEED0;
-        STM_SETTINGS.FREQ_DIV[0][31:16] <= dout;
-        state <= REQ_STM_SOUND_SPEED1_RD_STM_FREQ_DIV1_0;
+        STM_SETTINGS.CYCLE[1] <= dout[12:0];
+        state <= REQ_STM_SOUND_SPEED1_RD_STM_FREQ_DIV0;
       end
-      REQ_STM_SOUND_SPEED1_RD_STM_FREQ_DIV1_0: begin
+      REQ_STM_SOUND_SPEED1_RD_STM_FREQ_DIV0: begin
         addr <= params::ADDR_STM_SOUND_SPEED1;
-        STM_SETTINGS.FREQ_DIV[1][15:0] <= dout;
-        state <= REQ_STM_REP0_0_RD_STM_FREQ_DIV1_1;
+        STM_SETTINGS.FREQ_DIV[0] <= dout;
+        state <= REQ_STM_REP0_RD_STM_FREQ_DIV1;
       end
-      REQ_STM_REP0_0_RD_STM_FREQ_DIV1_1: begin
-        addr <= params::ADDR_STM_REP0_0;
-        STM_SETTINGS.FREQ_DIV[1][31:16] <= dout;
-        state <= REQ_STM_REP0_1_RD_STM_SOUND_SPEED0;
+      REQ_STM_REP0_RD_STM_FREQ_DIV1: begin
+        addr <= params::ADDR_STM_REP0;
+        STM_SETTINGS.FREQ_DIV[1] <= dout;
+        state <= REQ_STM_REP1_RD_STM_SOUND_SPEED0;
       end
-      REQ_STM_REP0_1_RD_STM_SOUND_SPEED0: begin
-        addr <= params::ADDR_STM_REP0_1;
+      REQ_STM_REP1_RD_STM_SOUND_SPEED0: begin
+        addr <= params::ADDR_STM_REP1;
         STM_SETTINGS.SOUND_SPEED[0] <= dout;
-        state <= REQ_STM_REP1_0_RD_STM_SOUND_SPEED1;
+        state <= REQ_STM_NUM_FOCI0_RD_STM_SOUND_SPEED1;
       end
-      REQ_STM_REP1_0_RD_STM_SOUND_SPEED1: begin
-        addr <= params::ADDR_STM_REP1_0;
-        STM_SETTINGS.SOUND_SPEED[1] <= dout;
-        state <= REQ_STM_REP1_1_RD_STM_REP0_0;
-      end
-      REQ_STM_REP1_1_RD_STM_REP0_0: begin
-        addr <= params::ADDR_STM_REP1_1;
-        STM_SETTINGS.REP[0][15:0] <= dout;
-        state <= REQ_STM_NUM_FOCI0_RD_STM_REP0_1;
-      end
-      REQ_STM_NUM_FOCI0_RD_STM_REP0_1: begin
+      REQ_STM_NUM_FOCI0_RD_STM_SOUND_SPEED1: begin
         addr <= params::ADDR_STM_NUM_FOCI0;
-        STM_SETTINGS.REP[0][31:16] <= dout;
-        state <= REQ_STM_NUM_FOCI1_RD_STM_REP1_0;
+        STM_SETTINGS.SOUND_SPEED[1] <= dout;
+        state <= REQ_STM_NUM_FOCI1_RD_STM_REP0;
       end
-      REQ_STM_NUM_FOCI1_RD_STM_REP1_0: begin
+      REQ_STM_NUM_FOCI1_RD_STM_REP0: begin
         addr <= params::ADDR_STM_NUM_FOCI1;
-        STM_SETTINGS.REP[1][15:0] <= dout;
-        state <= RD_STM_REP1_1;
+        STM_SETTINGS.REP[0] <= dout;
+        state <= RD_STM_REP1;
       end
-      RD_STM_REP1_1: begin
-        STM_SETTINGS.REP[1][31:16] <= dout;
+      RD_STM_REP1: begin
+        STM_SETTINGS.REP[1] <= dout;
         we <= 1'b1;
         addr <= params::ADDR_CTL_FLAG;
         din <= ctl_flags;
@@ -628,12 +604,12 @@ module controller (
     STM_SETTINGS.MODE[1] = params::STM_MODE_GAIN;
     STM_SETTINGS.CYCLE[0] = 13'd0;
     STM_SETTINGS.CYCLE[1] = 13'd0;
-    STM_SETTINGS.FREQ_DIV[0] = 32'hFFFFFFFF;
-    STM_SETTINGS.FREQ_DIV[1] = 32'hFFFFFFFF;
+    STM_SETTINGS.FREQ_DIV[0] = 16'hFFFF;
+    STM_SETTINGS.FREQ_DIV[1] = 16'hFFFF;
     STM_SETTINGS.SOUND_SPEED[0] = 16'd0;
     STM_SETTINGS.SOUND_SPEED[1] = 16'd0;
-    STM_SETTINGS.REP[0] = 32'hFFFFFFFF;
-    STM_SETTINGS.REP[1] = 32'hFFFFFFFF;
+    STM_SETTINGS.REP[0] = 16'hFFFF;
+    STM_SETTINGS.REP[1] = 16'hFFFF;
     STM_SETTINGS.NUM_FOCI[0] = 1;
     STM_SETTINGS.NUM_FOCI[1] = 1;
     SILENCER_SETTINGS.UPDATE = 1'b0;

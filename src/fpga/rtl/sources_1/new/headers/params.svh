@@ -3,7 +3,7 @@ package params;
   localparam int NumTransducers = 249;
   localparam int NumSegment = 2;
 
-  localparam int GainSTMSize = 2;
+  localparam int GainSTMSize = 1024;
   localparam int STMWrAddrWidth = $clog2(GainSTMSize * 256);
   localparam int STMRdAddrWidth = $clog2(GainSTMSize * 8);
   localparam int NumFociMax = 8;
@@ -77,8 +77,8 @@ package params;
   } debug_type_t;
 
   typedef enum logic [7:0] {
-    ADDR_CTL_FLAG = 8'h00,
-    ADDR_FPGA_STATE = 8'h01,
+    ADDR_CTL_FLAG          = 8'h00,
+    ADDR_FPGA_STATE        = 8'h01,
     ADDR_VERSION_NUM_MAJOR = 8'h02,
     ADDR_VERSION_NUM_MINOR = 8'h03,
 
@@ -103,36 +103,32 @@ package params;
     ADDR_MOD_TRANSITION_VALUE_2 = 8'h2B,
     ADDR_MOD_TRANSITION_VALUE_3 = 8'h2C,
 
-    ADDR_SILENCER_MODE = 8'h40,
-    ADDR_SILENCER_UPDATE_RATE_INTENSITY = 8'h41,
-    ADDR_SILENCER_UPDATE_RATE_PHASE = 8'h42,
+    ADDR_SILENCER_MODE                       = 8'h40,
+    ADDR_SILENCER_UPDATE_RATE_INTENSITY      = 8'h41,
+    ADDR_SILENCER_UPDATE_RATE_PHASE          = 8'h42,
     ADDR_SILENCER_COMPLETION_STEPS_INTENSITY = 8'h43,
-    ADDR_SILENCER_COMPLETION_STEPS_PHASE = 8'h44,
+    ADDR_SILENCER_COMPLETION_STEPS_PHASE     = 8'h44,
 
-    ADDR_STM_MEM_WR_SEGMENT = 8'h50,
-    ADDR_STM_MEM_WR_PAGE = 8'h51,
-    ADDR_STM_REQ_RD_SEGMENT = 8'h52,
-    ADDR_STM_CYCLE0 = 8'h54,
-    ADDR_STM_FREQ_DIV0_0 = 8'h55,
-    ADDR_STM_FREQ_DIV0_1 = 8'h56,
-    ADDR_STM_CYCLE1 = 8'h57,
-    ADDR_STM_FREQ_DIV1_0 = 8'h58,
-    ADDR_STM_FREQ_DIV1_1 = 8'h59,
-    ADDR_STM_REP0_0 = 8'h5A,
-    ADDR_STM_REP0_1 = 8'h5B,
-    ADDR_STM_REP1_0 = 8'h5C,
-    ADDR_STM_REP1_1 = 8'h5D,
-    ADDR_STM_MODE0 = 8'h5E,
-    ADDR_STM_MODE1 = 8'h5F,
-    ADDR_STM_SOUND_SPEED0 = 8'h60,
-    ADDR_STM_SOUND_SPEED1 = 8'h62,
-    ADDR_STM_TRANSITION_MODE = 8'h64,
-    ADDR_STM_TRANSITION_VALUE_0 = 8'h65,
-    ADDR_STM_TRANSITION_VALUE_1 = 8'h66,
-    ADDR_STM_TRANSITION_VALUE_2 = 8'h67,
-    ADDR_STM_TRANSITION_VALUE_3 = 8'h68,
-    ADDR_STM_NUM_FOCI0 = 8'h69,
-    ADDR_STM_NUM_FOCI1 = 8'h6A,
+    ADDR_STM_MEM_WR_SEGMENT     = 8'h50,
+    ADDR_STM_MEM_WR_PAGE        = 8'h51,
+    ADDR_STM_REQ_RD_SEGMENT     = 8'h52,
+    ADDR_STM_CYCLE0             = 8'h53,
+    ADDR_STM_FREQ_DIV0          = 8'h54,
+    ADDR_STM_REP0               = 8'h55,
+    ADDR_STM_MODE0              = 8'h56,
+    ADDR_STM_SOUND_SPEED0       = 8'h57,
+    ADDR_STM_NUM_FOCI0          = 8'h58,
+    ADDR_STM_CYCLE1             = 8'h59,
+    ADDR_STM_FREQ_DIV1          = 8'h5A,
+    ADDR_STM_REP1               = 8'h5B,
+    ADDR_STM_MODE1              = 8'h5C,
+    ADDR_STM_SOUND_SPEED1       = 8'h5D,
+    ADDR_STM_NUM_FOCI1          = 8'h5E,
+    ADDR_STM_TRANSITION_MODE    = 8'h5F,
+    ADDR_STM_TRANSITION_VALUE_0 = 8'h60,
+    ADDR_STM_TRANSITION_VALUE_1 = 8'h61,
+    ADDR_STM_TRANSITION_VALUE_2 = 8'h62,
+    ADDR_STM_TRANSITION_VALUE_3 = 8'h63,
 
     ADDR_DEBUG_TYPE0  = 8'hF0,
     ADDR_DEBUG_VALUE0 = 8'hF1,
