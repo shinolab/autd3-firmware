@@ -13,11 +13,9 @@ module sim_stm_timer_normal ();
   logic CLK;
   logic locked;
   logic [63:0] sys_time;
-  clock_bus_if clock_bus ();
   sim_helper_clk sim_helper_clk (
       .MRCC_25P6M(),
       .CLK(CLK),
-      .CLOCK_BUS(clock_bus.out_port),
       .LOCKED(locked),
       .SYS_TIME(sys_time)
   );

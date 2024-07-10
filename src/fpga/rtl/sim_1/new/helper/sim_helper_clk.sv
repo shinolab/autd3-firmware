@@ -2,7 +2,6 @@
 module sim_helper_clk (
     output var MRCC_25P6M,
     output var CLK,
-    clock_bus_if.out_port CLOCK_BUS,
     output var LOCKED,
     output var [63:0] SYS_TIME
 );
@@ -15,7 +14,6 @@ module sim_helper_clk (
 
   clock clock (
       .MRCC_25P6M(mrcc_25p6m),
-      .CLOCK_BUS(CLOCK_BUS),
       .CLK(clk),
       .LOCKED(locked)
   );

@@ -13,11 +13,9 @@ module sim_stm_swapchain ();
   logic CLK;
   logic locked;
   logic [63:0] SYS_TIME;
-  clock_bus_if clock_bus ();
   sim_helper_clk sim_helper_clk (
       .MRCC_25P6M(),
       .CLK(CLK),
-      .CLOCK_BUS(clock_bus.out_port),
       .LOCKED(locked),
       .SYS_TIME(SYS_TIME)
   );

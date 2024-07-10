@@ -5,11 +5,9 @@ module sim_silencer_fixed_update_rate ();
 
   logic CLK;
   logic locked;
-  clock_bus_if clock_bus ();
   sim_helper_clk sim_helper_clk (
       .MRCC_25P6M(),
       .CLK(CLK),
-      .CLOCK_BUS(clock_bus.out_port),
       .LOCKED(locked),
       .SYS_TIME()
   );
