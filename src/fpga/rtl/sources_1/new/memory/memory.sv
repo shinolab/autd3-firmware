@@ -3,7 +3,6 @@ module memory (
     input wire CLK,
     input wire MRCC_25P6M,
     memory_bus_if.bram_port MEM_BUS,
-    clock_bus_if.in_port CLOCK_BUS,
     cnt_bus_if.in_port CNT_BUS,
     modulation_bus_if.in_port MOD_BUS,
     stm_bus_if.in_port STM_BUS,
@@ -50,26 +49,6 @@ module memory (
       .doutb(CNT_BUS.DOUT)
   );
   ///////////////////////////// Controller ////////////////////////////
-
-  /////////////////////////////// Clock ///////////////////////////////
-  logic clock_en;
-
-  assign clock_en = (cnt_sel == BRAM_CNT_SELECT_CLOCK) & (select == BRAM_SELECT_CONTROLLER) & en;
-
-  BRAM_CLOCK clock_bram (
-      .clka (bus_clk),
-      .ena  (clock_en),
-      .wea  (we),
-      .addra(addr[6:0]),
-      .dina (data_in),
-      .douta(),
-      .clkb (MRCC_25P6M),
-      .web  (CLOCK_BUS.WE),
-      .addrb(CLOCK_BUS.ADDR),
-      .dinb (CLOCK_BUS.DIN),
-      .doutb(CLOCK_BUS.DOUT)
-  );
-  /////////////////////////////// Clock ///////////////////////////////
 
   ///////////////////////////// PWE table ////////////////////////////
   logic pwe_table_en;

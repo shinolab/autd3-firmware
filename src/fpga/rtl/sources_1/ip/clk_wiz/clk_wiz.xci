@@ -30,7 +30,7 @@
         "USE_PHASE_ALIGNMENT": [ { "value": "true", "resolve_type": "user", "format": "bool", "usage": "all" } ],
         "USE_MIN_POWER": [ { "value": "true", "value_src": "user", "resolve_type": "user", "format": "bool", "usage": "all" } ],
         "USE_DYN_PHASE_SHIFT": [ { "value": "false", "resolve_type": "user", "format": "bool", "usage": "all" } ],
-        "USE_DYN_RECONFIG": [ { "value": "true", "value_src": "user", "resolve_type": "user", "format": "bool", "usage": "all" } ],
+        "USE_DYN_RECONFIG": [ { "value": "false", "value_src": "user", "resolve_type": "user", "format": "bool", "usage": "all" } ],
         "JITTER_SEL": [ { "value": "No_Jitter", "value_src": "user", "resolve_type": "user", "usage": "all" } ],
         "PRIM_IN_FREQ": [ { "value": "25.6", "value_src": "user", "resolve_type": "user", "format": "float", "usage": "all" } ],
         "PRIM_IN_TIMEPERIOD": [ { "value": "10.000", "resolve_type": "user", "format": "float", "usage": "all" } ],
@@ -302,7 +302,7 @@
         "C_USE_DYN_PHASE_SHIFT": [ { "value": "0", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "C_OPTIMIZE_CLOCKING_STRUCTURE_EN": [ { "value": "0", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "C_USE_INCLK_SWITCHOVER": [ { "value": "0", "resolve_type": "generated", "format": "long", "usage": "all" } ],
-        "C_USE_DYN_RECONFIG": [ { "value": "1", "resolve_type": "generated", "format": "long", "usage": "all" } ],
+        "C_USE_DYN_RECONFIG": [ { "value": "0", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "C_USE_SPREAD_SPECTRUM": [ { "value": "0", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "C_USE_FAST_SIMULATION": [ { "value": "0", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "C_PRIMTYPE_SEL": [ { "value": "AUTO", "resolve_type": "generated", "usage": "all" } ],
@@ -611,13 +611,6 @@
       "ports": {
         "reset": [ { "direction": "in", "driver_value": "0" } ],
         "clk_in1": [ { "direction": "in" } ],
-        "daddr": [ { "direction": "in", "size_left": "6", "size_right": "0" } ],
-        "drdy": [ { "direction": "out" } ],
-        "dwe": [ { "direction": "in" } ],
-        "din": [ { "direction": "in", "size_left": "15", "size_right": "0" } ],
-        "dout": [ { "direction": "out", "size_left": "15", "size_right": "0" } ],
-        "den": [ { "direction": "in" } ],
-        "dclk": [ { "direction": "in" } ],
         "clk_out1": [ { "direction": "out" } ],
         "locked": [ { "direction": "out" } ]
       },
@@ -652,19 +645,6 @@
           },
           "port_maps": {
             "CLK_IN1": [ { "physical_name": "clk_in1" } ]
-          }
-        },
-        "s_drp": {
-          "vlnv": "xilinx.com:interface:drp:1.0",
-          "abstraction_type": "xilinx.com:interface:drp_rtl:1.0",
-          "mode": "slave",
-          "port_maps": {
-            "DADDR": [ { "physical_name": "daddr" } ],
-            "DRDY": [ { "physical_name": "drdy" } ],
-            "DWE": [ { "physical_name": "dwe" } ],
-            "DI": [ { "physical_name": "din" } ],
-            "DO": [ { "physical_name": "dout" } ],
-            "DEN": [ { "physical_name": "den" } ]
           }
         },
         "clock_CLK_OUT1": {
