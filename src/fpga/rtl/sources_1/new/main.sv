@@ -141,7 +141,6 @@ module main #(
       .CLK(clk),
       .SYS_TIME(sys_time),
       .MOD_SETTINGS(mod_settings),
-      .SYNC_SETTINGS(sync_settings),
       .DIN_VALID(dout_valid),
       .INTENSITY_IN(intensity),
       .INTENSITY_OUT(intensity_m),

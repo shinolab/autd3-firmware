@@ -1,4 +1,4 @@
-`define USE_BLOCK_RAM
+// `define USE_BLOCK_RAM
 //`define USE_DIST_RAM
 
 `ifndef RAM

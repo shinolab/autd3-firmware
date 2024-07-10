@@ -186,19 +186,11 @@ module sim_helper_bram #(
     bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_TRANSITION_VALUE_3,
                settings.TRANSITION_VALUE[63:48]);
     bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_CYCLE0, settings.CYCLE[0]);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_FREQ_DIV0_0,
-               settings.FREQ_DIV[0][15:0]);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_FREQ_DIV0_1,
-               settings.FREQ_DIV[0][31:16]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_FREQ_DIV0, settings.FREQ_DIV[0]);
     bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_CYCLE1, settings.CYCLE[1]);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_FREQ_DIV1_0,
-               settings.FREQ_DIV[1][15:0]);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_FREQ_DIV1_1,
-               settings.FREQ_DIV[1][31:16]);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_REP0_0, settings.REP[0][15:0]);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_REP0_1, settings.REP[0][31:16]);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_REP1_0, settings.REP[1][15:0]);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_REP1_1, settings.REP[1][31:16]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_FREQ_DIV1, settings.FREQ_DIV[1]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_REP0, settings.REP[0]);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_MOD_REP1, settings.REP[1]);
   endtask
 
   task automatic write_stm_settings(input settings::stm_settings_t settings);

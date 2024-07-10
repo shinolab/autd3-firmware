@@ -49,17 +49,13 @@ module controller (
     REQ_MOD_TRANSITION_VALUE_3_RD_MOD_TRANSITION_VALUE_0,
     REQ_MOD_CYCLE0_RD_MOD_TRANSITION_VALUE_1,
     REQ_MOD_CYCLE1_RD_MOD_TRANSITION_VALUE_2,
-    REQ_MOD_FREQ_DIV0_0_RD_MOD_TRANSITION_VALUE_3,
-    REQ_MOD_FREQ_DIV0_1_RD_MOD_CYCLE0,
-    REQ_MOD_FREQ_DIV1_0_RD_MOD_CYCLE1,
-    REQ_MOD_FREQ_DIV1_1_RD_MOD_FREQ_DIV0_0,
-    REQ_MOD_REP0_0_RD_MOD_FREQ_DIV0_1,
-    REQ_MOD_REP0_1_RD_MOD_FREQ_DIV1_0,
-    REQ_MOD_REP1_0_RD_MOD_FREQ_DIV1_1,
-    REQ_MOD_REP1_1_RD_MOD_REP0_0,
-    RD_MOD_REP0_1,
-    RD_MOD_REP1_0,
-    RD_MOD_REP1_1,
+    REQ_MOD_FREQ_DIV0_RD_MOD_TRANSITION_VALUE_3,
+    REQ_MOD_FREQ_DIV1_RD_MOD_CYCLE0,
+    REQ_MOD_REP0_RD_MOD_CYCLE1,
+    REQ_MOD_REP1_RD_MOD_FREQ_DIV0,
+    RD_MOD_FREQ_DIV1,
+    RD_MOD_REP0,
+    RD_MOD_REP1,
     MOD_CLR_UPDATE_SETTINGS_BIT,
     REQ_STM_REQ_RD_SEGMENT,
     REQ_STM_TRANSITION_MODE,
@@ -220,66 +216,46 @@ module controller (
       REQ_MOD_CYCLE1_RD_MOD_TRANSITION_VALUE_2: begin
         addr <= params::ADDR_MOD_CYCLE1;
         MOD_SETTINGS.TRANSITION_VALUE[47:32] <= dout;
-        state <= REQ_MOD_FREQ_DIV0_0_RD_MOD_TRANSITION_VALUE_3;
+        state <= REQ_MOD_FREQ_DIV0_RD_MOD_TRANSITION_VALUE_3;
       end
-      REQ_MOD_FREQ_DIV0_0_RD_MOD_TRANSITION_VALUE_3: begin
-        addr <= params::ADDR_MOD_FREQ_DIV0_0;
+      REQ_MOD_FREQ_DIV0_RD_MOD_TRANSITION_VALUE_3: begin
+        addr <= params::ADDR_MOD_FREQ_DIV0;
         MOD_SETTINGS.TRANSITION_VALUE[63:48] <= dout;
-        state <= REQ_MOD_FREQ_DIV0_1_RD_MOD_CYCLE0;
+        state <= REQ_MOD_FREQ_DIV1_RD_MOD_CYCLE0;
       end
-      REQ_MOD_FREQ_DIV0_1_RD_MOD_CYCLE0: begin
-        addr <= params::ADDR_MOD_FREQ_DIV0_1;
+      REQ_MOD_FREQ_DIV1_RD_MOD_CYCLE0: begin
+        addr <= params::ADDR_MOD_FREQ_DIV1;
         MOD_SETTINGS.CYCLE[0] <= dout[14:0];
-        state <= REQ_MOD_FREQ_DIV1_0_RD_MOD_CYCLE1;
+        state <= REQ_MOD_REP0_RD_MOD_CYCLE1;
       end
-      REQ_MOD_FREQ_DIV1_0_RD_MOD_CYCLE1: begin
-        addr <= params::ADDR_MOD_FREQ_DIV1_0;
+      REQ_MOD_REP0_RD_MOD_CYCLE1: begin
+        addr <= params::ADDR_MOD_REP0;
         MOD_SETTINGS.CYCLE[1] <= dout[14:0];
-        state <= REQ_MOD_FREQ_DIV1_1_RD_MOD_FREQ_DIV0_0;
+        state <= REQ_MOD_REP1_RD_MOD_FREQ_DIV0;
       end
-      REQ_MOD_FREQ_DIV1_1_RD_MOD_FREQ_DIV0_0: begin
-        addr <= params::ADDR_MOD_FREQ_DIV1_1;
-        MOD_SETTINGS.FREQ_DIV[0][15:0] <= dout;
-        state <= REQ_MOD_REP0_0_RD_MOD_FREQ_DIV0_1;
+      REQ_MOD_REP1_RD_MOD_FREQ_DIV0: begin
+        addr <= params::ADDR_MOD_REP1;
+        MOD_SETTINGS.FREQ_DIV[0] <= dout;
+        state <= RD_MOD_FREQ_DIV1;
       end
-      REQ_MOD_REP0_0_RD_MOD_FREQ_DIV0_1: begin
-        addr <= params::ADDR_MOD_REP0_0;
-        MOD_SETTINGS.FREQ_DIV[0][31:16] <= dout;
-        state <= REQ_MOD_REP0_1_RD_MOD_FREQ_DIV1_0;
-      end
-      REQ_MOD_REP0_1_RD_MOD_FREQ_DIV1_0: begin
-        addr <= params::ADDR_MOD_REP0_1;
-        MOD_SETTINGS.FREQ_DIV[1][15:0] <= dout;
-        state <= REQ_MOD_REP1_0_RD_MOD_FREQ_DIV1_1;
-      end
-      REQ_MOD_REP1_0_RD_MOD_FREQ_DIV1_1: begin
-        addr <= params::ADDR_MOD_REP1_0;
-        MOD_SETTINGS.FREQ_DIV[1][31:16] <= dout;
-        state <= REQ_MOD_REP1_1_RD_MOD_REP0_0;
-      end
-      REQ_MOD_REP1_1_RD_MOD_REP0_0: begin
-        addr <= params::ADDR_MOD_REP1_1;
-        MOD_SETTINGS.REP[0][15:0] <= dout;
-        state <= RD_MOD_REP0_1;
-      end
-      RD_MOD_REP0_1: begin
-        MOD_SETTINGS.REP[0][31:16] <= dout;
+      RD_MOD_FREQ_DIV1: begin
+        MOD_SETTINGS.FREQ_DIV[1] <= dout;
         we <= 1'b1;
         addr <= params::ADDR_CTL_FLAG;
         din <= ctl_flags;
-        state <= RD_MOD_REP1_0;
+        state <= RD_MOD_REP0;
       end
-      RD_MOD_REP1_0: begin
-        MOD_SETTINGS.REP[1][15:0] <= dout;
+      RD_MOD_REP0: begin
+        MOD_SETTINGS.REP[0] <= dout;
         we <= 1'b1;
         addr <= params::ADDR_FPGA_STATE;
         din <= {
           8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO
         };
-        state <= RD_MOD_REP1_1;
+        state <= RD_MOD_REP1;
       end
-      RD_MOD_REP1_1: begin
-        MOD_SETTINGS.REP[1][31:16] <= dout;
+      RD_MOD_REP1: begin
+        MOD_SETTINGS.REP[1] <= dout;
         MOD_SETTINGS.UPDATE <= 1'b1;
         we <= 1'b0;
         addr <= params::ADDR_CTL_FLAG;
@@ -640,10 +616,10 @@ module controller (
     MOD_SETTINGS.TRANSITION_VALUE = 64'd0;
     MOD_SETTINGS.CYCLE[0] = 15'd1;
     MOD_SETTINGS.CYCLE[1] = 15'd1;
-    MOD_SETTINGS.FREQ_DIV[0] = 32'd5120;
-    MOD_SETTINGS.FREQ_DIV[1] = 32'd5120;
-    MOD_SETTINGS.REP[0] = 32'hFFFFFFFF;
-    MOD_SETTINGS.REP[1] = 32'hFFFFFFFF;
+    MOD_SETTINGS.FREQ_DIV[0] = 16'd10;
+    MOD_SETTINGS.FREQ_DIV[1] = 16'd10;
+    MOD_SETTINGS.REP[0] = 16'hFFFF;
+    MOD_SETTINGS.REP[1] = 16'hFFFF;
     STM_SETTINGS.UPDATE = 1'b0;
     STM_SETTINGS.REQ_RD_SEGMENT = 1'd0;
     STM_SETTINGS.TRANSITION_MODE = params::TRANSITION_MODE_SYNC_IDX;

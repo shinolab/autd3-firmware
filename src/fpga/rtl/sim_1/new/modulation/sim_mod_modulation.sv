@@ -1,6 +1,12 @@
 `timescale 1ns / 1ps
 module sim_mod_modulation ();
 
+  `define ASSERT_EQ(expected, actual) \
+  if (expected !== actual) begin \
+    $error("%s:%d: expected is %s, but actual is %s", `__FILE__, `__LINE__, $sformatf("%0d", expected), $sformatf("%0d", actual));\
+    $finish();\
+  end
+
   localparam int DEPTH = 249;
   localparam int SIZE = 10;
 
@@ -66,7 +72,7 @@ module sim_mod_modulation ();
   );
 
   logic [14:0] cycle_buf[2];
-  logic [31:0] freq_div_buf[2];
+  logic [15:0] freq_div_buf[2];
   logic [7:0] mod_buf[2][SIZE];
   logic [7:0] intensity_buf[DEPTH];
   logic [7:0] phase_buf[DEPTH];
@@ -75,15 +81,9 @@ module sim_mod_modulation ();
     @(posedge CLK);
     mod_settings.UPDATE <= 1'b1;
     mod_settings.REQ_RD_SEGMENT <= req_segment;
-    if (req_segment === 1'b0) begin
-      mod_settings.CYCLE[0] = cycle_buf[req_segment] - 1;
-      mod_settings.FREQ_DIV[0] = 512 * freq_div_buf[req_segment];
-      mod_settings.REP[0] <= rep;
-    end else begin
-      mod_settings.CYCLE[1] = cycle_buf[req_segment] - 1;
-      mod_settings.FREQ_DIV[1] = 512 * freq_div_buf[req_segment];
-      mod_settings.REP[1] <= rep;
-    end
+    mod_settings.CYCLE[req_segment] = cycle_buf[req_segment] - 1;
+    mod_settings.FREQ_DIV[req_segment] = freq_div_buf[req_segment];
+    mod_settings.REP[req_segment] <= rep;
     @(posedge CLK);
     mod_settings.UPDATE <= 1'b0;
   endtask
@@ -119,16 +119,9 @@ module sim_mod_modulation ();
       end else begin
         expect_intensity = (int'(intensity_buf[i]) * (mod_buf[segment_debug][cycle_buf[segment_debug]-1]+1)) / 256;
       end
-      if (intensity_out !== expect_intensity) begin
-        $error("Intensity[%d] at %d: d=%d, %d !== %d", segment_debug, i, intensity_buf[i],
-               expect_intensity, intensity_out);
-        $finish();
-      end
       expect_phase = phase_buf[i];
-      if (phase_out !== expect_phase) begin
-        $error("Phase[%d] at %d: %d !== %d", segment_debug, i, expect_phase, phase_out);
-        $finish();
-      end
+      `ASSERT_EQ(expect_intensity, intensity_out);
+      `ASSERT_EQ(phase_buf[i], phase_out);
       @(posedge CLK);
     end
   endtask
@@ -143,9 +136,9 @@ module sim_mod_modulation ();
 
     din_valid = 1'b0;
 
+    mod_settings.UPDATE = 1'b0;
     mod_settings.TRANSITION_MODE = params::TRANSITION_MODE_SYNC_IDX;
     mod_settings.TRANSITION_VALUE = '0;
-
     mod_settings.CYCLE[0] = '0;
     mod_settings.FREQ_DIV[0] = '1;
     mod_settings.CYCLE[1] = '0;

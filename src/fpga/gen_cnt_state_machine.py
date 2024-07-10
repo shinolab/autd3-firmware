@@ -45,12 +45,12 @@ mod_params = Params(
             "params::TRANSITION_MODE_SYNC_IDX",
         ),
         Param("MOD_TRANSITION_VALUE", 64, "TRANSITION_VALUE", 0),
-        Param("MOD_CYCLE0", 15, "CYCLE[0]", 1),
-        Param("MOD_CYCLE1", 15, "CYCLE[1]", 1),
-        Param("MOD_FREQ_DIV0", 32, "FREQ_DIV[0]", 5120),
-        Param("MOD_FREQ_DIV1", 32, "FREQ_DIV[1]", 5120),
-        Param("MOD_REP0", 32, "REP[0]", "32'hFFFFFFFF"),
-        Param("MOD_REP1", 32, "REP[1]", "32'hFFFFFFFF"),
+        Param("MOD_CYCLE0", 15, "CYCLE[0]", 2 - 1),
+        Param("MOD_CYCLE1", 15, "CYCLE[1]", 2 - 1),
+        Param("MOD_FREQ_DIV0", 16, "FREQ_DIV[0]", 10),
+        Param("MOD_FREQ_DIV1", 16, "FREQ_DIV[1]", 10),
+        Param("MOD_REP0", 16, "REP[0]", "16'hFFFF"),
+        Param("MOD_REP1", 16, "REP[1]", "16'hFFFF"),
     ],
 )
 
