@@ -72,7 +72,7 @@ module modulation_swapchain (
       end else begin
         rep <= REP[REQ_RD_SEGMENT];
         req_segment <= REQ_RD_SEGMENT;
-        diff_latency <= Latency - 1;
+        diff_latency <= '0;
         state <= WAIT_START;
       end
     end else begin
@@ -89,7 +89,7 @@ module modulation_swapchain (
               end
             end
             params::TRANSITION_MODE_SYS_TIME: begin
-              if (diff_latency == '0) begin
+              if (diff_latency == Latency - 1) begin
                 if (~time_diff[64]) begin
                   stop <= 1'b0;
                   loop_cnt <= '0;
@@ -99,7 +99,7 @@ module modulation_swapchain (
                   state <= FINITE_LOOP;
                 end
               end else begin
-                diff_latency <= diff_latency - 1;
+                diff_latency <= diff_latency + 1;
                 state <= WAIT_START;
               end
             end
