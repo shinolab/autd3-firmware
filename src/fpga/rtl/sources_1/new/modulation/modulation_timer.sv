@@ -9,40 +9,10 @@ module modulation_timer (
     output wire UPDATE_SETTINGS_OUT
 );
 
-  localparam int DivLatency = 58;
+  localparam int DivLatency = 50;
 
   logic update_settings;
-  logic [$clog2(DivLatency*2)-1:0] cnt;
-
-  logic [15:0] freq_div[params::NumSegment];
-  logic [15:0] cycle[params::NumSegment];
-
-  assign UPDATE_SETTINGS_OUT = update_settings;
-  for (genvar i = 0; i < params::NumSegment; i++) begin : gen_mod_timer_idx
-    logic [55:0] quo;
-    logic [15:0] _unused_rem;
-    logic [55:0] _unused_quo;
-    logic [15:0] rem;
-    assign IDX[i] = rem[14:0];
-    div_56_16 div_cnt (
-        .s_axis_dividend_tdata(SYS_TIME[63:8]),
-        .s_axis_dividend_tvalid(1'b1),
-        .s_axis_divisor_tdata(freq_div[i]),
-        .s_axis_divisor_tvalid(1'b1),
-        .aclk(CLK),
-        .m_axis_dout_tdata({quo, _unused_rem}),
-        .m_axis_dout_tvalid()
-    );
-    div_56_16 div_idx (
-        .s_axis_dividend_tdata(quo),
-        .s_axis_dividend_tvalid(1'b1),
-        .s_axis_divisor_tdata(cycle[i]),
-        .s_axis_divisor_tvalid(1'b1),
-        .aclk(CLK),
-        .m_axis_dout_tdata({_unused_quo, rem}),
-        .m_axis_dout_tvalid()
-    );
-  end
+  logic [$clog2(DivLatency*2+2)-1:0] cnt;
 
   typedef enum logic {
     IDLE,
@@ -51,12 +21,46 @@ module modulation_timer (
 
   state_t state = IDLE;
 
-  for (genvar i = 0; i < params::NumSegment; i++) begin : gen_mod_timer
-    always_ff @(posedge CLK)
+  assign UPDATE_SETTINGS_OUT = update_settings;
+
+  for (genvar i = 0; i < params::NumSegment; i++) begin : gen_mod_timer_idx
+    logic [15:0] freq_div;
+    logic [15:0] cycle;
+    logic [47:0] quo, quo_buf;
+    logic [15:0] _unused_rem;
+    logic [47:0] _unused_quo;
+    logic [15:0] rem;
+    logic [14:0] idx;
+
+    assign IDX[i] = idx;
+
+    always_ff @(posedge CLK) begin
+      quo_buf <= quo;
+      idx <= rem[14:0];
       if ((state == IDLE) & UPDATE_SETTINGS_IN) begin
-        freq_div[i] <= FREQ_DIV[i];
-        cycle[i] <= CYCLE[i] + 1;
+        freq_div <= FREQ_DIV[i];
+        cycle <= CYCLE[i] + 1;
       end
+    end
+
+    div_48_16 div_cnt (
+        .s_axis_dividend_tdata(SYS_TIME[55:8]),
+        .s_axis_dividend_tvalid(1'b1),
+        .s_axis_divisor_tdata(freq_div),
+        .s_axis_divisor_tvalid(1'b1),
+        .aclk(CLK),
+        .m_axis_dout_tdata({quo, _unused_rem}),
+        .m_axis_dout_tvalid()
+    );
+    div_48_16 div_idx (
+        .s_axis_dividend_tdata(quo_buf),
+        .s_axis_dividend_tvalid(1'b1),
+        .s_axis_divisor_tdata(cycle),
+        .s_axis_divisor_tvalid(1'b1),
+        .aclk(CLK),
+        .m_axis_dout_tdata({_unused_quo, rem}),
+        .m_axis_dout_tvalid()
+    );
   end
 
   always_ff @(posedge CLK) begin
@@ -68,7 +72,7 @@ module modulation_timer (
       end
       LOAD: begin
         cnt <= cnt + 1;
-        if (cnt == 2 * DivLatency - 1) begin
+        if (cnt == 2 * DivLatency + 1) begin
           update_settings <= 1'b1;
           state <= IDLE;
         end

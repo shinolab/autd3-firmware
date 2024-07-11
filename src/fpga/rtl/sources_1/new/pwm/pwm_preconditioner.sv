@@ -13,9 +13,9 @@ module pwm_preconditioner #(
 
   logic [7:0] rise[DEPTH], fall[DEPTH];
 
-  (*rom_style = "distributed"*)
+  `RAM
   logic [7:0] rise_buf[DEPTH];
-  (*rom_style = "distributed"*)
+  `RAM
   logic [7:0] fall_buf[DEPTH];
 
   logic [7:0] s_rise, s_fall;
