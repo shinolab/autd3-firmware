@@ -84,7 +84,10 @@ silencer_params = Params(
     "SILENCER",
     [
         Param(
-            "SILENCER_MODE", 1, "MODE", "params::SILENCER_MODE_FIXED_COMPLETION_STEPS"
+            "SILENCER_FLAG",
+            8,
+            "FLAG",
+            0,
         ),
         Param("SILENCER_UPDATE_RATE_INTENSITY", 8, "UPDATE_RATE_INTENSITY", 1),
         Param("SILENCER_UPDATE_RATE_PHASE", 8, "UPDATE_RATE_PHASE", 1),

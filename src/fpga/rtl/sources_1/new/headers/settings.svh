@@ -25,7 +25,7 @@ package settings;
 
   typedef struct {
     logic       UPDATE;
-    logic       MODE;
+    logic [7:0] FLAG;
     logic [7:0] UPDATE_RATE_INTENSITY;
     logic [7:0] UPDATE_RATE_PHASE;
     logic [7:0] COMPLETION_STEPS_INTENSITY;

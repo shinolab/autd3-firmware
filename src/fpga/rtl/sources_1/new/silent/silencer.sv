@@ -23,7 +23,7 @@ module silencer #(
   logic [7:0] intensity;
   logic [7:0] phase;
 
-  assign is_fixed_update_rate = SILENCER_SETTINGS.MODE == params::SILENCER_MODE_FIXED_UPDATE_RATE;
+  assign is_fixed_update_rate = SILENCER_SETTINGS.FLAG[params::SILENCER_FLAG_BIT_FIXED_UPDATE_RATE_MODE];
 
   assign update_rate_intensity = is_fixed_update_rate ?  SILENCER_SETTINGS.UPDATE_RATE_INTENSITY : var_update_rate_intensity;
   assign update_rate_phase = is_fixed_update_rate ?  SILENCER_SETTINGS.UPDATE_RATE_PHASE : var_update_rate_phase;

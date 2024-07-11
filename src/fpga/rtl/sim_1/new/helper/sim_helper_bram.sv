@@ -221,7 +221,7 @@ module sim_helper_bram #(
   endtask
 
   task automatic write_silencer_settings(input settings::silencer_settings_t settings);
-    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_SILENCER_MODE, settings.MODE);
+    bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_SILENCER_FLAG, settings.FLAG);
     bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_SILENCER_UPDATE_RATE_INTENSITY,
                settings.UPDATE_RATE_INTENSITY);
     bram_write(params::BRAM_SELECT_CONTROLLER, params::ADDR_SILENCER_UPDATE_RATE_PHASE,

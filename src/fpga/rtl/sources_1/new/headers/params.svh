@@ -56,10 +56,10 @@ package params;
     STM_MODE_GAIN  = 1'b1
   } stm_mode_t;
 
-  typedef enum logic {
-    SILENCER_MODE_FIXED_COMPLETION_STEPS = 1'b0,
-    SILENCER_MODE_FIXED_UPDATE_RATE = 1'b1
-  } silencer_mode_t;
+  typedef enum int {
+    SILENCER_FLAG_BIT_FIXED_UPDATE_RATE_MODE = 0,
+    SILENCER_FLAG_BIT_PULSE_WIDTH = 1
+  } silencer_mode_bit_t;
 
   typedef enum logic [7:0] {
     DBG_NONE = 8'h00,
@@ -103,7 +103,7 @@ package params;
     ADDR_MOD_TRANSITION_VALUE_2 = 8'h2B,
     ADDR_MOD_TRANSITION_VALUE_3 = 8'h2C,
 
-    ADDR_SILENCER_MODE                       = 8'h40,
+    ADDR_SILENCER_FLAG                       = 8'h40,
     ADDR_SILENCER_UPDATE_RATE_INTENSITY      = 8'h41,
     ADDR_SILENCER_UPDATE_RATE_PHASE          = 8'h42,
     ADDR_SILENCER_COMPLETION_STEPS_INTENSITY = 8'h43,
