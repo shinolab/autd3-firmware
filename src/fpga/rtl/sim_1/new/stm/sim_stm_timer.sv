@@ -7,7 +7,7 @@ module sim_stm_timer ();
     $finish();\
   end
 
-  localparam int DivLatency = 58;
+  localparam int DivLatency = 50;
   localparam int DEPTH = 249;
 
   logic CLK;
@@ -38,8 +38,8 @@ module sim_stm_timer ();
   );
 
   logic [12:0] expect_idx[2];
-  assign expect_idx[0] = ((sys_time - 2 * DivLatency) / 256 / stm_settings.FREQ_DIV[0]) % (stm_settings.CYCLE[0] + 1);
-  assign expect_idx[1] = ((sys_time - 2 * DivLatency) / 256 / stm_settings.FREQ_DIV[1]) % (stm_settings.CYCLE[1] + 1);
+  assign expect_idx[0] = ((sys_time - 2 * DivLatency - 2) / 256 / stm_settings.FREQ_DIV[0]) % (stm_settings.CYCLE[0] + 1);
+  assign expect_idx[1] = ((sys_time - 2 * DivLatency - 2) / 256 / stm_settings.FREQ_DIV[1]) % (stm_settings.CYCLE[1] + 1);
 
   task automatic check(int segment);
     automatic logic [12:0] idx_old;
