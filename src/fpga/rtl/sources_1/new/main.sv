@@ -148,6 +148,7 @@ module main #(
       .DEPTH(DEPTH)
   ) silencer (
       .CLK(clk),
+      .PWE_TABLE_BUS(pwe_table_bus.out_port),
       .SILENCER_SETTINGS(silencer_settings),
       .DIN_VALID(dout_valid_m),
       .INTENSITY_IN(intensity_m),

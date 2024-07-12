@@ -3,6 +3,7 @@ module silencer_pwe_selector #(
     parameter int DEPTH = 249
 ) (
     input wire CLK,
+    pwe_table_bus_if.out_port PWE_TABLE_BUS,
     input settings::silencer_settings_t SILENCER_SETTINGS,
     input wire DIN_VALID,
     input wire [7:0] INTENSITY_IN,
@@ -49,7 +50,7 @@ module silencer_pwe_selector #(
       .DEPTH(DEPTH)
   ) pulse_width_encoder (
       .CLK(CLK),
-      .PWE_TABLE_BUS(pwe_table_bus.out_port),
+      .PWE_TABLE_BUS(PWE_TABLE_BUS),
       .DIN_VALID(pwe_din_valid),
       .INTENSITY_IN(pwe_i_in),
       .PHASE_IN(pwe_p_in),
