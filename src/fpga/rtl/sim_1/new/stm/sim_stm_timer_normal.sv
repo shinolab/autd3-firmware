@@ -1,11 +1,7 @@
 `timescale 1ns / 1ps
 module sim_stm_timer_normal ();
 
-  `define ASSERT_EQ(expected, actual) \
-  if (expected !== actual) begin \
-    $error("%s:%d: expected is %s, but actual is %s", `__FILE__, `__LINE__, $sformatf("%0d", expected), $sformatf("%0d", actual));\
-    $finish();\
-  end
+  `include "define.vh"
 
   localparam int DivLatency = 58;
   localparam int DEPTH = 249;
@@ -25,7 +21,7 @@ module sim_stm_timer_normal ();
 
   settings::stm_settings_t stm_settings;
   logic update_settings;
-  logic [12:0] idx[2];
+  logic [12:0] idx[params::NumSegment];
 
   stm_timer stm_timer (
       .CLK(CLK),
@@ -63,8 +59,9 @@ module sim_stm_timer_normal ();
 
     for (int i = 0; i < 10000; i++) begin
       @(posedge CLK);
-      `ASSERT_EQ('0, idx[0]);
-      `ASSERT_EQ('0, idx[1]);
+      for (int s = 0; s < params::NumSegment; s++) begin
+        `ASSERT_EQ('0, idx[s]);
+      end
     end
 
     $display("OK! sim_stm_timer_normal");

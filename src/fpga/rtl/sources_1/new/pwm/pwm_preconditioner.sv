@@ -11,6 +11,8 @@ module pwm_preconditioner #(
     output var DOUT_VALID
 );
 
+  `include "define.vh"
+
   logic [7:0] rise[DEPTH], fall[DEPTH];
 
   `RAM

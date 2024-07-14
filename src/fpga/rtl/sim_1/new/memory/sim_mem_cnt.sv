@@ -1,6 +1,8 @@
 `timescale 1ns / 1ps
 module sim_mem_cnt ();
 
+  `include "define.vh"
+
   localparam int DEPTH = 249;
   localparam int SIZE = 256;
 
@@ -48,17 +50,10 @@ module sim_mem_cnt ();
   endtask
 
   task automatic check();
-    logic [ 7:0] idx;
-    logic [15:0] expect_value;
     repeat (3) @(posedge CLK);
     for (int i = 0; i < SIZE; i++) begin
       @(posedge CLK);
-      idx = (addr + SIZE - 2) % SIZE;
-      expect_value = buffer[idx];
-      if (expect_value !== value) begin
-        $error("%d != %d @ %d", expect_value, value, idx);
-        $finish();
-      end
+      `ASSERT_EQ(buffer[(addr+SIZE-2)%SIZE], value);
     end
   endtask
 
@@ -82,7 +77,7 @@ module sim_mem_cnt ();
       check();
     join
 
-    $display("OK! sim_mem_normal");
+    $display("OK! sim_mem_cnt");
     $finish();
   end
 

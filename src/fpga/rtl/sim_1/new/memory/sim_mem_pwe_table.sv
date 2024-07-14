@@ -1,8 +1,10 @@
 `timescale 1ns / 1ps
 module sim_mem_pwe_table ();
 
+  `include "define.vh"
+
   localparam int DEPTH = 249;
-  localparam int SIZE = 65536;
+  localparam int SIZE = 256;
 
   logic CLK;
   logic locked;
@@ -26,16 +28,16 @@ module sim_mem_pwe_table ();
   );
 
   sim_helper_clk sim_helper_clk (
-      .MRCC_25P6M(),
+      .MRCC_25P6M(MRCC_25P6M),
       .CLK(CLK),
       .LOCKED(locked),
       .SYS_TIME()
   );
 
-  logic [ 7:0] buffer[SIZE];
+  logic [7:0] buffer[SIZE];
 
-  logic [15:0] idx;
-  logic [ 7:0] value;
+  logic [7:0] idx;
+  logic [7:0] value;
 
   assign pwe_table_bus.out_port.IDX = idx;
   assign value = pwe_table_bus.out_port.VALUE;
@@ -48,34 +50,26 @@ module sim_mem_pwe_table ();
   endtask
 
   task automatic check_initial_asin();
-    logic [15:0] cur_idx;
-    logic [ 7:0] expect_value;
+    logic [7:0] cur_idx;
+    logic [7:0] expect_value;
     repeat (3) @(posedge CLK);
     for (int i = 0; i < SIZE; i++) begin
       @(posedge CLK);
       cur_idx = (idx + SIZE - 2) % SIZE;
-      expect_value = int'($asin(cur_idx / 255.0 / 255.0) / $acos(-1) * 512.0);
-      if (expect_value !== value) begin
-        $error("%d != %d @ %d", expect_value, value, cur_idx);
-        $finish();
-      end
-      if (i % 1024 == 1023) $display("Init check: %d/%d...done", i + 1, SIZE);
+      expect_value = int'($asin(cur_idx / 255.0) / $acos(-1) * 256.0);
+      `ASSERT_EQ(expect_value, value);
     end
   endtask
 
   task automatic check();
-    logic [15:0] cur_idx;
-    logic [ 7:0] expect_value;
+    logic [7:0] cur_idx;
+    logic [7:0] expect_value;
     repeat (3) @(posedge CLK);
     for (int i = 0; i < SIZE; i++) begin
       @(posedge CLK);
       cur_idx = (idx + SIZE - 2) % SIZE;
       expect_value = buffer[cur_idx];
-      if (expect_value !== value) begin
-        $error("%d != %d @ %d", expect_value, value, cur_idx);
-        $finish();
-      end
-      if (i % 1024 == 1023) $display("Random check: %d/%d...done", i + 1, SIZE);
+      `ASSERT_EQ(expect_value, value);
     end
   endtask
 

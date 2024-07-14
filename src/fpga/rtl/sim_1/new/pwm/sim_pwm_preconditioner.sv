@@ -1,6 +1,8 @@
 `timescale 1ns / 1ps
 module sim_pwm_preconditioner ();
 
+  `include "define.vh"
+
   logic CLK;
   logic locked;
   sim_helper_clk sim_helper_clk (
@@ -66,15 +68,11 @@ module sim_pwm_preconditioner ();
 
     for (int i = 0; i < DEPTH; i++) begin
       if (i === idx) begin
-        if ((rise[i] !== rise_e) | (fall[i] !== fall_e)) begin
-          $error("At idx=%d, R(%d) != %d, F(%d) != %d", i, rise[i], rise_e, fall[i], fall_e);
-          $finish();
-        end
+        `ASSERT_EQ(rise_e, rise[i]);
+        `ASSERT_EQ(fall_e, fall[i]);
       end else begin
-        if ((rise[i] !== 0) | (fall[i] !== 0)) begin
-          $error("At idx=%d, R=%d, F=%d", i, rise[i], fall[i]);
-          $finish();
-        end
+        `ASSERT_EQ(0, rise[i]);
+        `ASSERT_EQ(0, fall[i]);
       end
     end
   endtask
@@ -103,12 +101,8 @@ module sim_pwm_preconditioner ();
     end
 
     for (int i = 0; i < DEPTH; i++) begin
-      if ((rise[i] !== ((256+phase_buf[i]-pulse_width_buf[i]/2)%256))
-        | (fall[i] !== ((phase_buf[i]+(pulse_width_buf[i]+1)/2)%256))) begin
-        $error("At idx=%d, d=%d, p=%d, R=%d, F=%d", i, pulse_width_buf[i], phase_buf[i], rise[i],
-               fall[i]);
-        $finish();
-      end
+      `ASSERT_EQ(((256 + phase_buf[i] - pulse_width_buf[i] / 2) % 256), rise[i]);
+      `ASSERT_EQ(((phase_buf[i] + (pulse_width_buf[i] + 1) / 2) % 256), fall[i]);
     end
   endtask
 

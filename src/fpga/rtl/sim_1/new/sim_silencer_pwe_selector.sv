@@ -1,11 +1,7 @@
 `timescale 1ns / 1ps
 module sim_silencer_pwe_selector ();
 
-  `define ASSERT_EQ(expected, actual) \
-  if (expected !== actual) begin \
-    $error("%s:%d: expected is %s, but actual is %s", `__FILE__, `__LINE__, $sformatf("%0d", expected), $sformatf("%0d", actual));\
-    $finish();\
-  end
+  `include "define.vh"
 
   localparam int DEPTH = 249;
   localparam int TABLE_SIZE = 256;
@@ -48,6 +44,7 @@ module sim_silencer_pwe_selector ();
       .DEPTH(DEPTH)
   ) silencer_pwe_selector (
       .CLK(CLK),
+      .PWE_TABLE_BUS(pwe_table_bus.out_port),
       .SILENCER_SETTINGS(silencer_settings),
       .DIN_VALID(din_valid),
       .INTENSITY_IN(intensity),

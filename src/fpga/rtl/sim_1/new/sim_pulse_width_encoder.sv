@@ -82,16 +82,8 @@ module sim_pulse_width_encoder ();
 
     for (int i = 0; i < DEPTH; i++) begin
       expect_pulse_width = int'(($asin($itor(intensity_buf[i]) / 255.0) * 2.0 / `M_PI * 128.0));
-      if (pulse_width_out !== expect_pulse_width) begin
-        $error("At %d: i=%d, d=%d, d_m=%d", i, intensity_buf[i], expect_pulse_width,
-               pulse_width_out);
-        $finish();
-      end
-      if (phase_out !== phase_buf[i]) begin
-        $error("At %d: p=%d, p_m=%d", i, phase_buf[i], phase_out);
-        $finish();
-      end
-
+      `ASSERT_EQ(expect_pulse_width, pulse_width_out);
+      `ASSERT_EQ(phase_buf[i], phase_out);
       @(posedge CLK);
     end
   endtask
@@ -107,16 +99,8 @@ module sim_pulse_width_encoder ();
 
     for (int i = 0; i < DEPTH; i++) begin
       expect_pulse_width = pwe_table[intensity_buf[i]];
-      if (pulse_width_out !== expect_pulse_width) begin
-        $error("At %d: i=%d, d=%d, d_m=%d", i, intensity_buf[i], expect_pulse_width,
-               pulse_width_out);
-        $finish();
-      end
-      if (phase_out !== phase_buf[i]) begin
-        $error("At %d: p=%d, p_m=%d", i, phase_buf[i], phase_out);
-        $finish();
-      end
-
+      `ASSERT_EQ(expect_pulse_width, pulse_width_out);
+      `ASSERT_EQ(phase_buf[i], phase_out);
       @(posedge CLK);
     end
   endtask
@@ -130,7 +114,6 @@ module sim_pulse_width_encoder ();
     @(posedge locked);
 
     for (int i = 0; i <= TABLE_SIZE;) begin
-      $display("Check default %d/%d", i, TABLE_SIZE);
       for (int j = i; j < i + DEPTH; j++) begin
         intensity_tmp[j-i] = j;
         phase_tmp[j-i] = sim_helper_random.range(8'hFF, 0);
@@ -149,7 +132,6 @@ module sim_pulse_width_encoder ();
     sim_helper_bram.write_pwe_table(pwe_table);
 
     for (int i = 0; i <= TABLE_SIZE;) begin
-      $display("Check config %d/%d", i, TABLE_SIZE);
       for (int j = i; j < i + DEPTH; j++) begin
         intensity_tmp[j-i] = j;
         phase_tmp[j-i] = sim_helper_random.range(8'hFF, 0);

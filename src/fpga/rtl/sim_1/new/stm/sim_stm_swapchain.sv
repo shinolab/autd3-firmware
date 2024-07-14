@@ -1,11 +1,7 @@
 `timescale 1ns / 1ps
 module sim_stm_swapchain ();
 
-  `define ASSERT_EQ(expected, actual) \
-  if (expected !== actual) begin \
-    $error("%s:%d: expected is %s, but actual is %s", `__FILE__, `__LINE__, $sformatf("%0d", expected), $sformatf("%0d", actual));\
-    $finish();\
-  end
+  `include "define.vh"
 
   localparam int AddSubLatency = 6;
   localparam int DEPTH = 249;
@@ -25,10 +21,10 @@ module sim_stm_swapchain ();
   logic [7:0] transition_mode;
   logic [63:0] transition_value;
   logic gpio_in[4];
-  logic [15:0] rep[2];
-  logic [12:0] cycle[2];
-  logic [12:0] sync_idx[2];
-  logic [12:0] idx[2];
+  logic [15:0] rep[params::NumSegment];
+  logic [12:0] cycle[params::NumSegment];
+  logic [12:0] sync_idx[params::NumSegment];
+  logic [12:0] idx[params::NumSegment];
   logic segment;
   logic stop;
 

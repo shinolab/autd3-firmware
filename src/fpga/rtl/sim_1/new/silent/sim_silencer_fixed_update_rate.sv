@@ -1,6 +1,8 @@
 `timescale 1ns / 1ps
 module sim_silencer_fixed_update_rate ();
 
+  `include "define.vh"
+
   parameter int DEPTH = 249;
 
   logic CLK;
@@ -69,36 +71,20 @@ module sim_silencer_fixed_update_rate ();
 
   task automatic check_manual(logic [7:0] expect_intensity, logic [7:0] expect_phase);
     for (int i = 0; i < DEPTH; i++) begin
-      if (phase_s_buf[i] !== expect_phase) begin
-        $display("ERR: PHASE(%d) !== %d in %d-th transducer, step = %d", phase_s_buf[i],
-                 expect_phase, i, silencer_settings.UPDATE_RATE_PHASE);
-        $finish;
-      end
-      if (intensity_s_buf[i] !== expect_intensity) begin
-        $display("ERR: INTENSITY(%d) !== %d in %d-th transducer, step = %d", intensity_s_buf[i],
-                 expect_intensity, i, silencer_settings.UPDATE_RATE_INTENSITY);
-        $finish;
-      end
+      `ASSERT_EQ(expect_phase, phase_s_buf[i]);
+      `ASSERT_EQ(expect_intensity, intensity_s_buf[i]);
     end
   endtask
 
   task automatic check();
     for (int i = 0; i < DEPTH; i++) begin
-      if (phase_s_buf[i] !== phase_buf[i]) begin
-        $display("ERR: PHASE(%d) !== PHASE_S(%d) in %d-th transducer, step = %d", phase_buf[i],
-                 phase_s_buf[i], i, silencer_settings.UPDATE_RATE_PHASE);
-        $finish;
-      end
-      if (intensity_s_buf[i] !== intensity_buf[i]) begin
-        $display("ERR: INTENSITY(%d) !== INTENSITY_S(%d) in %d-th transducer, step = %d",
-                 intensity_buf[i], intensity_s_buf[i], i, silencer_settings.UPDATE_RATE_INTENSITY);
-        $finish;
-      end
+      `ASSERT_EQ(phase_buf[i], phase_s_buf[i]);
+      `ASSERT_EQ(intensity_buf[i], intensity_s_buf[i]);
     end
   endtask
 
   initial begin
-    silencer_settings.MODE = params::SILENCER_MODE_FIXED_UPDATE_RATE;
+    silencer_settings.FLAG = 1 << params::SILENCER_FLAG_BIT_FIXED_UPDATE_RATE_MODE;
 
     din_valid = 0;
     silencer_settings.UPDATE_RATE_INTENSITY = 0;

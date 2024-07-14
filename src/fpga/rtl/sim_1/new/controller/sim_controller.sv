@@ -1,6 +1,8 @@
 `timescale 1ns / 1ps
 module sim_controller ();
 
+  `include "define.vh"
+
   localparam int DEPTH = 249;
 
   logic CLK;
@@ -25,7 +27,7 @@ module sim_controller ();
   );
 
   sim_helper_clk sim_helper_clk (
-      .MRCC_25P6M(),
+      .MRCC_25P6M(MRCC_25P6M),
       .CLK(CLK),
       .LOCKED(locked),
       .SYS_TIME()
@@ -66,10 +68,10 @@ module sim_controller ();
     mod_settings_in.TRANSITION_VALUE = sim_helper_random.range(64'hFFFFFFFFFFFFFFFF, 0);
     mod_settings_in.CYCLE[0] = sim_helper_random.range(15'h7FFF, 0);
     mod_settings_in.CYCLE[1] = sim_helper_random.range(15'h7FFF, 0);
-    mod_settings_in.FREQ_DIV[0] = sim_helper_random.range(32'hFFFFFFFF, 0);
-    mod_settings_in.FREQ_DIV[1] = sim_helper_random.range(32'hFFFFFFFF, 0);
-    mod_settings_in.REP[0] = sim_helper_random.range(32'hFFFFFFFF, 0);
-    mod_settings_in.REP[1] = sim_helper_random.range(32'hFFFFFFFF, 0);
+    mod_settings_in.FREQ_DIV[0] = sim_helper_random.range(16'hFFFF, 0);
+    mod_settings_in.FREQ_DIV[1] = sim_helper_random.range(16'hFFFF, 0);
+    mod_settings_in.REP[0] = sim_helper_random.range(16'hFFFF, 0);
+    mod_settings_in.REP[1] = sim_helper_random.range(16'hFFFF, 0);
 
     stm_settings_in.UPDATE = 1'b1;
     stm_settings_in.REQ_RD_SEGMENT = sim_helper_random.range(1'b1, 0);
@@ -77,21 +79,23 @@ module sim_controller ();
     stm_settings_in.TRANSITION_VALUE = sim_helper_random.range(64'hFFFFFFFFFFFFFFFF, 0);
     stm_settings_in.MODE[0] = sim_helper_random.range(1'b1, 0);
     stm_settings_in.MODE[1] = sim_helper_random.range(1'b1, 0);
-    stm_settings_in.CYCLE[0] = sim_helper_random.range(16'hFFFF, 0);
-    stm_settings_in.CYCLE[1] = sim_helper_random.range(16'hFFFF, 0);
-    stm_settings_in.FREQ_DIV[0] = sim_helper_random.range(32'hFFFFFFFF, 0);
-    stm_settings_in.FREQ_DIV[1] = sim_helper_random.range(32'hFFFFFFFF, 0);
-    stm_settings_in.REP[0] = sim_helper_random.range(32'hFFFFFFFF, 0);
-    stm_settings_in.REP[1] = sim_helper_random.range(32'hFFFFFFFF, 0);
-    stm_settings_in.SOUND_SPEED[0] = sim_helper_random.range(32'hFFFFFFFF, 0);
-    stm_settings_in.SOUND_SPEED[1] = sim_helper_random.range(32'hFFFFFFFF, 0);
+    stm_settings_in.CYCLE[0] = sim_helper_random.range(13'h1FFF, 0);
+    stm_settings_in.CYCLE[1] = sim_helper_random.range(13'h1FFF, 0);
+    stm_settings_in.FREQ_DIV[0] = sim_helper_random.range(16'hFFFF, 0);
+    stm_settings_in.FREQ_DIV[1] = sim_helper_random.range(16'hFFFF, 0);
+    stm_settings_in.REP[0] = sim_helper_random.range(16'hFFFF, 0);
+    stm_settings_in.REP[1] = sim_helper_random.range(16'hFFFF, 0);
+    stm_settings_in.SOUND_SPEED[0] = sim_helper_random.range(16'hFFFF, 0);
+    stm_settings_in.SOUND_SPEED[1] = sim_helper_random.range(16'hFFFF, 0);
+    stm_settings_in.NUM_FOCI[0] = sim_helper_random.range(8'd8, 0);
+    stm_settings_in.NUM_FOCI[1] = sim_helper_random.range(8'd8, 0);
 
     silencer_settings_in.UPDATE = 1'b1;
-    silencer_settings_in.MODE = sim_helper_random.range(1'b1, 0);
-    silencer_settings_in.UPDATE_RATE_INTENSITY = sim_helper_random.range(16'hFFFF, 0);
-    silencer_settings_in.UPDATE_RATE_PHASE = sim_helper_random.range(16'hFFFF, 0);
-    silencer_settings_in.COMPLETION_STEPS_INTENSITY = sim_helper_random.range(16'hFFFF, 0);
-    silencer_settings_in.COMPLETION_STEPS_PHASE = sim_helper_random.range(16'hFFFF, 0);
+    silencer_settings_in.FLAG = sim_helper_random.range(8'hFF, 0);
+    silencer_settings_in.UPDATE_RATE_INTENSITY = sim_helper_random.range(8'hFF, 0);
+    silencer_settings_in.UPDATE_RATE_PHASE = sim_helper_random.range(8'hFF, 0);
+    silencer_settings_in.COMPLETION_STEPS_INTENSITY = sim_helper_random.range(8'hFF, 0);
+    silencer_settings_in.COMPLETION_STEPS_PHASE = sim_helper_random.range(8'hFF, 0);
 
     sync_settings_in.UPDATE = 1'b1;
     sync_settings_in.ECAT_SYNC_TIME = sim_helper_random.range(64'hFFFFFFFFFFFFFFFF, 0);
@@ -122,34 +126,19 @@ module sim_controller ();
                                | (16'd1 << params::CTL_FLAG_BIT_DEBUG_SET)
                                | (16'd1 << params::CTL_FLAG_BIT_SYNC_SET));
     @(posedge mod_settings.UPDATE);
-    if (mod_settings_in !== mod_settings) begin
-      $error("MOD_SETTINGS mismatch");
-      $finish();
-    end
+    `ASSERT_EQ(mod_settings_in, mod_settings);
 
     @(posedge stm_settings.UPDATE);
-    if (stm_settings_in !== stm_settings) begin
-      $error("STM_SETTINGS mismatch");
-      $finish();
-    end
+    `ASSERT_EQ(stm_settings_in, stm_settings);
 
     @(posedge silencer_settings.UPDATE);
-    if (silencer_settings_in !== silencer_settings) begin
-      $error("SILENCER_SETTINGS mismatch");
-      $finish();
-    end
+    `ASSERT_EQ(silencer_settings_in, silencer_settings);
 
     @(posedge debug_settings.UPDATE);
-    if (debug_settings_in !== debug_settings) begin
-      $error("DEBUG_SETTINGS mismatch");
-      $finish();
-    end
+    `ASSERT_EQ(debug_settings_in, debug_settings);
 
     @(posedge sync_settings.UPDATE);
-    if (sync_settings_in.ECAT_SYNC_TIME !== sync_settings.ECAT_SYNC_TIME) begin
-      $error("SYNC_SETTINGS mismatch");
-      $finish();
-    end
+    `ASSERT_EQ(sync_settings_in, sync_settings);
 
     $display("OK! sim_controller");
     $finish();

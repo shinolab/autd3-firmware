@@ -1,11 +1,7 @@
 `timescale 1ns / 1ps
 module sim_stm_timer ();
 
-  `define ASSERT_EQ(expected, actual) \
-  if (expected !== actual) begin \
-    $error("%s:%d: expected is %s, but actual is %s", `__FILE__, `__LINE__, $sformatf("%0d", expected), $sformatf("%0d", actual));\
-    $finish();\
-  end
+  `include "define.vh"
 
   localparam int DivLatency = 50;
   localparam int DEPTH = 249;
@@ -25,7 +21,7 @@ module sim_stm_timer ();
 
   settings::stm_settings_t stm_settings;
   logic update_settings;
-  logic [12:0] idx[2];
+  logic [12:0] idx[params::NumSegment];
 
   stm_timer stm_timer (
       .CLK(CLK),
@@ -37,9 +33,10 @@ module sim_stm_timer ();
       .UPDATE_SETTINGS_OUT()
   );
 
-  logic [12:0] expect_idx[2];
-  assign expect_idx[0] = ((sys_time - 2 * DivLatency - 2) / 256 / stm_settings.FREQ_DIV[0]) % (stm_settings.CYCLE[0] + 1);
-  assign expect_idx[1] = ((sys_time - 2 * DivLatency - 2) / 256 / stm_settings.FREQ_DIV[1]) % (stm_settings.CYCLE[1] + 1);
+  logic [12:0] expect_idx[params::NumSegment];
+  for (genvar i = 0; i < params::NumSegment; i++) begin
+    assign expect_idx[i] = ((sys_time - 2 * DivLatency - 2) / 256 / stm_settings.FREQ_DIV[i]) % (stm_settings.CYCLE[i] + 1);
+  end
 
   task automatic check(int segment);
     automatic logic [12:0] idx_old;

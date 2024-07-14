@@ -1,6 +1,8 @@
 `timescale 1ns / 1ps
 module sim_pwm_generator ();
 
+  `include "define.vh"
+
   logic CLK;
   logic locked;
   logic [63:0] SYS_TIME;
@@ -35,10 +37,7 @@ module sim_pwm_generator ();
     while (1) begin
       automatic int t = time_cnt;
       @(posedge CLK);
-      if (pwm_out !== (((r <= f) & ((r <= t) & (t < f))) | ((f < r) & ((r <= t) | (t < f))))) begin
-        $error("At v=%u, t=%d, R=%d, F=%d", pwm_out, time_cnt, rise, fall);
-        $finish();
-      end
+      `ASSERT_EQ((((r <= f) & ((r <= t) & (t < f))) | ((f < r) & ((r <= t) | (t < f)))), pwm_out);
       if (time_cnt === 256 - 1) begin
         break;
       end

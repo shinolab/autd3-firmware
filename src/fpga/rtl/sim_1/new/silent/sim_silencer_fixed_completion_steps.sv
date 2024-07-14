@@ -1,11 +1,7 @@
 `timescale 1ns / 1ps
 module sim_silencer_fixed_completion_steps ();
 
-  `define ASSERT_EQ(expected, actual) \
-  if (expected !== actual) begin \
-    $error("%s:%d: expected is %s, but actual is %s", `__FILE__, `__LINE__, $sformatf("%0d", expected), $sformatf("%0d", actual));\
-    $finish();\
-  end
+  `include "define.vh"
 
   parameter int DEPTH = 249;
 
@@ -89,7 +85,7 @@ module sim_silencer_fixed_completion_steps ();
 
   int n_repeat;
   initial begin
-    silencer_settings.MODE = params::SILENCER_MODE_FIXED_COMPLETION_STEPS;
+    silencer_settings.FLAG = 0 << params::SILENCER_FLAG_BIT_FIXED_UPDATE_RATE_MODE;
 
     din_valid = 0;
     phase = 0;

@@ -13,7 +13,9 @@ module interpolator #(
     output var DOUT_VALID
 );
 
-  `RAM
+  `include "define.vh"
+
+`RAM
   logic [15:0] current_mem[256] = '{256{16'h00}};
 
   logic [15:0] current_0, current_1;

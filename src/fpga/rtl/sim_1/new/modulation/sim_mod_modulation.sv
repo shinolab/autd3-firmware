@@ -1,11 +1,7 @@
 `timescale 1ns / 1ps
 module sim_mod_modulation ();
 
-  `define ASSERT_EQ(expected, actual) \
-  if (expected !== actual) begin \
-    $error("%s:%d: expected is %s, but actual is %s", `__FILE__, `__LINE__, $sformatf("%0d", expected), $sformatf("%0d", actual));\
-    $finish();\
-  end
+  `include "define.vh"
 
   localparam int DEPTH = 249;
   localparam int SIZE = 10;
@@ -68,9 +64,9 @@ module sim_mod_modulation ();
       .DEBUG_STOP(stop_debug)
   );
 
-  logic [14:0] cycle_buf[2];
-  logic [15:0] freq_div_buf[2];
-  logic [7:0] mod_buf[2][SIZE];
+  logic [14:0] cycle_buf[params::NumSegment];
+  logic [15:0] freq_div_buf[params::NumSegment];
+  logic [7:0] mod_buf[params::NumSegment][SIZE];
   logic [7:0] intensity_buf[DEPTH];
   logic [7:0] phase_buf[DEPTH];
 
@@ -146,7 +142,7 @@ module sim_mod_modulation ();
 
     @(posedge locked);
 
-    for (int segment = 0; segment < 2; segment++) begin
+    for (int segment = 0; segment < params::NumSegment; segment++) begin
       for (int i = 0; i < SIZE; i++) begin
         mod_buf[segment][i] = sim_helper_random.range(8'hFF, 0);
       end

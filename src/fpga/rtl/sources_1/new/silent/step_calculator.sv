@@ -13,6 +13,8 @@ module step_calculator #(
     output var DOUT_VALID
 );
 
+  `include "define.vh"
+
   localparam int DivLatency = 6;
 
   `RAM

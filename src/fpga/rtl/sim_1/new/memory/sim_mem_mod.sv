@@ -1,6 +1,8 @@
 `timescale 1ns / 1ps
 module sim_mem_mod ();
 
+  `include "define.vh"
+
   localparam int DEPTH = 249;
   localparam int SIZE = 32768;
 
@@ -26,7 +28,7 @@ module sim_mem_mod ();
   );
 
   sim_helper_clk sim_helper_clk (
-      .MRCC_25P6M(),
+      .MRCC_25P6M(MRCC_25P6M),
       .CLK(CLK),
       .LOCKED(locked),
       .SYS_TIME()
@@ -40,8 +42,7 @@ module sim_mem_mod ();
   assign mod_bus.out_port.SEGMENT = segment;
   assign value = mod_bus.out_port.VALUE;
 
-  logic [7:0] mod_buf_0[SIZE];
-  logic [7:0] mod_buf_1[SIZE];
+  logic [7:0] mod_buf[params::NumSegment][SIZE];
 
   task automatic progress();
     for (int i = 0; i < SIZE + 3; i++) begin
@@ -57,11 +58,8 @@ module sim_mem_mod ();
     for (int i = 0; i < SIZE; i++) begin
       @(posedge CLK);
       cur_idx = (idx + SIZE - 2) % SIZE;
-      expect_value = segment === 1'b0 ? mod_buf_0[cur_idx] : mod_buf_1[cur_idx];
-      if (expect_value !== value) begin
-        $error("%d != %d @ %d", expect_value, value, cur_idx);
-        $finish();
-      end
+      expect_value = mod_buf[segment][cur_idx];
+      `ASSERT_EQ(expect_value, value);
       if (i % 1024 == 1023) $display("segment %d: %d/%d...done", segment, i + 1, SIZE);
     end
   endtask
@@ -74,12 +72,12 @@ module sim_mem_mod ();
 
     @(posedge locked);
 
-    for (int i = 0; i < SIZE; i++) begin
-      mod_buf_0[i] = sim_helper_random.range(8'hFF, 0);
-      mod_buf_1[i] = sim_helper_random.range(8'hFF, 0);
+    for (int s = 0; s < params::NumSegment; s++) begin
+      for (int i = 0; i < SIZE; i++) begin
+        mod_buf[s][i] = sim_helper_random.range(8'hFF, 0);
+      end
+      sim_helper_bram.write_mod(s, mod_buf[s], SIZE);
     end
-    sim_helper_bram.write_mod(0, mod_buf_0, SIZE);
-    sim_helper_bram.write_mod(1, mod_buf_1, SIZE);
     $display("memory initialized");
 
     segment = 0;

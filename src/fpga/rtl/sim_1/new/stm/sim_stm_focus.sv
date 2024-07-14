@@ -1,12 +1,7 @@
 `timescale 1ns / 1ps
 module sim_stm_focus ();
 
-  `define ASSERT_EQ(expected, actual) \
-  if (expected !== actual) begin \
-    $error("%s:%d: expected is %s, but actual is %s", `__FILE__, `__LINE__, $sformatf("%0d", expected), $sformatf("%0d", actual));\
-    $finish();\
-  end
-
+  `include "define.vh"
 
   logic CLK;
   logic locked;
@@ -20,12 +15,12 @@ module sim_stm_focus ();
 
   settings::stm_settings_t stm_settings;
 
-  logic [13:0] cycle_buf[2];
-  logic [15:0] freq_div_buf[2];
-  logic signed [17:0] focus_x[2][SIZE][8];
-  logic signed [17:0] focus_y[2][SIZE][8];
-  logic signed [17:0] focus_z[2][SIZE][8];
-  logic [7:0] intensity_buf[2][SIZE][8];
+  logic [13:0] cycle_buf[params::NumSegment];
+  logic [15:0] freq_div_buf[params::NumSegment];
+  logic signed [17:0] focus_x[params::NumSegment][SIZE][params::NumFociMax];
+  logic signed [17:0] focus_y[params::NumSegment][SIZE][params::NumFociMax];
+  logic signed [17:0] focus_z[params::NumSegment][SIZE][params::NumFociMax];
+  logic [7:0] intensity_buf[params::NumSegment][SIZE][params::NumFociMax];
 
   logic [12:0] debug_idx;
   logic debug_segment;
@@ -154,7 +149,6 @@ module sim_stm_focus ();
     end
   endtask
 
-
   initial begin
     $readmemh("sin.txt", sin_table);
     $readmemh("atan.txt", atan_table);
@@ -166,6 +160,7 @@ module sim_stm_focus ();
     freq_div_buf[0] = 1;
     freq_div_buf[1] = 3;
 
+    stm_settings.UPDATE = 0;
     stm_settings.TRANSITION_MODE = params::TRANSITION_MODE_SYNC_IDX;
     stm_settings.TRANSITION_VALUE = 0;
     stm_settings.MODE[0] = params::STM_MODE_FOCUS;
@@ -181,7 +176,7 @@ module sim_stm_focus ();
 
     @(posedge locked);
 
-    for (int segment = 0; segment < 2; segment++) begin
+    for (int segment = 0; segment < params::NumSegment; segment++) begin
       for (int i = 0; i < SIZE; i++) begin
         focus_x[segment][i][0] = sim_helper_random.range(131071, -131072 + 6908);
         focus_y[segment][i][0] = sim_helper_random.range(131071, -131072 + 5283);

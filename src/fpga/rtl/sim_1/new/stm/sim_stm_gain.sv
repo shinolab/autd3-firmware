@@ -1,11 +1,7 @@
 `timescale 1ns / 1ps
 module sim_stm_gain ();
 
-  `define ASSERT_EQ(expected, actual) \
-  if (expected !== actual) begin \
-    $error("%s:%d: expected is %s, but actual is %s", `__FILE__, `__LINE__, $sformatf("%0d", expected), $sformatf("%0d", actual));\
-    $finish();\
-  end
+  `include "define.vh"
 
   logic CLK;
   logic locked;
@@ -25,10 +21,10 @@ module sim_stm_gain ();
   logic debug_segment;
   logic dout_valid;
 
-  logic [13:0] cycle_buf[2];
-  logic [15:0] freq_div_buf[2];
-  logic [7:0] intensity_buf[2][SIZE][DEPTH];
-  logic [7:0] phase_buf[2][SIZE][DEPTH];
+  logic [13:0] cycle_buf[params::NumSegment];
+  logic [15:0] freq_div_buf[params::NumSegment];
+  logic [7:0] intensity_buf[params::NumSegment][SIZE][DEPTH];
+  logic [7:0] phase_buf[params::NumSegment][SIZE][DEPTH];
 
   cnt_bus_if cnt_bus ();
   modulation_bus_if mod_bus ();
@@ -131,6 +127,7 @@ module sim_stm_gain ();
     freq_div_buf[0] = 1;
     freq_div_buf[1] = 3;
 
+    stm_settings.UPDATE = 0;
     stm_settings.TRANSITION_MODE = params::TRANSITION_MODE_SYNC_IDX;
     stm_settings.TRANSITION_VALUE = 0;
     stm_settings.MODE[0] = params::STM_MODE_GAIN;
@@ -142,7 +139,7 @@ module sim_stm_gain ();
 
     @(posedge locked);
 
-    for (int segment = 0; segment < 2; segment++) begin
+    for (int segment = 0; segment < params::NumSegment; segment++) begin
       for (int i = 0; i < SIZE; i++) begin
         for (int j = 0; j < DEPTH; j++) begin
           intensity_buf[segment][i][j] = sim_helper_random.range(8'hFF, 0);
