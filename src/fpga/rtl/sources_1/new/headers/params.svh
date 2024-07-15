@@ -8,7 +8,7 @@ package params;
   localparam int STMRdAddrWidth = $clog2(GainSTMSize * 8);
   localparam int NumFociMax = 8;
 
-  localparam bit [7:0] VersionNumMajor = 8'h93;
+  localparam bit [7:0] VersionNumMajor = 8'hA0;
   localparam bit [7:0] VersionNumMinor = 8'h00;
 
   localparam logic [18:0] ECATSyncBase = 19'd500000;  // ns

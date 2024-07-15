@@ -139,3 +139,5 @@ foreach header_file $header_list {
   set_property is_global_include true [get_files $header_file]
   set_property file_type {Verilog Header} [get_files $header_file]
 }
+
+current_run [get_runs impl_alter_def]
