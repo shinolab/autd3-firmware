@@ -10,11 +10,9 @@ module synchronizer (
 
   localparam int AddSubLatency = 6;
 
-  localparam logic [17:0] ECATSyncBaseCnt = 18'd5120;  // 20.48MHz * 500000ns
+  localparam logic [12:0] ECATSyncBaseCnt = 13'd5120;  // 10.24MHz * 500000ns
 
   logic [63:0] ecat_sync_time;
-  logic [63:0] lap;
-  logic [23:0] lap_rem_unused;
   logic [63:0] sync_time;
 
   logic [2:0] sync_tri;
@@ -27,7 +25,7 @@ module synchronizer (
   logic [$clog2(AddSubLatency+1+1)-1:0] diff_cnt;
   logic [$clog2(AddSubLatency+1+1)-1:0] next_cnt;
   logic set;
-  logic [17:0] next_sync_cnt;
+  logic [12:0] next_sync_cnt;
 
   logic [63:0] a_diff, b_diff;
   logic signed [64:0] s_diff;
@@ -36,20 +34,10 @@ module synchronizer (
   logic skip_one_assert;
   assign SKIP_ONE_ASSERT = skip_one_assert;
 
-  div_64_19 div_lap (
-      .s_axis_dividend_tdata(ecat_sync_time),
-      .s_axis_dividend_tvalid(1'b1),
-      .s_axis_divisor_tdata({5'd0, params::ECATSyncBase}),
-      .s_axis_divisor_tvalid(1'b1),
-      .aclk(CLK),
-      .m_axis_dout_tdata({lap, lap_rem_unused}),
-      .m_axis_dout_tvalid()
-  );
-
-  mult_sync_base mult_sync_base_time (
+  ec_time_to_sys_time ec_time_to_sys_time (
       .CLK(CLK),
-      .A  (lap),
-      .P  (sync_time)
+      .EC_TIME(ecat_sync_time),
+      .SYS_TIME(sync_time)
   );
 
   sub64_64 sub_diff (
@@ -92,7 +80,7 @@ module synchronizer (
         sys_time <= sys_time + 1;
       end
       diff_cnt <= '0;
-      next_sync_cnt <= {1'b0, ECATSyncBaseCnt[17:1]};
+      next_sync_cnt <= {1'b0, ECATSyncBaseCnt[12:1]};
       skip_one_assert <= 1'b0;
     end else begin
       if (diff_cnt == AddSubLatency + 1) begin
@@ -122,7 +110,7 @@ module synchronizer (
       if (next_sync_cnt == ECATSyncBaseCnt - 1) begin
         next_sync_cnt <= 0;
         a_next <= next_sync_time;
-        b_next <= {46'd0, ECATSyncBaseCnt};
+        b_next <= {51'd0, ECATSyncBaseCnt};
         next_cnt <= 0;
       end else begin
         if (next_cnt == AddSubLatency + 1) begin

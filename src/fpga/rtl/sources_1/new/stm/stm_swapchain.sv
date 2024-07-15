@@ -15,7 +15,7 @@ module stm_swapchain (
     output wire [12:0] IDX[params::NumSegment]
 );
 
-  localparam int Latency = 5;
+  localparam int Latency = 66 + 5;
 
   logic segment = 1'b0;
   logic req_segment;
@@ -48,10 +48,16 @@ module stm_swapchain (
   state_t state = INFINITE_LOOP;
 
   logic [$clog2(Latency)-1:0] diff_latency;
+  logic [63:0] transition_time;
+  ec_time_to_sys_time ec_time_to_sys_time (
+      .CLK(CLK),
+      .EC_TIME(TRANSITION_VALUE),
+      .SYS_TIME(transition_time)
+  );
   sub64_64 addsub_diff_time (
       .CLK(CLK),
       .A  (SYS_TIME),
-      .B  (TRANSITION_VALUE),
+      .B  (transition_time),
       .S  (time_diff)
   );
 

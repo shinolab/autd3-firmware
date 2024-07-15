@@ -3,8 +3,8 @@ module sim_stm_swapchain ();
 
   `include "define.vh"
 
-  localparam int AddSubLatency = 6;
   localparam int DEPTH = 249;
+  localparam int ECAT_SYNC_BASE_CNT = 40000 * 256 / 2000;
 
   logic CLK;
   logic locked;
@@ -452,8 +452,7 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(1, idx[1]);
 
     @(posedge CLK);
-    transition_value <= SYS_TIME + 10;
-    repeat (AddSubLatency) @(posedge CLK);
+    transition_value <= (SYS_TIME / ECAT_SYNC_BASE_CNT + 1) * 500000;
 
     // segment change to 0, repeat one time
     @(posedge CLK);
@@ -474,7 +473,7 @@ module sim_stm_swapchain ();
       @(negedge CLK);
       `ASSERT_EQ(1, segment);
       `ASSERT_EQ(0, stop);
-      if (SYS_TIME == transition_value + 6) break;
+      if (SYS_TIME == ECAT_SYNC_BASE_CNT * 2 + 6) break;
     end
 
     // change segment
@@ -512,8 +511,7 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(0, idx[0]);
 
     @(posedge CLK);
-    transition_value <= SYS_TIME + 10;
-    repeat (AddSubLatency) @(posedge CLK);
+    transition_value <= (SYS_TIME / ECAT_SYNC_BASE_CNT + 1) * 500000;
 
     // segment change to 1, wait for for 5 clocks, repeat 2 times
     @(posedge CLK);
@@ -533,7 +531,7 @@ module sim_stm_swapchain ();
       @(negedge CLK);
       `ASSERT_EQ(0, segment);
       `ASSERT_EQ(1, stop);
-      if (SYS_TIME == transition_value + 6) break;
+      if (SYS_TIME == ECAT_SYNC_BASE_CNT * 3 + 6) break;
     end
 
     // change segment
