@@ -22,27 +22,27 @@ volatile uint8_t _stm_segment;
 volatile uint8_t _stm_transition_mode;
 volatile uint64_t _stm_transition_value;
 volatile uint8_t _stm_mode[2];
-volatile uint32_t _stm_cycle[2];
-volatile uint32_t _stm_freq_div[2];
-volatile uint32_t _stm_rep[2];
+volatile uint16_t _stm_cycle[2];
+volatile uint16_t _stm_freq_div[2];
+volatile uint16_t _stm_rep[2];
 volatile uint8_t _gain_stm_mode;
 
 extern volatile bool_t _silencer_strict_mode;
-extern volatile uint32_t _min_freq_div_intensity;
-extern volatile uint32_t _min_freq_div_phase;
+extern volatile uint16_t _min_freq_div_intensity;
+extern volatile uint16_t _min_freq_div_phase;
 extern volatile uint8_t _mod_segment;
-extern volatile uint32_t _mod_freq_div[2];
+extern volatile uint16_t _mod_freq_div[2];
 
 uint8_t write_gain_stm(const volatile uint8_t* p_data) {
-  static_assert(sizeof(GainSTMHead) == 24, "GainSTM is not valid.");
+  static_assert(sizeof(GainSTMHead) == 16, "GainSTM is not valid.");
   static_assert(offsetof(GainSTMHead, tag) == 0, "GainSTM is not valid.");
   static_assert(offsetof(GainSTMHead, flag) == 1, "GainSTM is not valid.");
   static_assert(offsetof(GainSTMHead, mode) == 2, "GainSTM is not valid.");
   static_assert(offsetof(GainSTMHead, transition_mode) == 3,
                 "GainSTM is not valid.");
-  static_assert(offsetof(GainSTMHead, freq_div) == 8, "GainSTM is not valid.");
-  static_assert(offsetof(GainSTMHead, rep) == 12, "GainSTM is not valid.");
-  static_assert(offsetof(GainSTMHead, transition_value) == 16,
+  static_assert(offsetof(GainSTMHead, freq_div) == 4, "GainSTM is not valid.");
+  static_assert(offsetof(GainSTMHead, rep) == 6, "GainSTM is not valid.");
+  static_assert(offsetof(GainSTMHead, transition_value) == 8,
                 "GainSTM is not valid.");
   static_assert(sizeof(GainSTMSubseq) == 2, "GainSTM is not valid.");
   static_assert(offsetof(GainSTMSubseq, tag) == 0, "GainSTM is not valid.");
@@ -77,18 +77,16 @@ uint8_t write_gain_stm(const volatile uint8_t* p_data) {
 
     switch (segment) {
       case 0:
-        bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_STM_FREQ_DIV0_0,
-                 (uint16_t*)&_stm_freq_div[segment], sizeof(uint32_t) >> 1);
+        bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_FREQ_DIV0,
+                   _stm_freq_div[segment]);
         bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MODE0, STM_MODE_GAIN);
-        bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_STM_REP0_0,
-                 (uint16_t*)&p->head.rep, sizeof(uint32_t) >> 1);
+        bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_REP0, p->head.rep);
         break;
       case 1:
-        bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_STM_FREQ_DIV1_0,
-                 (uint16_t*)&_stm_freq_div[segment], sizeof(uint32_t) >> 1);
+        bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_FREQ_DIV1,
+                   _stm_freq_div[segment]);
         bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MODE1, STM_MODE_GAIN);
-        bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_STM_REP1_0,
-                 (uint16_t*)&p->head.rep, sizeof(uint32_t) >> 1);
+        bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_REP1, p->head.rep);
         break;
       default:  // LCOV_EXCL_LINE
         break;  // LCOV_EXCL_LINE

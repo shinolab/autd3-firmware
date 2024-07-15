@@ -16,16 +16,16 @@ extern "C" {
 
 volatile uint8_t _mod_transision_mode;
 volatile uint64_t _mod_transition_value;
-volatile uint32_t _mod_cycle;
-volatile uint32_t _mod_freq_div[2];
-volatile uint32_t _mod_rep[2];
+volatile uint16_t _mod_cycle;
+volatile uint16_t _mod_freq_div[2];
+volatile uint16_t _mod_rep[2];
 volatile uint8_t _mod_segment;
 
 extern volatile bool_t _silencer_strict_mode;
-extern volatile uint32_t _min_freq_div_intensity;
-extern volatile uint32_t _min_freq_div_phase;
+extern volatile uint16_t _min_freq_div_intensity;
+extern volatile uint16_t _min_freq_div_phase;
 extern volatile uint8_t _stm_segment;
-extern volatile uint32_t _stm_freq_div[2];
+extern volatile uint16_t _stm_freq_div[2];
 
 inline static uint8_t mod_segment_update(const uint8_t segment,
                                          const uint8_t mode,
@@ -42,19 +42,18 @@ inline static uint8_t mod_segment_update(const uint8_t segment,
 }
 
 uint8_t write_mod(const volatile uint8_t* p_data) {
-  static_assert(sizeof(ModulationHead) == 24, "Modulation is not valid.");
+  static_assert(sizeof(ModulationHead) == 16, "Modulation is not valid.");
   static_assert(offsetof(ModulationHead, tag) == 0, "Modulation is not valid.");
   static_assert(offsetof(ModulationHead, flag) == 1,
                 "Modulation is not valid.");
   static_assert(offsetof(ModulationHead, size) == 2,
                 "Modulation is not valid.");
-  static_assert(offsetof(ModulationHead, transition_mode) == 4,
+  static_assert(offsetof(ModulationHead, transition_mode) == 3,
                 "Modulation is not valid.");
-  static_assert(offsetof(ModulationHead, freq_div) == 8,
+  static_assert(offsetof(ModulationHead, freq_div) == 4,
                 "Modulation is not valid.");
-  static_assert(offsetof(ModulationHead, rep) == 12,
-                "Modulation is not valid.");
-  static_assert(offsetof(ModulationHead, transition_value) == 16,
+  static_assert(offsetof(ModulationHead, rep) == 6, "Modulation is not valid.");
+  static_assert(offsetof(ModulationHead, transition_value) == 8,
                 "Modulation is not valid.");
   static_assert(sizeof(ModulationSubseq) == 4, "Modulation is not valid.");
   static_assert(offsetof(ModulationSubseq, tag) == 0,
@@ -66,9 +65,9 @@ uint8_t write_mod(const volatile uint8_t* p_data) {
   static_assert(offsetof(Modulation, head) == 0, "Modulation is not valid.");
   static_assert(offsetof(Modulation, subseq) == 0, "Modulation is not valid.");
 
+  uint16_t write;
   const Modulation* p = (const Modulation*)p_data;
 
-  volatile uint16_t write = p->subseq.size;
   const uint8_t segment = (p->head.flag & MODULATION_FLAG_SEGMENT) != 0 ? 1 : 0;
 
   const uint16_t* data;
@@ -91,16 +90,14 @@ uint8_t write_mod(const volatile uint8_t* p_data) {
 
     switch (segment) {
       case 0:
-        bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_MOD_FREQ_DIV0_0,
-                 (uint16_t*)&_mod_freq_div[segment], sizeof(uint32_t) >> 1);
-        bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_MOD_REP0_0,
-                 (uint16_t*)&p->head.rep, sizeof(uint32_t) >> 1);
+        bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_FREQ_DIV0,
+                   _mod_freq_div[segment]);
+        bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_REP0, p->head.rep);
         break;
       case 1:
-        bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_MOD_FREQ_DIV1_0,
-                 (uint16_t*)&_mod_freq_div[segment], sizeof(uint32_t) >> 1);
-        bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_MOD_REP1_0,
-                 (uint16_t*)&p->head.rep, sizeof(uint32_t) >> 1);
+        bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_FREQ_DIV1,
+                   _mod_freq_div[segment]);
+        bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_REP1, p->head.rep);
         break;
       default:  // LCOV_EXCL_LINE
         break;  // LCOV_EXCL_LINE
@@ -108,8 +105,10 @@ uint8_t write_mod(const volatile uint8_t* p_data) {
 
     change_mod_wr_segment(segment);
 
+    write = p->head.size;
     data = (const uint16_t*)(&p_data[sizeof(ModulationHead)]);
   } else {
+    write = p->subseq.size;
     data = (const uint16_t*)(&p_data[sizeof(ModulationSubseq)]);
   }
 

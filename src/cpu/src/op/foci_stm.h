@@ -11,8 +11,9 @@ typedef ALIGN2 struct {
   uint8_t transition_mode;
   uint8_t num_foci;
   uint16_t sound_speed;
-  uint32_t freq_div;
-  uint32_t rep;
+  uint16_t freq_div;
+  uint16_t rep;
+  uint8_t _pad[4];
   uint64_t transition_value;
 } FocusSTMHead;
 

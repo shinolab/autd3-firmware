@@ -13,9 +13,9 @@ extern "C" {
 
 extern volatile uint8_t _stm_segment;
 extern volatile uint8_t _stm_mode[2];
-extern volatile uint32_t _stm_cycle[2];
-extern volatile uint32_t _stm_rep[2];
-extern volatile uint32_t _stm_freq_div[2];
+extern volatile uint16_t _stm_cycle[2];
+extern volatile uint16_t _stm_rep[2];
+extern volatile uint16_t _stm_freq_div[2];
 
 uint8_t write_gain(const volatile uint8_t* p_data) {
   static_assert(sizeof(Gain) == 4, "Gain is not valid.");
@@ -29,18 +29,14 @@ uint8_t write_gain(const volatile uint8_t* p_data) {
 
   switch (segment) {
     case 0:
-      bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_FREQ_DIV0_0, 0xFFFF);
-      bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_FREQ_DIV0_1, 0xFFFF);
-      bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_REP0_0, 0xFFFF);
-      bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_REP0_1, 0xFFFF);
+      bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_FREQ_DIV0, 0xFFFF);
+      bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_REP0, 0xFFFF);
       bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_CYCLE0, 0);
       bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MODE0, STM_MODE_GAIN);
       break;
     case 1:
-      bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_FREQ_DIV1_0, 0xFFFF);
-      bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_FREQ_DIV1_1, 0xFFFF);
-      bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_REP1_0, 0xFFFF);
-      bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_REP1_1, 0xFFFF);
+      bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_FREQ_DIV1, 0xFFFF);
+      bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_REP1, 0xFFFF);
       bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_CYCLE1, 0);
       bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MODE1, STM_MODE_GAIN);
       break;
@@ -48,8 +44,8 @@ uint8_t write_gain(const volatile uint8_t* p_data) {
       break;  // LCOV_EXCL_LINE
   }
   _stm_cycle[segment] = 1;
-  _stm_rep[segment] = 0xFFFFFFFF;
-  _stm_freq_div[segment] = 0xFFFFFFFF;
+  _stm_rep[segment] = 0xFFFF;
+  _stm_freq_div[segment] = 0xFFFF;
 
   change_stm_wr_segment(segment);
   change_stm_wr_page(0);

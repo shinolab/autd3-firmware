@@ -33,7 +33,6 @@ set_source_files_properties(
   ${PROJECT_SOURCE_DIR}/../src/app.c
   ${PROJECT_SOURCE_DIR}/../src/buf.c
   ${PROJECT_SOURCE_DIR}/../src/op/clear.c
-  ${PROJECT_SOURCE_DIR}/../src/op/clk.c
   ${PROJECT_SOURCE_DIR}/../src/op/debug.c
   ${PROJECT_SOURCE_DIR}/../src/op/gpio_in.c
   ${PROJECT_SOURCE_DIR}/../src/op/foci_stm.c
