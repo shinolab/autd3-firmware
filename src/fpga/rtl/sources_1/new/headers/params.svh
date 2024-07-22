@@ -37,10 +37,7 @@ package params;
     BRAM_SELECT_STM = 2'h3
   } bram_select_t;
 
-  typedef enum logic [5:0] {
-    BRAM_CNT_SELECT_MAIN  = 6'h00,
-    BRAM_CNT_SELECT_CLOCK = 6'h02
-  } bram_cnt_select_t;
+  typedef enum logic [5:0] {BRAM_CNT_SELECT_MAIN = 6'h00} bram_cnt_select_t;
 
   typedef enum logic [7:0] {
     TRANSITION_MODE_SYNC_IDX = 8'h00,
