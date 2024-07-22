@@ -24,8 +24,7 @@ uint8_t get_msg_id(void) {
 uint16_t* controller_bram = new uint16_t[256];
 uint16_t* modulation_bram_0 = new uint16_t[32768 / sizeof(uint16_t)];
 uint16_t* modulation_bram_1 = new uint16_t[32768 / sizeof(uint16_t)];
-uint16_t* pwe_table_bram = new uint16_t[32768 / sizeof(uint16_t)];
-uint16_t* clk_bram = new uint16_t[256 / sizeof(uint16_t)];
+uint16_t* pwe_table_bram = new uint16_t[256 / sizeof(uint16_t)];
 uint16_t* stm_op_bram_0 = new uint16_t[1024 * 256];
 uint16_t* stm_op_bram_1 = new uint16_t[1024 * 256];
 
@@ -51,8 +50,6 @@ uint16_t bram_read_mod(uint32_t segment, uint32_t bram_addr) {
 uint16_t bram_read_pwe_table(uint32_t bram_addr) {
   return pwe_table_bram[bram_addr];
 }
-
-uint16_t bram_read_clk(uint32_t bram_addr) { return clk_bram[bram_addr]; }
 
 uint16_t bram_read_stm(uint32_t segment, uint32_t bram_addr) {
   switch (segment) {
@@ -81,23 +78,14 @@ void fpga_write(uint16_t bram_addr, uint16_t value) {
   auto addr = bram_addr & 0x3FFF;
   switch (select) {
     case BRAM_SELECT_CONTROLLER:
-      switch (addr >> 8) {
-        case BRAM_CNT_SELECT_MAIN:
-          if (addr == ADDR_MOD_MEM_WR_SEGMENT) {
-            mod_wr_segment = value;
-          } else if (addr == ADDR_STM_MEM_WR_SEGMENT) {
-            stm_wr_segment = value;
-          } else if (addr == ADDR_STM_MEM_WR_PAGE) {
-            stm_wr_page = value;
-          } else {
-            controller_bram[addr] = value;
-          }
-          break;
-        case BRAM_CNT_SELECT_CLOCK:
-          clk_bram[addr & 0xFF] = value;
-          break;
-        default:
-          exit(1);
+      if (addr == ADDR_MOD_MEM_WR_SEGMENT) {
+        mod_wr_segment = value;
+      } else if (addr == ADDR_STM_MEM_WR_SEGMENT) {
+        stm_wr_segment = value;
+      } else if (addr == ADDR_STM_MEM_WR_PAGE) {
+        stm_wr_page = value;
+      } else {
+        controller_bram[addr] = value;
       }
       break;
     case BRAM_SELECT_MOD:
@@ -139,7 +127,7 @@ int main(int argc, char** argv) {
   std::memset(controller_bram, 0, sizeof(uint16_t) * 256);
   std::memset(modulation_bram_0, 0, sizeof(uint8_t) * 32768);
   std::memset(modulation_bram_1, 0, sizeof(uint8_t) * 32768);
-  std::memset(pwe_table_bram, 0, sizeof(uint8_t) * 32768);
+  std::memset(pwe_table_bram, 0, sizeof(uint8_t) * 256);
   std::memset(stm_op_bram_0, 0, sizeof(uint64_t) * 1024 * 64);
   std::memset(stm_op_bram_1, 0, sizeof(uint64_t) * 1024 * 64);
 
