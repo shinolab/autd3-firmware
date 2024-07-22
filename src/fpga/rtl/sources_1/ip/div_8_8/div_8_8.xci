@@ -27,7 +27,7 @@
         "OutTready": [ { "value": "false", "resolve_type": "user", "format": "bool", "usage": "all" } ],
         "OutTLASTBehv": [ { "value": "Null", "resolve_type": "user", "usage": "all" } ],
         "latency_configuration": [ { "value": "Manual", "value_src": "user", "resolve_type": "user", "usage": "all" } ],
-        "latency": [ { "value": "6", "value_src": "user", "resolve_type": "user", "format": "long", "usage": "all" } ],
+        "latency": [ { "value": "4", "value_src": "user", "resolve_type": "user", "format": "long", "usage": "all" } ],
         "ACLKEN": [ { "value": "false", "resolve_type": "user", "format": "bool", "usage": "all" } ],
         "ARESETN": [ { "value": "false", "resolve_type": "user", "format": "bool", "usage": "all" } ]
       },
@@ -35,7 +35,7 @@
         "C_XDEVICEFAMILY": [ { "value": "artix7", "resolve_type": "generated", "usage": "all" } ],
         "C_HAS_ARESETN": [ { "value": "0", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "C_HAS_ACLKEN": [ { "value": "0", "resolve_type": "generated", "format": "long", "usage": "all" } ],
-        "C_LATENCY": [ { "value": "6", "resolve_type": "generated", "format": "long", "usage": "all" } ],
+        "C_LATENCY": [ { "value": "4", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "ALGORITHM_TYPE": [ { "value": "4", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "DIVISOR_WIDTH": [ { "value": "8", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "DIVIDEND_WIDTH": [ { "value": "8", "resolve_type": "generated", "format": "long", "usage": "all" } ],

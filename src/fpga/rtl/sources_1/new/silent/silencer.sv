@@ -12,7 +12,7 @@ module silencer #(
     output var DOUT_VALID
 );
 
-  localparam int StepCalcLatency = 9;
+  localparam int StepCalcLatency = 7;
 
   logic is_fixed_update_rate;
 

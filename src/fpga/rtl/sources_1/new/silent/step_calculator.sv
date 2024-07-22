@@ -15,7 +15,7 @@ module step_calculator #(
 
   `include "define.vh"
 
-  localparam int DivLatency = 6;
+  localparam int DivLatency = 4;
 
   `RAM
   logic [15:0] current_target_mem[256] = '{256{16'h0000}};
