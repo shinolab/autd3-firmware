@@ -4,7 +4,7 @@ module sim_mod_modulation ();
   `include "define.vh"
 
   localparam int DEPTH = 249;
-  localparam int SIZE = 10;
+  localparam int SIZE = 256;
 
   logic CLK;
   logic locked;
@@ -82,10 +82,6 @@ module sim_mod_modulation ();
   endtask
 
   task automatic set();
-    for (int i = 0; i < DEPTH; i++) begin
-      intensity_buf[i] = sim_helper_random.range(8'hFF, 0);
-      phase_buf[i] = sim_helper_random.range(8'hFF, 0);
-    end
     while (sys_time[8:0] !== '0) @(posedge CLK);
     for (int i = 0; i < DEPTH; i++) begin
       @(posedge CLK);
@@ -108,9 +104,9 @@ module sim_mod_modulation ();
     end
     for (int i = 0; i < DEPTH; i++) begin
       if (stop_debug == 1'b0) begin
-        expect_intensity = (int'(intensity_buf[i]) * (mod_buf[segment_debug][(idx_debug+cycle_buf[segment_debug])%cycle_buf[segment_debug]]+1)) / 256;
+        expect_intensity = (int'(intensity_buf[i]) * (mod_buf[segment_debug][(idx_debug+cycle_buf[segment_debug])%cycle_buf[segment_debug]])) / 255;
       end else begin
-        expect_intensity = (int'(intensity_buf[i]) * (mod_buf[segment_debug][cycle_buf[segment_debug]-1]+1)) / 256;
+        expect_intensity = (int'(intensity_buf[i]) * (mod_buf[segment_debug][cycle_buf[segment_debug]-1])) / 255;
       end
       expect_phase = phase_buf[i];
       `ASSERT_EQ(expect_intensity, intensity_out);
@@ -119,6 +115,7 @@ module sim_mod_modulation ();
     end
   endtask
 
+  int j;
   initial begin
     sim_helper_random.init();
 
@@ -142,6 +139,24 @@ module sim_mod_modulation ();
 
     @(posedge locked);
 
+    // Manual
+    for (int i = 0; i < SIZE; i++) begin
+      mod_buf[0][i] = i;
+    end
+    sim_helper_bram.write_mod(0, mod_buf[0], cycle_buf[0]);
+    update(0, 32'hFFFFFFFF);
+    j = 0;
+    for (int i = 0; i < cycle_buf[0] + 5; i++) begin
+      for (int i = 0; i < DEPTH; i++, j++) begin
+        intensity_buf[i] = j;
+        phase_buf[i] = sim_helper_random.range(8'hFF, 0);
+      end
+      fork
+        set();
+        check();
+      join
+    end
+
     for (int segment = 0; segment < params::NumSegment; segment++) begin
       for (int i = 0; i < SIZE; i++) begin
         mod_buf[segment][i] = sim_helper_random.range(8'hFF, 0);
@@ -149,18 +164,12 @@ module sim_mod_modulation ();
       sim_helper_bram.write_mod(segment, mod_buf[segment], cycle_buf[segment]);
     end
 
-    update(0, 32'hFFFFFFFF);
-    while (1'b1) begin
-      fork
-        set();
-        check();
-      join
-      if (idx_debug === 5) break;
-      @(posedge CLK);
-    end
-
     update(1, 32'd0);
-    for (int i = 0; i < 15; i++) begin
+    for (int k = 0; k < cycle_buf[1] + 5; k++) begin
+      for (int i = 0; i < DEPTH; i++) begin
+        intensity_buf[i] = sim_helper_random.range(8'hFF, 0);
+        phase_buf[i] = sim_helper_random.range(8'hFF, 0);
+      end
       fork
         set();
         check();
@@ -168,7 +177,11 @@ module sim_mod_modulation ();
     end
 
     update(0, 32'd1);
-    for (int i = 0; i < 25; i++) begin
+    for (int k = 0; k < cycle_buf[0] + 5; k++) begin
+      for (int i = 0; i < DEPTH; i++) begin
+        intensity_buf[i] = sim_helper_random.range(8'hFF, 0);
+        phase_buf[i] = sim_helper_random.range(8'hFF, 0);
+      end
       fork
         set();
         check();

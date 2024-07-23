@@ -16,22 +16,20 @@ module modulation_multiplier #(
     output wire DEBUG_STOP
 );
 
-  localparam int Latency = 1;
-
   logic dout_valid = 1'b0;
 
   logic [7:0] mod;
   logic [14:0] idx = '0;
   logic stop = 1'b0, segment = 1'b0;
-  logic [$clog2(DEPTH+(Latency+1))-1:0] cnt;
+  logic [$clog2(DEPTH)-1:0] cnt;
   logic [7:0] intensity_buf;
-  logic [16:0] p;
+  logic [15:0] p;
 
   assign MOD_BUS.IDX = idx;
   assign mod = MOD_BUS.VALUE;
   assign MOD_BUS.SEGMENT = segment;
 
-  assign INTENSITY_OUT = p[15:8];
+  assign INTENSITY_OUT = div_255(p);
   assign DOUT_VALID = dout_valid;
 
   assign DEBUG_IDX = idx;
@@ -47,10 +45,10 @@ module modulation_multiplier #(
       .DOUT(intensity_buf)
   );
 
-  mult_8x9 mult (
+  mult_8x8 mult (
       .CLK(CLK),
       .A  (intensity_buf),
-      .B  ({1'b0, mod} + 9'd1),
+      .B  (mod),
       .P  (p)
   );
 
@@ -99,5 +97,12 @@ module modulation_multiplier #(
       default: state <= IDLE;
     endcase
   end
+
+  // This function is valid for [0, 255*255]
+  function automatic [7:0] div_255(input logic [15:0] a);
+    logic [15:0] b;
+    b = a + {8'd0, a[15:8]} + 16'd1;
+    div_255 = b[15:8];
+  endfunction
 
 endmodule
