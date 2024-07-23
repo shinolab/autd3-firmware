@@ -392,8 +392,8 @@ TEST(Op, InvalidCompletionStepsIntensityFocusSTM) {
     header->msg_id = get_msg_id();
     header->slot_2_offset = 0;
 
-    const uint16_t intensity = 10;  // 25us * 10 = 250us
-    const uint16_t phase = 2;       // 25us * 2 = 50us
+    const uint8_t intensity = 10;  // 25us * 10 = 250us
+    const uint8_t phase = 2;       // 25us * 2 = 50us
     const uint8_t flag = SILENCER_FLAG_STRICT_MODE;
 
     auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
@@ -423,6 +423,7 @@ TEST(Op, InvalidCompletionStepsIntensityFocusSTM) {
     reinterpret_cast<FocusSTMHead*>(p)->tag = TAG_FOCI_STM;
     reinterpret_cast<FocusSTMHead*>(p)->flag =
         FOCUS_STM_FLAG_BEGIN | FOCUS_STM_FLAG_END;
+    reinterpret_cast<FocusSTMHead*>(p)->segment = 0;
     reinterpret_cast<FocusSTMHead*>(p)->send_num = 2;
     reinterpret_cast<FocusSTMHead*>(p)->freq_div = freq_div;
     reinterpret_cast<FocusSTMHead*>(p)->transition_mode =
@@ -576,6 +577,7 @@ TEST(Op, InvalidCompletionStepsPhaseFocusSTM) {
     reinterpret_cast<FocusSTMHead*>(p)->tag = TAG_FOCI_STM;
     reinterpret_cast<FocusSTMHead*>(p)->flag =
         FOCUS_STM_FLAG_BEGIN | FOCUS_STM_FLAG_END;
+    reinterpret_cast<FocusSTMHead*>(p)->segment = 0;
     reinterpret_cast<FocusSTMHead*>(p)->send_num = 2;
     reinterpret_cast<FocusSTMHead*>(p)->freq_div = freq_div;
     reinterpret_cast<FocusSTMHead*>(p)->transition_mode =
@@ -628,8 +630,8 @@ TEST(Op, InvalidCompletionStepsWithPermisiveModeFocusSTM) {
     header->msg_id = get_msg_id();
     header->slot_2_offset = 0;
 
-    const uint16_t intensity = 10;  // 25us * 10 = 250us
-    const uint16_t phase = 10;      // 25us * 2 = 250us
+    const uint8_t intensity = 10;  // 25us * 10 = 250us
+    const uint8_t phase = 10;      // 25us * 2 = 250us
     const uint8_t flag = 0;
 
     auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
@@ -659,6 +661,7 @@ TEST(Op, InvalidCompletionStepsWithPermisiveModeFocusSTM) {
     reinterpret_cast<FocusSTMHead*>(p)->tag = TAG_FOCI_STM;
     reinterpret_cast<FocusSTMHead*>(p)->flag =
         FOCUS_STM_FLAG_BEGIN | FOCUS_STM_FLAG_END;
+    reinterpret_cast<FocusSTMHead*>(p)->segment = 0;
     reinterpret_cast<FocusSTMHead*>(p)->send_num = 2;
     reinterpret_cast<FocusSTMHead*>(p)->freq_div = freq_div;
     reinterpret_cast<FocusSTMHead*>(p)->transition_mode =

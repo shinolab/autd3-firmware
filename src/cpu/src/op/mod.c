@@ -21,9 +21,6 @@ volatile uint16_t _mod_freq_div[2];
 volatile uint16_t _mod_rep[2];
 volatile uint8_t _mod_segment;
 
-extern volatile bool_t _silencer_strict_mode;
-extern volatile uint16_t _min_freq_div_intensity;
-extern volatile uint16_t _min_freq_div_phase;
 extern volatile uint8_t _stm_segment;
 extern volatile uint16_t _stm_freq_div[2];
 
@@ -76,9 +73,8 @@ uint8_t write_mod(const volatile uint8_t* p_data) {
                                  p->head.transition_mode))
       return ERR_INVALID_TRANSITION_MODE;
 
-    if (validate_silencer_settings(
-            _silencer_strict_mode, _min_freq_div_intensity, _min_freq_div_phase,
-            _stm_freq_div[_stm_segment], p->head.freq_div))
+    if (validate_silencer_settings(_stm_freq_div[_stm_segment],
+                                   p->head.freq_div))
       return ERR_INVALID_SILENCER_SETTING;
 
     if (p->head.transition_mode != TRANSITION_MODE_NONE) _mod_segment = segment;
@@ -153,9 +149,8 @@ uint8_t change_mod_segment(const volatile uint8_t* p_data) {
                                p->transition_mode))
     return ERR_INVALID_TRANSITION_MODE;
 
-  if (validate_silencer_settings(
-          _silencer_strict_mode, _min_freq_div_intensity, _min_freq_div_phase,
-          _stm_freq_div[_stm_segment], _mod_freq_div[p->segment]))
+  if (validate_silencer_settings(_stm_freq_div[_stm_segment],
+                                 _mod_freq_div[p->segment]))
     return ERR_INVALID_SILENCER_SETTING;
 
   _mod_segment = p->segment;
