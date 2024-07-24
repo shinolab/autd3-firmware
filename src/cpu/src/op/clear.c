@@ -52,8 +52,8 @@ uint8_t clear(void) {
   _min_freq_div_phase = 40;
 
   _mod_cycle = 2;
-  _mod_freq_div[0] = 10;
-  _mod_freq_div[1] = 10;
+  _mod_freq_div[0] = 0xFFFF;
+  _mod_freq_div[1] = 0xFFFF;
   _mod_rep[0] = 0xFFFF;
   _mod_rep[1] = 0xFFFF;
   _mod_segment = 0;
