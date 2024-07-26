@@ -12,12 +12,15 @@ FULL = 255
 with open(path, "w") as f:
     f.write("memory_initialization_radix = 16 ;\n")
     f.write("memory_initialization_vector =\n")
+    s = set()
     for i in range(N):
         if i >= FULL:
             v = T // 2
         else:
             v = int(np.round(np.arcsin(i / FULL) / np.pi * 2 * T / 2))
+        s.add(v)
         if i == N - 1:
             f.write(f"{v:02x};\n")
         else:
             f.write(f"{v:02x},\n")
+    print(len(s))
