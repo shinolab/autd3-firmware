@@ -1,47 +1,40 @@
 name: build
 
 on:
-  push:
-    branches:
-      - 'develop'
   pull_request:
-    types: [opened, reopened, review_requested]
+    branches: [ "main" ]
+  merge_group:
+    types: [ checks_requested ]
 
 jobs:
-  check:
+
+  changed-files:
+    name: changed-files
     runs-on: ubuntu-latest
-    name: check if files changed
     outputs:
-      status: ${{ steps.changed-files.outputs.modified_files }}
+      src: ${{ steps.changed-files-yaml.outputs.src_any_changed }}
     steps:
       - uses: actions/checkout@v4
-      - uses: tj-actions/changed-files@v42
-        id: changed-files
+      - id: changed-files-yaml
+        uses: tj-actions/changed-files@v44
         with:
-          files: |
-            .github/workflows/build.yml
-            build.py
-            ./src/cpu/tests/CMakeLists.txt
-            ./src/cpu/**/*.h
-            ./src/cpu/**/*.c
-            ./src/cpu/**/*.hpp
-            ./src/cpu/**/*.cpp
+          files_yaml: |
+            src:
+              - '**/*.h'
+              - '**/*.c'
+              - '**/*.hpp'
+              - '**/*.cpp'
+              - '**/CMakeLists.txt'
 
-  build:
-    needs: check
-    name: build-cpu
+  test:
+    needs: changed-files
+    if: ${{ needs.changed-files.outputs.src == 'true' }}
+    name: test-cpu
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Python
-        if: needs.check.outputs.status
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
-      - name: Run CPU src tests
-        run: |
+      - run: |
           python3 build.py cpu test --cmake-extra="-DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12"
-        if: needs.check.outputs.status
