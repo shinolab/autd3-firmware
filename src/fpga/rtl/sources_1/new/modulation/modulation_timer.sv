@@ -23,6 +23,7 @@ module modulation_timer (
 
   assign UPDATE_SETTINGS_OUT = update_settings;
 
+  logic [47:0] sys_time;
   for (genvar i = 0; i < params::NumSegment; i++) begin : gen_mod_timer_idx
     logic [15:0] freq_div;
     logic [15:0] cycle;
@@ -44,7 +45,7 @@ module modulation_timer (
     end
 
     div_48_16 div_cnt (
-        .s_axis_dividend_tdata(SYS_TIME[55:8]),
+        .s_axis_dividend_tdata(sys_time),
         .s_axis_dividend_tvalid(1'b1),
         .s_axis_divisor_tdata(freq_div),
         .s_axis_divisor_tvalid(1'b1),
@@ -61,6 +62,10 @@ module modulation_timer (
         .m_axis_dout_tdata({_unused_quo, rem}),
         .m_axis_dout_tvalid()
     );
+  end
+
+  always_ff @(posedge CLK) begin
+    sys_time <= SYS_TIME[55:8];
   end
 
   always_ff @(posedge CLK) begin
