@@ -15,7 +15,7 @@ module stm_swapchain (
     output wire [12:0] IDX[params::NumSegment]
 );
 
-  localparam int Latency = 66 + 5;
+  localparam int Latency = 66 + 7;
 
   logic segment = 1'b0;
   logic req_segment;

@@ -7,11 +7,14 @@ module ec_time_to_sys_time (
 
   localparam logic [15:0] ECATSyncBase = 16'd50000;
 
+  logic [63:0] ec_time;
+  logic [63:0] sys_time;
+
   logic [63:0] lap;
   logic [15:0] lap_rem_unused;
 
   div_64_16 div_lap (
-      .s_axis_dividend_tdata(EC_TIME),
+      .s_axis_dividend_tdata(ec_time),
       .s_axis_dividend_tvalid(1'b1),
       .s_axis_divisor_tdata(ECATSyncBase),
       .s_axis_divisor_tvalid(1'b1),
@@ -20,6 +23,11 @@ module ec_time_to_sys_time (
       .m_axis_dout_tvalid()
   );
 
-  assign SYS_TIME = {lap[54:0], 9'h00};
+  assign SYS_TIME = sys_time;
+
+  always_ff @(posedge CLK) begin
+    ec_time  <= EC_TIME;
+    sys_time <= {lap[54:0], 9'h00};
+  end
 
 endmodule
