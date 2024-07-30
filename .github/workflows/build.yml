@@ -1,13 +1,16 @@
 name: build
 
 on:
+  push:
+    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-  merge_group:
-    types: [ checks_requested ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-
   changed-files:
     name: changed-files
     runs-on: ubuntu-latest
