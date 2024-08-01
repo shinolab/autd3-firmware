@@ -37,7 +37,9 @@ module synchronizer (
   ec_time_to_sys_time ec_time_to_sys_time (
       .CLK(CLK),
       .EC_TIME(ecat_sync_time),
-      .SYS_TIME(sync_time)
+      .DIN_VALID(1'b1),
+      .SYS_TIME(sync_time),
+      .DOUT_VALID()
   );
 
   sub64_64 sub_diff (
