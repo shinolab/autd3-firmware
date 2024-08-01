@@ -15,7 +15,7 @@ module stm_swapchain (
     output wire [12:0] IDX[params::NumSegment]
 );
 
-  localparam int Latency = 66 + 7;
+  localparam int Latency = 6;
 
   logic segment = 1'b0;
   logic req_segment;
@@ -47,12 +47,17 @@ module stm_swapchain (
   idx_mode_t idx_mode = IDX_MODE_SYNC_IDX;
   state_t state = INFINITE_LOOP;
 
-  logic [$clog2(Latency)-1:0] diff_latency;
+  logic [$clog2(Latency-1)-1:0] addsub_latency;
+  logic wait_transition;
   logic [63:0] transition_time;
+  logic transition_time_din_valid = 1'b0;
+  logic transition_time_dout_valid;
   ec_time_to_sys_time ec_time_to_sys_time (
       .CLK(CLK),
       .EC_TIME(TRANSITION_VALUE),
-      .SYS_TIME(transition_time)
+      .DIN_VALID(transition_time_din_valid),
+      .SYS_TIME(transition_time),
+      .DOUT_VALID(transition_time_dout_valid)
   );
   sub64_64 addsub_diff_time (
       .CLK(CLK),
@@ -78,7 +83,9 @@ module stm_swapchain (
       end else begin
         rep <= REP[REQ_RD_SEGMENT];
         req_segment <= REQ_RD_SEGMENT;
-        diff_latency <= '0;
+        transition_time_din_valid <= TRANSITION_MODE == params::TRANSITION_MODE_SYS_TIME;
+        wait_transition <= 1'b1;
+        addsub_latency <= '0;
         state <= WAIT_START;
       end
     end else begin
@@ -95,18 +102,24 @@ module stm_swapchain (
               end
             end
             params::TRANSITION_MODE_SYS_TIME: begin
-              if (diff_latency == Latency - 1) begin
-                if (~time_diff[64]) begin
-                  stop <= 1'b0;
-                  loop_cnt <= '0;
-                  segment <= req_segment;
-                  idx_mode <= IDX_MODE_TIC;
-                  tic_idx[req_segment] <= '0;
-                  state <= FINITE_LOOP;
+              transition_time_din_valid <= 1'b0;
+              if (wait_transition) begin
+                if (transition_time_dout_valid) begin
+                  wait_transition <= 1'b0;
                 end
               end else begin
-                diff_latency <= diff_latency + 1;
-                state <= WAIT_START;
+                if (addsub_latency == Latency - 1) begin
+                  if (~time_diff[64]) begin
+                    stop <= 1'b0;
+                    loop_cnt <= '0;
+                    segment <= req_segment;
+                    idx_mode <= IDX_MODE_TIC;
+                    tic_idx[req_segment] <= '0;
+                    state <= FINITE_LOOP;
+                  end
+                end else begin
+                  addsub_latency <= addsub_latency + 1;
+                end
               end
             end
             params::TRANSITION_MODE_GPIO: begin

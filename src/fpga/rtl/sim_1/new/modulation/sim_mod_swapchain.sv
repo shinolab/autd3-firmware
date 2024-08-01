@@ -511,7 +511,7 @@ module sim_mod_swapchain ();
     `ASSERT_EQ(0, idx[0]);
 
     @(posedge CLK);
-    transition_value <= (SYS_TIME / ECAT_SYNC_BASE_CNT + 1) * 500000;
+    transition_value <= (SYS_TIME / ECAT_SYNC_BASE_CNT + 2) * 500000;
 
     // segment change to 1, wait for for 5 clocks, repeat 2 times
     @(posedge CLK);
@@ -531,7 +531,7 @@ module sim_mod_swapchain ();
       @(negedge CLK);
       `ASSERT_EQ(0, segment);
       `ASSERT_EQ(1, stop);
-      if (SYS_TIME == ECAT_SYNC_BASE_CNT * 3 + 6) break;
+      if (SYS_TIME == ECAT_SYNC_BASE_CNT * 4 + 6) break;
     end
 
     // change segment
