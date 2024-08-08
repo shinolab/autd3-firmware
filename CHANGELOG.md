@@ -1,3 +1,12 @@
+# 9.0.0
+
+- Change ultrasound period to 256 from 512
+    - Changed main clock frequency to 10.24MHz
+    - Remove dynamic reconfiguration function
+    - Change pulse width encoder table size to 256
+- Silencer can now be applied to pulse width
+- Invert the sign of the phase
+
 # 8.0.1
 
 - Fixed a bug when page capacity equals write data volume in `FociSTM`
