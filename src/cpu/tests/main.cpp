@@ -13,6 +13,9 @@ TX_STR _sTx = TX_STR{};
 st_ecatc_t ECATC = st_ecatc_t{
     .AL_STATUS_CODE = {.WORD = 0x0000},
 };
+st_porta_t PORTA = st_porta_t{
+    .PODR = {.BYTE = 0x00},
+};
 
 uint8_t get_msg_id(void) {
   static uint8_t msg_id = 0;
@@ -32,9 +35,7 @@ uint32_t mod_wr_segment = 0;
 uint32_t stm_wr_segment = 0;
 uint32_t stm_wr_page = 0;
 
-uint16_t bram_read_controller(uint32_t bram_addr) {
-  return controller_bram[bram_addr];
-}
+uint16_t bram_read_controller(uint32_t bram_addr) { return controller_bram[bram_addr]; }
 
 uint16_t bram_read_mod(uint32_t segment, uint32_t bram_addr) {
   switch (segment) {
@@ -47,9 +48,7 @@ uint16_t bram_read_mod(uint32_t segment, uint32_t bram_addr) {
   }
 }
 
-uint16_t bram_read_pwe_table(uint32_t bram_addr) {
-  return pwe_table_bram[bram_addr];
-}
+uint16_t bram_read_pwe_table(uint32_t bram_addr) { return pwe_table_bram[bram_addr]; }
 
 uint16_t bram_read_stm(uint32_t segment, uint32_t bram_addr) {
   switch (segment) {
