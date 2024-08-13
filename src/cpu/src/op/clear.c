@@ -6,6 +6,7 @@ extern "C" {
 #include <stddef.h>
 
 #include "app.h"
+#include "iodefine.h"
 #include "mod.h"
 #include "params.h"
 #include "stm.h"
@@ -37,6 +38,8 @@ uint8_t clear(void) {
   static_assert(sizeof(Clear) == 2, "Clear is not valid.");
   static_assert(offsetof(Clear, tag) == 0, "Clear is not valid.");
 
+  PORTA.PODR.BYTE = 0x00;
+
   _read_fpga_state = false;
 
   _fpga_flags_internal = 0;
@@ -44,8 +47,7 @@ uint8_t clear(void) {
   bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_UPDATE_RATE_INTENSITY, 1);
   bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_UPDATE_RATE_PHASE, 1);
   bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_FLAG, 0);
-  bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_COMPLETION_STEPS_INTENSITY,
-             10);
+  bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_COMPLETION_STEPS_INTENSITY, 10);
   bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENCER_COMPLETION_STEPS_PHASE, 40);
   _silencer_strict_mode = true;
   _min_freq_div_intensity = 10;
@@ -57,8 +59,7 @@ uint8_t clear(void) {
   _mod_rep[0] = 0xFFFF;
   _mod_rep[1] = 0xFFFF;
   _mod_segment = 0;
-  bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_TRANSITION_MODE,
-             TRANSITION_MODE_SYNC_IDX);
+  bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_TRANSITION_MODE, TRANSITION_MODE_SYNC_IDX);
   bram_set(BRAM_SELECT_CONTROLLER, ADDR_MOD_TRANSITION_VALUE_0, 0, 4);
   bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_REQ_RD_SEGMENT, 0);
   bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_CYCLE0, _mod_cycle - 1);
@@ -81,8 +82,7 @@ uint8_t clear(void) {
   _stm_rep[0] = 0xFFFF;
   _stm_rep[1] = 0xFFFF;
   _stm_segment = 0;
-  bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_TRANSITION_MODE,
-             TRANSITION_MODE_SYNC_IDX);
+  bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_TRANSITION_MODE, TRANSITION_MODE_SYNC_IDX);
   bram_set(BRAM_SELECT_CONTROLLER, ADDR_STM_TRANSITION_VALUE_0, 0, 4);
   bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MODE0, STM_MODE_GAIN);
   bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MODE1, STM_MODE_GAIN);

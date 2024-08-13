@@ -30,6 +30,7 @@ extern uint8_t config_pwe(const volatile uint8_t*);
 extern uint8_t configure_debug(const volatile uint8_t*);
 extern uint8_t read_fpga_state(void);
 extern uint8_t emulate_gpio_in(const volatile uint8_t*);
+extern uint8_t cpu_gpio_out(const volatile uint8_t*);
 
 #define WDT_CNT_MAX (500)
 
@@ -90,6 +91,8 @@ uint8_t handle_payload(const volatile uint8_t* p_data) {
       return configure_debug(p_data);
     case TAG_EMULATE_GPIO_IN:
       return emulate_gpio_in(p_data);
+    case TAG_CPU_GPIO_OUT:
+      return cpu_gpio_out(p_data);
     default:
       return ERR_NOT_SUPPORTED_TAG;
   }
@@ -102,8 +105,7 @@ void update(void) {
   volatile uint8_t* p_data;
   Header* header;
 
-  if ((ECATC.AL_STATUS_CODE.WORD == AL_STATUS_CODE_SYNC_ERR) ||
-      (ECATC.AL_STATUS_CODE.WORD == AL_STATUS_CODE_SYNC_MANAGER_WATCHDOG)) {
+  if ((ECATC.AL_STATUS_CODE.WORD == AL_STATUS_CODE_SYNC_ERR) || (ECATC.AL_STATUS_CODE.WORD == AL_STATUS_CODE_SYNC_MANAGER_WATCHDOG)) {
     if (_wdt_cnt < 0) return;
     if (_wdt_cnt == 0) clear();
     _wdt_cnt = _wdt_cnt - 1;
