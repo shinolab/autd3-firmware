@@ -1,3 +1,7 @@
+# 9.1.0
+
+- Add `cpu_gpio_out` operation
+
 # 9.0.0
 
 - Change ultrasound period to 256 from 512
