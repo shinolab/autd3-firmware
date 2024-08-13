@@ -16,7 +16,14 @@ typedef struct {
   } DC_SYS_TIME;
 } st_ecatc_t;
 
+typedef struct {
+  union {
+    unsigned char BYTE;
+  } PODR;
+} st_porta_t;
+
 extern st_ecatc_t ECATC;
+extern st_porta_t PORTA;
 
 #ifdef __cplusplus
 }
