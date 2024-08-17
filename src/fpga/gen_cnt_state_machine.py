@@ -89,8 +89,8 @@ silencer_params = Params(
             "FLAG",
             0,
         ),
-        Param("SILENCER_UPDATE_RATE_INTENSITY", 8, "UPDATE_RATE_INTENSITY", 1),
-        Param("SILENCER_UPDATE_RATE_PHASE", 8, "UPDATE_RATE_PHASE", 1),
+        Param("SILENCER_UPDATE_RATE_INTENSITY", 16, "UPDATE_RATE_INTENSITY", 256),
+        Param("SILENCER_UPDATE_RATE_PHASE", 16, "UPDATE_RATE_PHASE", 256),
         Param(
             "SILENCER_COMPLETION_STEPS_INTENSITY", 8, "COMPLETION_STEPS_INTENSITY", 10
         ),
