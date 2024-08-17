@@ -24,12 +24,12 @@ package settings;
   } stm_settings_t;
 
   typedef struct {
-    logic       UPDATE;
-    logic [7:0] FLAG;
-    logic [7:0] UPDATE_RATE_INTENSITY;
-    logic [7:0] UPDATE_RATE_PHASE;
-    logic [7:0] COMPLETION_STEPS_INTENSITY;
-    logic [7:0] COMPLETION_STEPS_PHASE;
+    logic        UPDATE;
+    logic [7:0]  FLAG;
+    logic [15:0] UPDATE_RATE_INTENSITY;
+    logic [15:0] UPDATE_RATE_PHASE;
+    logic [7:0]  COMPLETION_STEPS_INTENSITY;
+    logic [7:0]  COMPLETION_STEPS_PHASE;
   } silencer_settings_t;
 
   typedef struct {
