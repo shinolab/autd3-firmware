@@ -553,7 +553,7 @@ TEST(Op, GainSTMInvalidMode) {
   header->slot_2_offset = 0;
 
   const uint8_t mode = 0xFF;
-  const uint16_t freq_div = 0x12345678;
+  const uint16_t freq_div = 0x5678;
 
   header->msg_id = get_msg_id();
 
