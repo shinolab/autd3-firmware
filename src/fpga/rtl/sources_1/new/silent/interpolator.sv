@@ -21,7 +21,7 @@ module interpolator #(
   logic [31:0] current_0, current_1;
   logic [15:0] update_rate_i, update_rate_p;
   logic signed [16:0] update_rate_i_p, update_rate_i_n, update_rate_p_p, update_rate_p_n;
-  logic signed [8:0] step_i, step_i_buf, step_p, step_p_wrapped;
+  logic signed [16:0] step_i, step_i_buf, step_p, step_p_wrapped;
 
   logic [7:0] cnt;
   logic dout_valid = 0;
