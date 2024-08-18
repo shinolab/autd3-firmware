@@ -98,16 +98,35 @@ module sim_silencer_fixed_update_rate ();
     //////////////// Manual check ////////////////
     silencer_settings.UPDATE_RATE_INTENSITY = 1;
     silencer_settings.UPDATE_RATE_PHASE = 1;
-
     for (int i = 0; i < DEPTH; i++) begin
       phase_buf[i] = 1;
       intensity_buf[i] = 1;
+    end
+    for (int i = 0; i < 255; i++) begin
+      fork
+        set();
+        wait_calc();
+      join
+      check_manual(0, 0);
     end
     fork
       set();
       wait_calc();
     join
     check_manual(1, 1);
+
+    silencer_settings.UPDATE_RATE_INTENSITY = 256;
+    silencer_settings.UPDATE_RATE_PHASE = 256;
+
+    for (int i = 0; i < DEPTH; i++) begin
+      phase_buf[i] = 0;
+      intensity_buf[i] = 0;
+    end
+    fork
+      set();
+      wait_calc();
+    join
+    check_manual(0, 0);
 
     for (int i = 0; i < DEPTH; i++) begin
       phase_buf[i] = 255;
@@ -117,16 +136,10 @@ module sim_silencer_fixed_update_rate ();
       set();
       wait_calc();
     join
-    check_manual(2, 0);
+    check_manual(1, 255);
 
-    fork
-      set();
-      wait_calc();
-    join
-    check_manual(3, 255);
-
-    silencer_settings.UPDATE_RATE_INTENSITY = 8'hFF;
-    silencer_settings.UPDATE_RATE_PHASE = 8'hFF;
+    silencer_settings.UPDATE_RATE_INTENSITY = 16'hFF00;
+    silencer_settings.UPDATE_RATE_PHASE = 16'hFF00;
     for (int i = 0; i < DEPTH; i++) begin
       phase_buf[i] = 0;
       intensity_buf[i] = 0;
@@ -162,11 +175,11 @@ module sim_silencer_fixed_update_rate ();
     // from random to random with random step
     for (int i = 0; i < 100; i++) begin
       $display("Random test %d/100", i);
-      silencer_settings.UPDATE_RATE_INTENSITY = sim_helper_random.range(8'hFF, 1);
-      silencer_settings.UPDATE_RATE_PHASE = sim_helper_random.range(8'hFF, 1);
+      silencer_settings.UPDATE_RATE_INTENSITY = sim_helper_random.range(16'hFFFF, 1);
+      silencer_settings.UPDATE_RATE_PHASE = sim_helper_random.range(16'hFFFF, 1);
       n_repeat = silencer_settings.UPDATE_RATE_INTENSITY < silencer_settings.UPDATE_RATE_PHASE ?
-                      int'(8'hFF / silencer_settings.UPDATE_RATE_INTENSITY) + 1 :
-                      int'(8'hFF / silencer_settings.UPDATE_RATE_PHASE) + 1;
+                      int'(16'hFFFF / silencer_settings.UPDATE_RATE_INTENSITY) + 1 :
+                      int'(16'hFFFF / silencer_settings.UPDATE_RATE_PHASE) + 1;
       for (int i = 0; i < DEPTH; i++) begin
         intensity_buf[i] = sim_helper_random.range(8'hFF, 0);
         phase_buf[i] = sim_helper_random.range(8'hFF, 0);
@@ -185,8 +198,8 @@ module sim_silencer_fixed_update_rate ();
     end
 
     // disable
-    silencer_settings.UPDATE_RATE_INTENSITY = 8'hFF;
-    silencer_settings.UPDATE_RATE_PHASE = 8'hFF;
+    silencer_settings.UPDATE_RATE_INTENSITY = 16'hFFFF;
+    silencer_settings.UPDATE_RATE_PHASE = 16'hFFFF;
     n_repeat = 1;
 
     for (int i = 0; i < DEPTH; i++) begin
