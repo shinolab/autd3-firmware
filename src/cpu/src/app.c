@@ -17,6 +17,7 @@ extern uint8_t firmware_info(const volatile uint8_t*);
 extern uint8_t write_mod(const volatile uint8_t*);
 extern uint8_t change_mod_segment(const volatile uint8_t*);
 extern uint8_t config_silencer(const volatile uint8_t*);
+extern uint8_t config_silencer2(const volatile uint8_t*);
 extern uint8_t write_gain(const volatile uint8_t*);
 extern uint8_t change_gain_segment(const volatile uint8_t*);
 extern uint8_t write_foci_stm(const volatile uint8_t*);
@@ -69,6 +70,8 @@ uint8_t handle_payload(const volatile uint8_t* p_data) {
       return change_mod_segment(p_data);
     case TAG_SILENCER:
       return config_silencer(p_data);
+    case TAG_SILENCER2:
+      return config_silencer2(p_data);
     case TAG_GAIN:
       return write_gain(p_data);
     case TAG_GAIN_CHANGE_SEGMENT:
