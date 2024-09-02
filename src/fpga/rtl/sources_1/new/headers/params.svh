@@ -8,7 +8,7 @@ package params;
   localparam int STMRdAddrWidth = $clog2(GainSTMSize * 8);
   localparam int NumFociMax = 8;
 
-  localparam bit [7:0] VersionNumMajor = 8'hA1;
+  localparam bit [7:0] VersionNumMajor = 8'hA2;
   localparam bit [7:0] VersionNumMinor = 8'h00;
 
   typedef enum int {
