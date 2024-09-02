@@ -1,3 +1,7 @@
+# 10.0.0
+
+- Change silencer minimum update rate from 2pi/256 to 2pi/65536
+
 # 9.1.0
 
 - Add `cpu_gpio_out` operation

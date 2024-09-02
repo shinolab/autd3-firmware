@@ -70,8 +70,6 @@ uint8_t handle_payload(const volatile uint8_t* p_data) {
       return change_mod_segment(p_data);
     case TAG_SILENCER:
       return config_silencer(p_data);
-    case TAG_SILENCER2:
-      return config_silencer2(p_data);
     case TAG_GAIN:
       return write_gain(p_data);
     case TAG_GAIN_CHANGE_SEGMENT:

@@ -4,18 +4,18 @@ module step_calculator #(
 ) (
     input var CLK,
     input var DIN_VALID,
-    input var [7:0] COMPLETION_STEPS_INTENSITY,
-    input var [7:0] COMPLETION_STEPS_PHASE,
+    input var [15:0] COMPLETION_STEPS_INTENSITY,
+    input var [15:0] COMPLETION_STEPS_PHASE,
     input var [7:0] INTENSITY,
     input var [7:0] PHASE,
-    output var [7:0] UPDATE_RATE_INTENSITY,
-    output var [7:0] UPDATE_RATE_PHASE,
+    output var [15:0] UPDATE_RATE_INTENSITY,
+    output var [15:0] UPDATE_RATE_PHASE,
     output var DOUT_VALID
 );
 
   `include "define.vh"
 
-  localparam int DivLatency = 4;
+  localparam int DivLatency = 18;
 
   `RAM
   logic [15:0] current_target_mem[256] = '{256{16'h0000}};
@@ -24,22 +24,23 @@ module step_calculator #(
   `RAM
   logic [7:0] diff_mem_p[256] = '{256{8'h00}};
   `RAM
-  logic [7:0] step_rem_mem_i[256] = '{256{8'h00}};
+  logic [15:0] step_rem_mem_i[256] = '{256{16'h00}};
   `RAM
-  logic [7:0] step_rem_mem_p[256] = '{256{8'h00}};
+  logic [15:0] step_rem_mem_p[256] = '{256{16'h00}};
 
   logic [7:0] current_i, current_p;
 
-  logic [7:0] cnt;
+  logic [7:0] output_cnt, cnt;
+  logic start_output;
   logic reset_in_i, reset_out_i;
   logic reset_in_p, reset_out_p;
   logic [7:0] diff_tmp_i, diff_i;
   logic [7:0] diff_tmp_p, diff_p;
-  logic [7:0] step_quo_i, step_rem_i;
-  logic [7:0] step_quo_p, step_rem_p;
+  logic [15:0] step_quo_i, step_rem_i;
+  logic [15:0] step_quo_p, step_rem_p;
 
   logic dout_valid = 0;
-  logic [7:0] update_rate_i, update_rate_p;
+  logic [15:0] update_rate_i, update_rate_p;
 
   assign current_i = current_target_mem[cnt][15:8];
   assign current_p = current_target_mem[cnt][7:0];
@@ -48,8 +49,8 @@ module step_calculator #(
   assign UPDATE_RATE_PHASE = update_rate_p;
   assign DOUT_VALID = dout_valid;
 
-  div_8_8 div_8_8_i (
-      .s_axis_dividend_tdata(diff_i),
+  div_16_16 div_i (
+      .s_axis_dividend_tdata({diff_i, 8'h00}),
       .s_axis_dividend_tvalid(1'b1),
       .s_axis_divisor_tdata(COMPLETION_STEPS_INTENSITY),
       .s_axis_divisor_tvalid(1'b1),
@@ -58,8 +59,8 @@ module step_calculator #(
       .m_axis_dout_tvalid()
   );
 
-  div_8_8 div_8_8_p (
-      .s_axis_dividend_tdata(diff_p),
+  div_16_16 div_p (
+      .s_axis_dividend_tdata({diff_p, 8'h00}),
       .s_axis_dividend_tvalid(1'b1),
       .s_axis_divisor_tdata(COMPLETION_STEPS_PHASE),
       .s_axis_divisor_tvalid(1'b1),
@@ -77,13 +78,13 @@ module step_calculator #(
       .DOUT({reset_out_i, reset_out_p})
   );
 
-  typedef enum logic [1:0] {
+  typedef enum logic {
     IDLE,
-    WAIT_DIV,
     RUN
   } state_t;
 
-  state_t state = IDLE;
+  state_t input_state = IDLE;
+  state_t output_state = IDLE;
 
   always_ff @(posedge CLK) begin
     if (DIN_VALID) begin
@@ -96,7 +97,7 @@ module step_calculator #(
     diff_tmp_p <= (PHASE < current_p) ? current_p - PHASE : PHASE - current_p;
 
     // diff_mem's index is shifted by 1
-    if (diff_tmp_i == 8'd0) begin
+    if ((input_state == IDLE) || (diff_tmp_i == 8'd0)) begin
       reset_in_i <= 1'b0;
       diff_i <= diff_mem_i[cnt];
     end else begin
@@ -104,7 +105,7 @@ module step_calculator #(
       diff_i <= diff_tmp_i;
       diff_mem_i[cnt] <= diff_tmp_i;
     end
-    if (diff_tmp_p == 8'd0) begin
+    if ((input_state == IDLE) || (diff_tmp_p == 8'd0)) begin
       reset_in_p <= 1'b0;
       diff_p <= diff_mem_p[cnt];
     end else begin
@@ -113,53 +114,68 @@ module step_calculator #(
       diff_mem_p[cnt] <= (diff_tmp_p >= 8'd128) ? 9'd256 - diff_tmp_p : diff_tmp_p;
     end
 
-    // step_rem_mem's index is shifted by DivLatency
     if (reset_out_i) begin
       update_rate_i <= step_quo_i;
-      step_rem_mem_i[cnt] <= step_rem_i;
+      step_rem_mem_i[output_cnt] <= step_rem_i;
     end else begin
-      if (step_rem_mem_i[cnt] == '0) begin
+      if (step_rem_mem_i[output_cnt] == '0) begin
         update_rate_i <= step_quo_i;
       end else begin
         update_rate_i <= step_quo_i + 1;
-        step_rem_mem_i[cnt] <= step_rem_mem_i[cnt] - 1;
+        step_rem_mem_i[output_cnt] <= (output_state == RUN) ? step_rem_mem_i[output_cnt] - 1 : step_rem_mem_i[output_cnt];
       end
     end
     if (reset_out_p) begin
       update_rate_p <= step_quo_p;
-      step_rem_mem_p[cnt] <= step_rem_p;
+      step_rem_mem_p[output_cnt] <= step_rem_p;
     end else begin
-      if (step_rem_mem_p[cnt] == '0) begin
+      if (step_rem_mem_p[output_cnt] == '0) begin
         update_rate_p <= step_quo_p;
       end else begin
         update_rate_p <= step_quo_p + 1;
-        step_rem_mem_p[cnt] <= step_rem_mem_p[cnt] - 1;
+        step_rem_mem_p[output_cnt] <= (output_state == RUN) ? step_rem_mem_p[output_cnt] - 1 : step_rem_mem_p[output_cnt];
       end
     end
   end
 
   always_ff @(posedge CLK) begin
-    case (state)
+    case (input_state)
       IDLE: begin
-        dout_valid <= 1'b0;
+        start_output <= 1'b0;
         if (DIN_VALID) begin
-          cnt   <= 8'd1;
-          state <= WAIT_DIV;
+          cnt <= 1;
+          input_state <= RUN;
         end else begin
           cnt <= '0;
         end
       end
-      WAIT_DIV: begin
-        cnt   <= cnt + 1;
-        state <= cnt == DivLatency + 1 ? RUN : state;
-      end
       RUN: begin
         cnt <= cnt + 1;
-        dout_valid <= 1'b1;
-        state <= (cnt == 1 + DivLatency + DEPTH - 1) ? IDLE : state;
+        if (cnt == DivLatency) begin
+          start_output <= 1'b1;
+        end else if (cnt == DEPTH) begin
+          input_state <= IDLE;
+        end
       end
-      default: state <= IDLE;
+      default: input_state <= IDLE;
     endcase
   end
+
+  always_ff @(posedge CLK) begin
+    case (output_state)
+      IDLE: begin
+        output_cnt   <= '0;
+        dout_valid   <= 1'b0;
+        output_state <= start_output ? RUN : output_state;
+      end
+      RUN: begin
+        output_cnt   <= output_cnt + 1;
+        dout_valid   <= 1'b1;
+        output_state <= (output_cnt == DEPTH - 1) ? IDLE : output_state;
+      end
+      default: output_state <= IDLE;
+    endcase
+  end
+
 
 endmodule
