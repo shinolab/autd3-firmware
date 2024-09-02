@@ -75,6 +75,13 @@ module sim_silencer_fixed_completion_steps ();
     `ASSERT_EQ(expect_intensity, intensity_s_buf[0]);
   endtask
 
+  task automatic check_manual_seq(logic [7:0] expect_intensity[], logic [7:0] expect_phase[],
+                                  int n);
+    for (int i = 0; i < n; i++) begin
+      check_manual(expect_intensity[i], expect_phase[i]);
+    end
+  endtask
+
   task automatic reset(logic [7:0] expect_intensity, logic [7:0] expect_phase);
     silencer_settings.COMPLETION_STEPS_INTENSITY = 1;
     silencer_settings.COMPLETION_STEPS_PHASE = 1;
@@ -105,19 +112,8 @@ module sim_silencer_fixed_completion_steps ();
     silencer_settings.COMPLETION_STEPS_PHASE     = 10;
     phase_buf[0]                                 = 128;
     intensity_buf[0]                             = 128;
-
-    check_manual(21, 21);  //1
-    check_manual(33, 33);  //2
-    check_manual(45, 45);  //3
-    check_manual(57, 57);  //4
-    check_manual(69, 69);  //5
-    check_manual(81, 81);  //6
-    check_manual(93, 93);  //7
-    check_manual(105, 105);  //8
-    check_manual(117, 117);  //9
-    for (int i = 0; i < 5; i++) begin
-      check_manual(128, 128);
-    end
+    check_manual_seq({21, 33, 45, 57, 69, 80, 92, 104, 116, 128, 128}, {
+                     21, 33, 45, 57, 69, 80, 92, 104, 116, 128, 128}, 11);
     $display("manual check 1 done");
     //////////////// Manual check 1 ////////////////
 
@@ -128,19 +124,8 @@ module sim_silencer_fixed_completion_steps ();
     silencer_settings.COMPLETION_STEPS_PHASE = 10;
     phase_buf[0] = 128;
     intensity_buf[0] = 255;
-
-    check_manual(25, 12);  //1
-    check_manual(51, 25);  //2
-    check_manual(77, 38);  //3
-    check_manual(103, 51);  //4
-    check_manual(129, 64);  //5
-    check_manual(155, 77);  //6
-    check_manual(180, 90);  //7
-    check_manual(205, 103);  //8
-    check_manual(230, 116);  //9
-    for (int i = 0; i < 5; i++) begin
-      check_manual(255, 128);
-    end
+    check_manual_seq({25, 51, 76, 102, 127, 153, 178, 204, 229, 255, 255}, {
+                     12, 25, 38, 51, 64, 76, 89, 102, 115, 128, 128}, 11);
     $display("manual check 2 done");
     //////////////// Manual check 2 ////////////////
 
@@ -151,19 +136,8 @@ module sim_silencer_fixed_completion_steps ();
     silencer_settings.COMPLETION_STEPS_PHASE = 10;
     phase_buf[0] = 139;
     intensity_buf[0] = 255;
-
-    check_manual(25, 254);  //1
-    check_manual(51, 241);  //2
-    check_manual(77, 228);  //3
-    check_manual(103, 215);  //4
-    check_manual(129, 202);  //5
-    check_manual(155, 189);  //6
-    check_manual(180, 176);  //7
-    check_manual(205, 163);  //8
-    check_manual(230, 151);  //9
-    for (int i = 0; i < 5; i++) begin
-      check_manual(255, 139);
-    end
+    check_manual_seq({25, 51, 76, 102, 127, 153, 178, 204, 229, 255, 255}, {
+                     253, 240, 227, 215, 202, 189, 177, 164, 151, 139, 139}, 11);
     $display("manual check 3 done");
     //////////////// Manual check 3 ////////////////
 
@@ -174,19 +148,8 @@ module sim_silencer_fixed_completion_steps ();
     silencer_settings.COMPLETION_STEPS_PHASE     = 10;
     phase_buf[0]                                 = 129;
     intensity_buf[0]                             = 255;
-
-    check_manual(25, 244);  //1
-    check_manual(51, 231);  //2
-    check_manual(77, 218);  //3
-    check_manual(103, 205);  //4
-    check_manual(129, 192);  //5
-    check_manual(155, 179);  //6
-    check_manual(180, 166);  //7
-    check_manual(205, 153);  //8
-    check_manual(230, 141);  //9
-    for (int i = 0; i < 5; i++) begin
-      check_manual(255, 129);
-    end
+    check_manual_seq({25, 51, 76, 102, 127, 153, 178, 204, 229, 255, 255}, {
+                     243, 230, 217, 205, 192, 179, 167, 154, 141, 129, 129}, 11);
     $display("manual check 4 done");
     //////////////// Manual check 4 ////////////////
 
@@ -197,19 +160,8 @@ module sim_silencer_fixed_completion_steps ();
     silencer_settings.COMPLETION_STEPS_PHASE = 10;
     phase_buf[0] = 180;
     intensity_buf[0] = 255;
-
-    check_manual(25, 249);  //1
-    check_manual(51, 241);  //2
-    check_manual(77, 233);  //3
-    check_manual(103, 225);  //4
-    check_manual(129, 217);  //5
-    check_manual(155, 209);  //6
-    check_manual(180, 201);  //7
-    check_manual(205, 194);  //8
-    check_manual(230, 187);  //9
-    for (int i = 0; i < 5; i++) begin
-      check_manual(255, 180);
-    end
+    check_manual_seq({25, 51, 76, 102, 127, 153, 178, 204, 229, 255, 255}, {
+                     248, 240, 233, 225, 217, 210, 202, 195, 187, 180, 180}, 11);
     $display("manual check 5 done");
     //////////////// Manual check 5 ////////////////
 
@@ -220,19 +172,8 @@ module sim_silencer_fixed_completion_steps ();
     silencer_settings.COMPLETION_STEPS_PHASE = 10;
     phase_buf[0] = 128;
     intensity_buf[0] = 245;
-
-    check_manual(254, 175);  //1
-    check_manual(253, 169);  //2
-    check_manual(252, 163);  //3
-    check_manual(251, 158);  //4
-    check_manual(250, 153);  //5
-    check_manual(249, 148);  //6
-    check_manual(248, 143);  //7
-    check_manual(247, 138);  //8
-    check_manual(246, 133);  //9
-    for (int i = 0; i < 5; i++) begin
-      check_manual(245, 128);
-    end
+    check_manual_seq({254, 253, 252, 251, 250, 249, 248, 247, 246, 245, 245}, {
+                     174, 169, 164, 159, 153, 148, 143, 138, 133, 128, 128}, 11);
     $display("manual check 6 done");
     //////////////// Manual check 6 ////////////////
 
@@ -243,19 +184,8 @@ module sim_silencer_fixed_completion_steps ();
     silencer_settings.COMPLETION_STEPS_PHASE = 10;
     phase_buf[0] = 180;
     intensity_buf[0] = 245;
-
-    check_manual(254, 248);  //1
-    check_manual(253, 240);  //2
-    check_manual(252, 232);  //3
-    check_manual(251, 224);  //4
-    check_manual(250, 216);  //5
-    check_manual(249, 208);  //6
-    check_manual(248, 201);  //7
-    check_manual(247, 194);  //8
-    check_manual(246, 187);  //9
-    for (int i = 0; i < 5; i++) begin
-      check_manual(245, 180);
-    end
+    check_manual_seq({254, 253, 252, 251, 250, 249, 248, 247, 246, 245, 245}, {
+                     247, 240, 232, 225, 217, 210, 202, 195, 187, 180, 180}, 11);
     $display("manual check 7 done");
     //////////////// Manual check 7 ////////////////
 
@@ -266,19 +196,8 @@ module sim_silencer_fixed_completion_steps ();
     silencer_settings.COMPLETION_STEPS_PHASE = 10;
     phase_buf[0] = 126;
     intensity_buf[0] = 245;
-
-    check_manual(254, 11);  //1
-    check_manual(253, 24);  //2
-    check_manual(252, 37);  //3
-    check_manual(251, 50);  //4
-    check_manual(250, 63);  //5
-    check_manual(249, 76);  //6
-    check_manual(248, 89);  //7
-    check_manual(247, 102);  //8
-    check_manual(246, 114);  //9
-    for (int i = 0; i < 5; i++) begin
-      check_manual(245, 126);
-    end
+    check_manual_seq({254, 253, 252, 251, 250, 249, 248, 247, 246, 245, 245}, {
+                     11, 24, 37, 49, 62, 75, 87, 100, 113, 126, 126}, 11);
     $display("manual check 8 done");
     //////////////// Manual check 8 ////////////////
 
@@ -289,19 +208,8 @@ module sim_silencer_fixed_completion_steps ();
     silencer_settings.COMPLETION_STEPS_PHASE = 10;
     phase_buf[0] = 127;
     intensity_buf[0] = 245;
-
-    check_manual(254, 243);  //1
-    check_manual(253, 230);  //2
-    check_manual(252, 217);  //3
-    check_manual(251, 204);  //4
-    check_manual(250, 191);  //5
-    check_manual(249, 178);  //6
-    check_manual(248, 165);  //7
-    check_manual(247, 152);  //8
-    check_manual(246, 139);  //9
-    for (int i = 0; i < 5; i++) begin
-      check_manual(245, 127);
-    end
+    check_manual_seq({254, 253, 252, 251, 250, 249, 248, 247, 246, 245, 245}, {
+                     242, 229, 216, 203, 191, 178, 165, 152, 139, 127, 127}, 11);
     $display("manual check 9 done");
     //////////////// Manual check 9 ////////////////
 
@@ -312,19 +220,8 @@ module sim_silencer_fixed_completion_steps ();
     silencer_settings.COMPLETION_STEPS_PHASE = 10;
     phase_buf[0] = 10;
     intensity_buf[0] = 245;
-
-    check_manual(254, 0);  //1
-    check_manual(253, 2);  //2
-    check_manual(252, 3);  //3
-    check_manual(251, 4);  //4
-    check_manual(250, 5);  //5
-    check_manual(249, 6);  //6
-    check_manual(248, 7);  //7
-    check_manual(247, 8);  //8
-    check_manual(246, 9);  //9
-    for (int i = 0; i < 5; i++) begin
-      check_manual(245, 10);
-    end
+    check_manual_seq({254, 253, 252, 251, 250, 249, 248, 247, 246, 245, 245}, {
+                     0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 10}, 11);
     $display("manual check 10 done");
     //////////////// Manual check 10 ////////////////
 
@@ -335,19 +232,8 @@ module sim_silencer_fixed_completion_steps ();
     silencer_settings.COMPLETION_STEPS_PHASE = 10;
     phase_buf[0] = 0;
     intensity_buf[0] = 245;
-
-    check_manual(254, 187);  //1
-    check_manual(253, 195);  //2
-    check_manual(252, 203);  //3
-    check_manual(251, 211);  //4
-    check_manual(250, 219);  //5
-    check_manual(249, 227);  //6
-    check_manual(248, 235);  //7
-    check_manual(247, 242);  //8
-    check_manual(246, 249);  //9
-    for (int i = 0; i < 5; i++) begin
-      check_manual(245, 0);
-    end
+    check_manual_seq({254, 253, 252, 251, 250, 249, 248, 247, 246, 245, 245}, {
+                     187, 195, 202, 210, 218, 225, 233, 240, 248, 0, 0}, 11);
     $display("manual check 11 done");
     //////////////// Manual check 11 ////////////////
 
@@ -358,25 +244,13 @@ module sim_silencer_fixed_completion_steps ();
     silencer_settings.COMPLETION_STEPS_PHASE = 10;
     phase_buf[0] = 5;
     intensity_buf[0] = 5;
-
-    check_manual(0, 0);  //1
-    check_manual(1, 1);  //2
-    check_manual(2, 2);  //3
-    check_manual(3, 3);  //4
-    check_manual(4, 4);  //5
-    check_manual(5, 5);  //6
-    check_manual(5, 5);  //7
-    check_manual(5, 5);  //8
-    check_manual(5, 5);  //9
-    for (int i = 0; i < 5; i++) begin
-      check_manual(5, 5);
-    end
+    check_manual_seq({0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5}, {0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5}, 11);
     $display("manual check 12 done");
     //////////////// Manual check 12 ////////////////
 
     // from random to random with random step
-    for (int i = 0; i < 30; i++) begin
-      $display("Random test %d/30", i + 1);
+    for (int i = 0; i < 100; i++) begin
+      $display("Random test %d/100", i + 1);
       n_repeat = sim_helper_random.range(8'hFF, 1);
       silencer_settings.COMPLETION_STEPS_INTENSITY = n_repeat;
       silencer_settings.COMPLETION_STEPS_PHASE = n_repeat;

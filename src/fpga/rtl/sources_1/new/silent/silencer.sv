@@ -12,12 +12,12 @@ module silencer #(
     output var DOUT_VALID
 );
 
-  localparam int StepCalcLatency = 7;
+  localparam int StepCalcLatency = 18 + 3;
 
   logic is_fixed_update_rate;
 
   logic [15:0] update_rate_intensity, update_rate_phase;
-  logic [7:0] var_update_rate_intensity, var_update_rate_phase;
+  logic [15:0] var_update_rate_intensity, var_update_rate_phase;
   logic dout_valid;
 
   logic [7:0] intensity;
@@ -25,8 +25,8 @@ module silencer #(
 
   assign is_fixed_update_rate = SILENCER_SETTINGS.FLAG[params::SILENCER_FLAG_BIT_FIXED_UPDATE_RATE_MODE];
 
-  assign update_rate_intensity = is_fixed_update_rate ?  SILENCER_SETTINGS.UPDATE_RATE_INTENSITY : {var_update_rate_intensity, 8'h00};
-  assign update_rate_phase = is_fixed_update_rate ?  SILENCER_SETTINGS.UPDATE_RATE_PHASE : {var_update_rate_phase, 8'h00};
+  assign update_rate_intensity = is_fixed_update_rate ?  SILENCER_SETTINGS.UPDATE_RATE_INTENSITY : var_update_rate_intensity;
+  assign update_rate_phase = is_fixed_update_rate ?  SILENCER_SETTINGS.UPDATE_RATE_PHASE : var_update_rate_phase;
 
   step_calculator #(
       .DEPTH(DEPTH)
