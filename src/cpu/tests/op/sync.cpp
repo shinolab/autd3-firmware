@@ -23,11 +23,9 @@ TEST(Op, Sync) {
   header->slot_2_offset = 0;
 
   sync_time = 0x0123456789ABCDEF;
-  const uint32_t ecat_sync_base_cnt = 0x76543210;
 
   auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
   data_body[0] = TAG_SYNC;
-  *reinterpret_cast<uint32_t*>(data_body + 4) = ecat_sync_base_cnt;
 
   auto frame = to_frame_data(data);
 
@@ -41,14 +39,7 @@ TEST(Op, Sync) {
   ASSERT_EQ(is_sync, 1);
 
   ASSERT_EQ(bram_read_controller(ADDR_ECAT_SYNC_TIME_0), sync_time & 0xFFFF);
-  ASSERT_EQ(bram_read_controller(ADDR_ECAT_SYNC_TIME_1),
-            (sync_time >> 16) & 0xFFFF);
-  ASSERT_EQ(bram_read_controller(ADDR_ECAT_SYNC_TIME_2),
-            (sync_time >> 32) & 0xFFFF);
-  ASSERT_EQ(bram_read_controller(ADDR_ECAT_SYNC_TIME_3),
-            (sync_time >> 48) & 0xFFFF);
-  ASSERT_EQ(bram_read_controller(ADDR_ECAT_SYNC_BASE_CNT_0),
-            ecat_sync_base_cnt & 0xFFFF);
-  ASSERT_EQ(bram_read_controller(ADDR_ECAT_SYNC_BASE_CNT_1),
-            ecat_sync_base_cnt >> 16);
+  ASSERT_EQ(bram_read_controller(ADDR_ECAT_SYNC_TIME_1), (sync_time >> 16) & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_ECAT_SYNC_TIME_2), (sync_time >> 32) & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_ECAT_SYNC_TIME_3), (sync_time >> 48) & 0xFFFF);
 }
