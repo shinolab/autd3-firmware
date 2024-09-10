@@ -40,7 +40,7 @@ package settings;
   typedef struct {
     logic UPDATE;
     logic [7:0] TYPE[4];
-    logic [15:0] VALUE[4];
+    logic [47:0] VALUE[4];
   } debug_settings_t;
 
 endpackage

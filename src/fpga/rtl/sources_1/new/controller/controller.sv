@@ -89,16 +89,24 @@ module controller (
     RD_SILENCER_COMPLETION_STEPS_PHASE,
     SILENCER_CLR_UPDATE_SETTINGS_BIT,
     REQ_DEBUG_TYPE0,
-    REQ_DEBUG_VALUE0,
-    REQ_DEBUG_TYPE1,
-    REQ_DEBUG_VALUE1_RD_DEBUG_TYPE0,
-    REQ_DEBUG_TYPE2_RD_DEBUG_VALUE0,
-    REQ_DEBUG_VALUE2_RD_DEBUG_TYPE1,
-    REQ_DEBUG_TYPE3_RD_DEBUG_VALUE1,
-    REQ_DEBUG_VALUE3_RD_DEBUG_TYPE2,
-    RD_DEBUG_VALUE2,
-    RD_DEBUG_TYPE3,
-    RD_DEBUG_VALUE3,
+    REQ_DEBUG_VALUE0_0,
+    REQ_DEBUG_VALUE0_1,
+    REQ_DEBUG_VALUE0_2_RD_DEBUG_TYPE0,
+    REQ_DEBUG_TYPE1_RD_DEBUG_VALUE0_0,
+    REQ_DEBUG_VALUE1_0_RD_DEBUG_VALUE0_1,
+    REQ_DEBUG_VALUE1_1_RD_DEBUG_VALUE0_2,
+    REQ_DEBUG_VALUE1_2_RD_DEBUG_TYPE1,
+    REQ_DEBUG_TYPE2_RD_DEBUG_VALUE1_0,
+    REQ_DEBUG_VALUE2_0_RD_DEBUG_VALUE1_1,
+    REQ_DEBUG_VALUE2_1_RD_DEBUG_VALUE1_2,
+    REQ_DEBUG_VALUE2_2_RD_DEBUG_TYPE2,
+    REQ_DEBUG_TYPE3_RD_DEBUG_VALUE2_0,
+    REQ_DEBUG_VALUE3_0_RD_DEBUG_VALUE2_1,
+    REQ_DEBUG_VALUE3_1_RD_DEBUG_VALUE2_2,
+    REQ_DEBUG_VALUE3_2_RD_DEBUG_TYPE3,
+    RD_DEBUG_VALUE3_0,
+    RD_DEBUG_VALUE3_1,
+    RD_DEBUG_VALUE3_2,
     DEBUG_CLR_UPDATE_SETTINGS_BIT,
     REQ_ECAT_SYNC_TIME_0,
     REQ_ECAT_SYNC_TIME_1,
@@ -448,59 +456,99 @@ module controller (
       REQ_DEBUG_TYPE0: begin
         we <= 1'b0;
         addr <= params::ADDR_DEBUG_TYPE0;
-        state <= REQ_DEBUG_VALUE0;
+        state <= REQ_DEBUG_VALUE0_0;
       end
-      REQ_DEBUG_VALUE0: begin
-        addr  <= params::ADDR_DEBUG_VALUE0;
-        state <= REQ_DEBUG_TYPE1;
+      REQ_DEBUG_VALUE0_0: begin
+        addr  <= params::ADDR_DEBUG_VALUE0_0;
+        state <= REQ_DEBUG_VALUE0_1;
       end
-      REQ_DEBUG_TYPE1: begin
-        addr  <= params::ADDR_DEBUG_TYPE1;
-        state <= REQ_DEBUG_VALUE1_RD_DEBUG_TYPE0;
+      REQ_DEBUG_VALUE0_1: begin
+        addr  <= params::ADDR_DEBUG_VALUE0_1;
+        state <= REQ_DEBUG_VALUE0_2_RD_DEBUG_TYPE0;
       end
-      REQ_DEBUG_VALUE1_RD_DEBUG_TYPE0: begin
-        addr <= params::ADDR_DEBUG_VALUE1;
+      REQ_DEBUG_VALUE0_2_RD_DEBUG_TYPE0: begin
+        addr <= params::ADDR_DEBUG_VALUE0_2;
         DEBUG_SETTINGS.TYPE[0] <= dout[7:0];
-        state <= REQ_DEBUG_TYPE2_RD_DEBUG_VALUE0;
+        state <= REQ_DEBUG_TYPE1_RD_DEBUG_VALUE0_0;
       end
-      REQ_DEBUG_TYPE2_RD_DEBUG_VALUE0: begin
-        addr <= params::ADDR_DEBUG_TYPE2;
-        DEBUG_SETTINGS.VALUE[0] <= dout;
-        state <= REQ_DEBUG_VALUE2_RD_DEBUG_TYPE1;
+      REQ_DEBUG_TYPE1_RD_DEBUG_VALUE0_0: begin
+        addr <= params::ADDR_DEBUG_TYPE1;
+        DEBUG_SETTINGS.VALUE[0][15:0] <= dout;
+        state <= REQ_DEBUG_VALUE1_0_RD_DEBUG_VALUE0_1;
       end
-      REQ_DEBUG_VALUE2_RD_DEBUG_TYPE1: begin
-        addr <= params::ADDR_DEBUG_VALUE2;
+      REQ_DEBUG_VALUE1_0_RD_DEBUG_VALUE0_1: begin
+        addr <= params::ADDR_DEBUG_VALUE1_0;
+        DEBUG_SETTINGS.VALUE[0][31:16] <= dout;
+        state <= REQ_DEBUG_VALUE1_1_RD_DEBUG_VALUE0_2;
+      end
+      REQ_DEBUG_VALUE1_1_RD_DEBUG_VALUE0_2: begin
+        addr <= params::ADDR_DEBUG_VALUE1_1;
+        DEBUG_SETTINGS.VALUE[0][47:32] <= dout;
+        state <= REQ_DEBUG_VALUE1_2_RD_DEBUG_TYPE1;
+      end
+      REQ_DEBUG_VALUE1_2_RD_DEBUG_TYPE1: begin
+        addr <= params::ADDR_DEBUG_VALUE1_2;
         DEBUG_SETTINGS.TYPE[1] <= dout[7:0];
-        state <= REQ_DEBUG_TYPE3_RD_DEBUG_VALUE1;
+        state <= REQ_DEBUG_TYPE2_RD_DEBUG_VALUE1_0;
       end
-      REQ_DEBUG_TYPE3_RD_DEBUG_VALUE1: begin
-        addr <= params::ADDR_DEBUG_TYPE3;
-        DEBUG_SETTINGS.VALUE[1] <= dout;
-        state <= REQ_DEBUG_VALUE3_RD_DEBUG_TYPE2;
+      REQ_DEBUG_TYPE2_RD_DEBUG_VALUE1_0: begin
+        addr <= params::ADDR_DEBUG_TYPE2;
+        DEBUG_SETTINGS.VALUE[1][15:0] <= dout;
+        state <= REQ_DEBUG_VALUE2_0_RD_DEBUG_VALUE1_1;
       end
-      REQ_DEBUG_VALUE3_RD_DEBUG_TYPE2: begin
-        addr <= params::ADDR_DEBUG_VALUE3;
+      REQ_DEBUG_VALUE2_0_RD_DEBUG_VALUE1_1: begin
+        addr <= params::ADDR_DEBUG_VALUE2_0;
+        DEBUG_SETTINGS.VALUE[1][31:16] <= dout;
+        state <= REQ_DEBUG_VALUE2_1_RD_DEBUG_VALUE1_2;
+      end
+      REQ_DEBUG_VALUE2_1_RD_DEBUG_VALUE1_2: begin
+        addr <= params::ADDR_DEBUG_VALUE2_1;
+        DEBUG_SETTINGS.VALUE[1][47:32] <= dout;
+        state <= REQ_DEBUG_VALUE2_2_RD_DEBUG_TYPE2;
+      end
+      REQ_DEBUG_VALUE2_2_RD_DEBUG_TYPE2: begin
+        addr <= params::ADDR_DEBUG_VALUE2_2;
         DEBUG_SETTINGS.TYPE[2] <= dout[7:0];
-        state <= RD_DEBUG_VALUE2;
+        state <= REQ_DEBUG_TYPE3_RD_DEBUG_VALUE2_0;
       end
-      RD_DEBUG_VALUE2: begin
-        DEBUG_SETTINGS.VALUE[2] <= dout;
+      REQ_DEBUG_TYPE3_RD_DEBUG_VALUE2_0: begin
+        addr <= params::ADDR_DEBUG_TYPE3;
+        DEBUG_SETTINGS.VALUE[2][15:0] <= dout;
+        state <= REQ_DEBUG_VALUE3_0_RD_DEBUG_VALUE2_1;
+      end
+      REQ_DEBUG_VALUE3_0_RD_DEBUG_VALUE2_1: begin
+        addr <= params::ADDR_DEBUG_VALUE3_0;
+        DEBUG_SETTINGS.VALUE[2][31:16] <= dout;
+        state <= REQ_DEBUG_VALUE3_1_RD_DEBUG_VALUE2_2;
+      end
+      REQ_DEBUG_VALUE3_1_RD_DEBUG_VALUE2_2: begin
+        addr <= params::ADDR_DEBUG_VALUE3_1;
+        DEBUG_SETTINGS.VALUE[2][47:32] <= dout;
+        state <= REQ_DEBUG_VALUE3_2_RD_DEBUG_TYPE3;
+      end
+      REQ_DEBUG_VALUE3_2_RD_DEBUG_TYPE3: begin
+        addr <= params::ADDR_DEBUG_VALUE3_2;
+        DEBUG_SETTINGS.TYPE[3] <= dout[7:0];
+        state <= RD_DEBUG_VALUE3_0;
+      end
+      RD_DEBUG_VALUE3_0: begin
+        DEBUG_SETTINGS.VALUE[3][15:0] <= dout;
         we <= 1'b1;
         addr <= params::ADDR_CTL_FLAG;
         din <= ctl_flags;
-        state <= RD_DEBUG_TYPE3;
+        state <= RD_DEBUG_VALUE3_1;
       end
-      RD_DEBUG_TYPE3: begin
-        DEBUG_SETTINGS.TYPE[3] <= dout[7:0];
+      RD_DEBUG_VALUE3_1: begin
+        DEBUG_SETTINGS.VALUE[3][31:16] <= dout;
         we <= 1'b1;
         addr <= params::ADDR_FPGA_STATE;
         din <= {
           8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO
         };
-        state <= RD_DEBUG_VALUE3;
+        state <= RD_DEBUG_VALUE3_2;
       end
-      RD_DEBUG_VALUE3: begin
-        DEBUG_SETTINGS.VALUE[3] <= dout;
+      RD_DEBUG_VALUE3_2: begin
+        DEBUG_SETTINGS.VALUE[3][47:32] <= dout;
         DEBUG_SETTINGS.UPDATE <= 1'b1;
         we <= 1'b0;
         addr <= params::ADDR_CTL_FLAG;
@@ -608,13 +656,13 @@ module controller (
     SILENCER_SETTINGS.COMPLETION_STEPS_PHASE = 16'd40;
     DEBUG_SETTINGS.UPDATE = 1'b0;
     DEBUG_SETTINGS.TYPE[0] = params::DBG_NONE;
-    DEBUG_SETTINGS.VALUE[0] = 16'd0;
+    DEBUG_SETTINGS.VALUE[0] = 48'd0;
     DEBUG_SETTINGS.TYPE[1] = params::DBG_NONE;
-    DEBUG_SETTINGS.VALUE[1] = 16'd0;
+    DEBUG_SETTINGS.VALUE[1] = 48'd0;
     DEBUG_SETTINGS.TYPE[2] = params::DBG_NONE;
-    DEBUG_SETTINGS.VALUE[2] = 16'd0;
+    DEBUG_SETTINGS.VALUE[2] = 48'd0;
     DEBUG_SETTINGS.TYPE[3] = params::DBG_NONE;
-    DEBUG_SETTINGS.VALUE[3] = 16'd0;
+    DEBUG_SETTINGS.VALUE[3] = 48'd0;
     SYNC_SETTINGS.UPDATE = 1'b0;
     SYNC_SETTINGS.ECAT_SYNC_TIME = 64'd0;
   end

@@ -102,13 +102,13 @@ debug_params = Params(
     "DEBUG",
     [
         Param("DEBUG_TYPE0", 8, "TYPE[0]", "params::DBG_NONE"),
-        Param("DEBUG_VALUE0", 16, "VALUE[0]", 0),
+        Param("DEBUG_VALUE0", 48, "VALUE[0]", 0),
         Param("DEBUG_TYPE1", 8, "TYPE[1]", "params::DBG_NONE"),
-        Param("DEBUG_VALUE1", 16, "VALUE[1]", 0),
+        Param("DEBUG_VALUE1", 48, "VALUE[1]", 0),
         Param("DEBUG_TYPE2", 8, "TYPE[2]", "params::DBG_NONE"),
-        Param("DEBUG_VALUE2", 16, "VALUE[2]", 0),
+        Param("DEBUG_VALUE2", 48, "VALUE[2]", 0),
         Param("DEBUG_TYPE3", 8, "TYPE[3]", "params::DBG_NONE"),
-        Param("DEBUG_VALUE3", 16, "VALUE[3]", 0),
+        Param("DEBUG_VALUE3", 48, "VALUE[3]", 0),
     ],
 )
 
