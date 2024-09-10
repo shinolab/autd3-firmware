@@ -67,6 +67,7 @@ package params;
     DBG_STM_SEGMENT = 8'h50,
     DBG_STM_IDX = 8'h51,
     DBG_IS_STM_MODE = 8'h52,
+    DBG_SYS_TIME_EQ = 8'h60,
     DBG_PWM_OUT = 8'hE0,
     DBG_DIRECT = 8'hF0
   } debug_type_t;
@@ -123,14 +124,22 @@ package params;
     ADDR_STM_TRANSITION_VALUE_2 = 8'h62,
     ADDR_STM_TRANSITION_VALUE_3 = 8'h63,
 
-    ADDR_DEBUG_TYPE0  = 8'hF0,
-    ADDR_DEBUG_VALUE0 = 8'hF1,
-    ADDR_DEBUG_TYPE1  = 8'hF2,
-    ADDR_DEBUG_VALUE1 = 8'hF3,
-    ADDR_DEBUG_TYPE2  = 8'hF4,
-    ADDR_DEBUG_VALUE2 = 8'hF5,
-    ADDR_DEBUG_TYPE3  = 8'hF6,
-    ADDR_DEBUG_VALUE3 = 8'hF7
+    ADDR_DEBUG_TYPE0    = 8'hF0,
+    ADDR_DEBUG_VALUE0_0 = 8'hF1,
+    ADDR_DEBUG_VALUE0_1 = 8'hF2,
+    ADDR_DEBUG_VALUE0_2 = 8'hF3,
+    ADDR_DEBUG_TYPE1    = 8'hF4,
+    ADDR_DEBUG_VALUE1_0 = 8'hF5,
+    ADDR_DEBUG_VALUE1_1 = 8'hF6,
+    ADDR_DEBUG_VALUE1_2 = 8'hF7,
+    ADDR_DEBUG_TYPE2    = 8'hF8,
+    ADDR_DEBUG_VALUE2_0 = 8'hF9,
+    ADDR_DEBUG_VALUE2_1 = 8'hFA,
+    ADDR_DEBUG_VALUE2_2 = 8'hFB,
+    ADDR_DEBUG_TYPE3    = 8'hFC,
+    ADDR_DEBUG_VALUE3_0 = 8'hFD,
+    ADDR_DEBUG_VALUE3_1 = 8'hFE,
+    ADDR_DEBUG_VALUE3_2 = 8'hFF
   } bram_addr_t;
 
 endpackage

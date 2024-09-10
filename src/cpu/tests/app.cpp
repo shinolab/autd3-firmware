@@ -63,19 +63,16 @@ TEST(Op, Slot2) {
 
   Header* header = reinterpret_cast<Header*>(data.data);
   header->msg_id = get_msg_id();
-  header->slot_2_offset = 14;
+  header->slot_2_offset = 40;
 
-  const uint8_t ty[4] = {0x00, 0x01, 0x02, 0x03};
-  const uint16_t value[4] = {0x0123, 0x4567, 0x89ab, 0xcdef};
+  const uint64_t value[4] = {0x0123456789ABCDEF, 0xEFCDAB8967452301, 0xFEDCBA9876543210, 0x1032547698BADCFE};
   {
     auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     data_body[0] = TAG_DEBUG;
-    std::memcpy(&data_body[2], ty, 4);
-    std::memcpy(&data_body[6], value, 8);
+    std::memcpy(&data_body[8], value, 4 * sizeof(uint64_t));
   }
   {
-    auto* data_body =
-        reinterpret_cast<uint8_t*>(data.data) + sizeof(Header) + 14;
+    auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header) + 40;
     data_body[0] = TAG_FORCE_FAN;
     data_body[1] = 0x01;
   }
@@ -88,16 +85,23 @@ TEST(Op, Slot2) {
   const auto ack = _sTx.ack >> 8;
   ASSERT_EQ(ack, header->msg_id);
 
-  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_TYPE0), ty[0]);
-  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_TYPE1), ty[1]);
-  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_TYPE2), ty[2]);
-  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_TYPE3), ty[3]);
-  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE0), value[0]);
-  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE1), value[1]);
-  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE2), value[2]);
-  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE3), value[3]);
-  ASSERT_TRUE((bram_read_controller(ADDR_CTL_FLAG) & CTL_FLAG_FORCE_FAN) ==
-              CTL_FLAG_FORCE_FAN);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_TYPE0), value[0] & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_TYPE1), value[1] & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_TYPE2), value[2] & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_TYPE3), value[3] & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE0_0), (value[0] >> 16) & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE0_1), (value[0] >> 32) & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE0_2), (value[0] >> 48) & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE1_0), (value[1] >> 16) & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE1_1), (value[1] >> 32) & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE1_2), (value[1] >> 48) & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE2_0), (value[2] >> 16) & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE2_1), (value[2] >> 32) & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE2_2), (value[2] >> 48) & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE3_0), (value[3] >> 16) & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE3_1), (value[3] >> 32) & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE3_2), (value[3] >> 48) & 0xFFFF);
+  ASSERT_TRUE((bram_read_controller(ADDR_CTL_FLAG) & CTL_FLAG_FORCE_FAN) == CTL_FLAG_FORCE_FAN);
 }
 
 TEST(Op, WDT) {

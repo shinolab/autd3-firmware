@@ -177,6 +177,7 @@ module main #(
       .CLK(clk),
       .DEBUG_SETTINGS(debug_settings),
       .TIME_CNT(time_cnt),
+      .SYS_TIME(sys_time),
       .PWM_OUT(PWM_OUT),
       .THERMO(THERMO),
       .FORCE_FAN(FORCE_FAN),
