@@ -3,7 +3,7 @@ module modulation #(
     parameter int DEPTH = 249
 ) (
     input wire CLK,
-    input wire [63:0] SYS_TIME,
+    input wire [55:0] SYS_TIME,
     input wire settings::mod_settings_t MOD_SETTINGS,
     input wire DIN_VALID,
     input wire [7:0] INTENSITY_IN,

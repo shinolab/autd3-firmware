@@ -3,7 +3,7 @@ module time_cnt_generator #(
     parameter int DEPTH = 249
 ) (
     input wire CLK,
-    input wire [63:0] SYS_TIME,
+    input wire [55:0] SYS_TIME,
     input wire SKIP_ONE_ASSERT,
     output wire [7:0] TIME_CNT,
     output wire UPDATE

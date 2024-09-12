@@ -3,7 +3,7 @@ module ec_time_to_sys_time (
     input wire CLK,
     input wire [63:0] EC_TIME,
     input wire DIN_VALID,
-    output wire [63:0] SYS_TIME,
+    output wire [55:0] SYS_TIME,
     output wire DOUT_VALID
 );
 
@@ -28,7 +28,7 @@ module ec_time_to_sys_time (
       .m_axis_dout_tvalid(DOUT_VALID)
   );
 
-  assign SYS_TIME = {lap[54:0], 9'h00};
+  assign SYS_TIME = {lap[46:0], 9'h00};
 
   always_ff @(posedge CLK) begin
     if (din_valid && din_ready) begin

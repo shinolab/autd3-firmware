@@ -5,7 +5,7 @@ module sim_stm_foci ();
 
   logic CLK;
   logic locked;
-  logic [63:0] SYS_TIME;
+  logic [55:0] SYS_TIME;
 
   localparam int DEPTH = 249;
   localparam int SIZE = 16;

@@ -3,33 +3,33 @@ module synchronizer (
     input wire CLK,
     input wire settings::sync_settings_t SYNC_SETTINGS,
     input wire ECAT_SYNC,
-    output var [63:0] SYS_TIME,
+    output var [55:0] SYS_TIME,
     output var SYNC,
     output var SKIP_ONE_ASSERT
 );
 
-  localparam int AddSubLatency = 6;
+  localparam int AddSubLatency = 5;
 
   localparam logic [12:0] ECATSyncBaseCnt = 13'd5120;  // 10.24MHz * 500000ns
 
   logic [63:0] ecat_sync_time;
-  logic [63:0] sync_time;
+  logic [55:0] sync_time;
 
   logic [2:0] sync_tri;
   logic sync;
   assign SYNC = sync;
 
-  logic [63:0] sys_time;
-  logic [63:0] next_sync_time;
+  logic [55:0] sys_time;
+  logic [55:0] next_sync_time;
   logic signed [18:0] sync_time_diff;
   logic [$clog2(AddSubLatency+1+1)-1:0] diff_cnt;
   logic [$clog2(AddSubLatency+1+1)-1:0] next_cnt;
   logic set;
   logic [12:0] next_sync_cnt;
 
-  logic [63:0] a_diff, b_diff;
-  logic signed [64:0] s_diff;
-  logic [63:0] a_next, b_next, s_next;
+  logic [55:0] a_diff, b_diff;
+  logic signed [56:0] s_diff;
+  logic [55:0] a_next = 0, b_next, s_next;
 
   logic skip_one_assert;
   assign SKIP_ONE_ASSERT = skip_one_assert;
@@ -42,14 +42,14 @@ module synchronizer (
       .DOUT_VALID()
   );
 
-  sub64_64 sub_diff (
+  sub56_56 sub_diff (
       .CLK(CLK),
       .A  (a_diff),
       .B  (b_diff),
       .S  (s_diff)
   );
 
-  add64_64 add_next (
+  add56_56 add_next (
       .CLK(CLK),
       .A  (a_next),
       .B  (b_next),
@@ -99,7 +99,7 @@ module synchronizer (
           sync_time_diff <= sync_time_diff - 1;
         end
       end else if (diff_cnt == AddSubLatency) begin
-        sync_time_diff <= {s_diff[64], s_diff[17:0]};
+        sync_time_diff <= {s_diff[56], s_diff[17:0]};
         diff_cnt <= diff_cnt + 1;
         sys_time <= sys_time + 1;
         skip_one_assert <= 1'b0;
@@ -112,7 +112,7 @@ module synchronizer (
       if (next_sync_cnt == ECATSyncBaseCnt - 1) begin
         next_sync_cnt <= 0;
         a_next <= next_sync_time;
-        b_next <= {51'd0, ECATSyncBaseCnt};
+        b_next <= {43'd0, ECATSyncBaseCnt};
         next_cnt <= 0;
       end else begin
         if (next_cnt == AddSubLatency + 1) begin

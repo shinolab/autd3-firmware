@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 module stm_swapchain (
     input wire CLK,
-    input wire [63:0] SYS_TIME,
+    input wire [55:0] SYS_TIME,
     input wire UPDATE_SETTINGS,
     input wire REQ_RD_SEGMENT,
     input wire [7:0] TRANSITION_MODE,

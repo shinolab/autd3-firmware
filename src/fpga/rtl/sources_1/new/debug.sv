@@ -5,7 +5,7 @@ module debug #(
     input wire CLK,
     settings::debug_settings_t DEBUG_SETTINGS,
     input wire [7:0] TIME_CNT,
-    input wire [63:0] SYS_TIME,
+    input wire [55:0] SYS_TIME,
     input wire PWM_OUT[DEPTH],
     input wire THERMO,
     input wire FORCE_FAN,
