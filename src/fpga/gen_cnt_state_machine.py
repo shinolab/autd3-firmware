@@ -39,12 +39,11 @@ mod_params = Params(
     [
         Param("MOD_REQ_RD_SEGMENT", 1, "REQ_RD_SEGMENT", 0),
         Param(
-            "MOD_TRANSITION_MODE",
-            8,
-            "TRANSITION_MODE",
-            "params::TRANSITION_MODE_SYNC_IDX",
+            "MOD_TRANSITION",
+            64,
+            "TRANSITION",
+            "{params::TRANSITION_MODE_SYNC_IDX, 56'd0}",
         ),
-        Param("MOD_TRANSITION_VALUE", 64, "TRANSITION_VALUE", 0),
         Param("MOD_CYCLE0", 15, "CYCLE[0]", 2 - 1),
         Param("MOD_CYCLE1", 15, "CYCLE[1]", 2 - 1),
         Param("MOD_FREQ_DIV0", 16, "FREQ_DIV[0]", 10),
@@ -59,12 +58,11 @@ stm_params = Params(
     [
         Param("STM_REQ_RD_SEGMENT", 1, "REQ_RD_SEGMENT", 0),
         Param(
-            "STM_TRANSITION_MODE",
-            8,
-            "TRANSITION_MODE",
-            "params::TRANSITION_MODE_SYNC_IDX",
+            "STM_TRANSITION",
+            64,
+            "TRANSITION",
+            "{params::TRANSITION_MODE_SYNC_IDX, 56'd0}",
         ),
-        Param("STM_TRANSITION_VALUE", 64, "TRANSITION_VALUE", 0),
         Param("STM_MODE0", 1, "MODE[0]", "params::STM_MODE_GAIN"),
         Param("STM_MODE1", 1, "MODE[1]", "params::STM_MODE_GAIN"),
         Param("STM_CYCLE0", 13, "CYCLE[0]", 0),

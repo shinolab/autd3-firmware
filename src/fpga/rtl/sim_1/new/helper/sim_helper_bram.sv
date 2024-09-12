@@ -105,15 +105,10 @@ module sim_helper_bram #(
 
   task automatic write_mod_settings(input settings::mod_settings_t settings);
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_REQ_RD_SEGMENT, settings.REQ_RD_SEGMENT);
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_TRANSITION_MODE, settings.TRANSITION_MODE);
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_TRANSITION_VALUE_0,
-               settings.TRANSITION_VALUE[15:0]);
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_TRANSITION_VALUE_1,
-               settings.TRANSITION_VALUE[31:16]);
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_TRANSITION_VALUE_2,
-               settings.TRANSITION_VALUE[47:32]);
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_TRANSITION_VALUE_3,
-               settings.TRANSITION_VALUE[63:48]);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_TRANSITION_0, settings.TRANSITION[15:0]);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_TRANSITION_1, settings.TRANSITION[31:16]);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_TRANSITION_2, settings.TRANSITION[47:32]);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_TRANSITION_3, settings.TRANSITION[63:48]);
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_CYCLE0, settings.CYCLE[0]);
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_FREQ_DIV0, settings.FREQ_DIV[0]);
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_CYCLE1, settings.CYCLE[1]);
@@ -126,15 +121,10 @@ module sim_helper_bram #(
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MODE0, settings.MODE[0]);
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MODE1, settings.MODE[1]);
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_REQ_RD_SEGMENT, settings.REQ_RD_SEGMENT);
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_TRANSITION_MODE, settings.TRANSITION_MODE);
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_TRANSITION_VALUE_0,
-               settings.TRANSITION_VALUE[15:0]);
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_TRANSITION_VALUE_1,
-               settings.TRANSITION_VALUE[31:16]);
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_TRANSITION_VALUE_2,
-               settings.TRANSITION_VALUE[47:32]);
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_TRANSITION_VALUE_3,
-               settings.TRANSITION_VALUE[63:48]);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_TRANSITION_0, settings.TRANSITION[15:0]);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_TRANSITION_1, settings.TRANSITION[31:16]);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_TRANSITION_2, settings.TRANSITION[47:32]);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_TRANSITION_3, settings.TRANSITION[63:48]);
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_CYCLE0, settings.CYCLE[0]);
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_FREQ_DIV0, settings.FREQ_DIV[0]);
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_CYCLE1, settings.CYCLE[1]);
@@ -166,14 +156,22 @@ module sim_helper_bram #(
   endtask
 
   task automatic write_debug_settings(input settings::debug_settings_t settings);
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_DEBUG_TYPE0, settings.TYPE[0]);
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_DEBUG_TYPE1, settings.TYPE[1]);
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_DEBUG_TYPE2, settings.TYPE[2]);
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_DEBUG_TYPE3, settings.TYPE[3]);
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_DEBUG_VALUE0, settings.VALUE[0]);
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_DEBUG_VALUE1, settings.VALUE[1]);
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_DEBUG_VALUE2, settings.VALUE[2]);
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_DEBUG_VALUE3, settings.VALUE[3]);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_DEBUG_VALUE0_0, settings.VALUE[0][15:0]);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_DEBUG_VALUE0_1, settings.VALUE[0][31:16]);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_DEBUG_VALUE0_2, settings.VALUE[0][47:32]);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_DEBUG_VALUE0_3, settings.VALUE[0][63:48]);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_DEBUG_VALUE1_0, settings.VALUE[1][15:0]);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_DEBUG_VALUE1_1, settings.VALUE[1][31:16]);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_DEBUG_VALUE1_2, settings.VALUE[1][47:32]);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_DEBUG_VALUE1_3, settings.VALUE[1][63:48]);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_DEBUG_VALUE2_0, settings.VALUE[2][15:0]);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_DEBUG_VALUE2_1, settings.VALUE[2][31:16]);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_DEBUG_VALUE2_2, settings.VALUE[2][47:32]);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_DEBUG_VALUE2_3, settings.VALUE[2][63:48]);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_DEBUG_VALUE3_0, settings.VALUE[3][15:0]);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_DEBUG_VALUE3_1, settings.VALUE[3][31:16]);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_DEBUG_VALUE3_2, settings.VALUE[3][47:32]);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_DEBUG_VALUE3_3, settings.VALUE[3][63:48]);
   endtask
 
   initial begin

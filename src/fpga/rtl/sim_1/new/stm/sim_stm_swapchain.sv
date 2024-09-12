@@ -452,13 +452,13 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(1, idx[1]);
 
     @(posedge CLK);
-    transition_value <= (SYS_TIME / ECAT_SYNC_BASE_CNT + 1) * 500000;
 
     // segment change to 0, repeat one time
     @(posedge CLK);
     sync_idx[1] <= sync_idx[1] + 1;
     rep[0] <= 16'h0000;
     req_rd_segment <= 0;
+    transition_value <= ((SYS_TIME / ECAT_SYNC_BASE_CNT + 1) * 500000 / 50000) << 9;
     update_settings <= 1;
     @(posedge CLK);
     update_settings <= 0;
@@ -473,7 +473,7 @@ module sim_stm_swapchain ();
       @(negedge CLK);
       `ASSERT_EQ(1, segment);
       `ASSERT_EQ(0, stop);
-      if (SYS_TIME == ECAT_SYNC_BASE_CNT * 2 + 6) break;
+      if (SYS_TIME == ECAT_SYNC_BASE_CNT * 2 + 5) break;
     end
 
     // change segment
@@ -511,12 +511,12 @@ module sim_stm_swapchain ();
     `ASSERT_EQ(0, idx[0]);
 
     @(posedge CLK);
-    transition_value <= (SYS_TIME / ECAT_SYNC_BASE_CNT + 2) * 500000;
 
     // segment change to 1, wait for for 5 clocks, repeat 2 times
     @(posedge CLK);
     rep[1] <= 32'h1;
     req_rd_segment <= 1;
+    transition_value <= ((SYS_TIME / ECAT_SYNC_BASE_CNT + 2) * 500000 / 50000) << 9;
     update_settings <= 1;
     @(posedge CLK);
     update_settings <= 0;
@@ -531,7 +531,7 @@ module sim_stm_swapchain ();
       @(negedge CLK);
       `ASSERT_EQ(0, segment);
       `ASSERT_EQ(1, stop);
-      if (SYS_TIME == ECAT_SYNC_BASE_CNT * 4 + 6) break;
+      if (SYS_TIME == ECAT_SYNC_BASE_CNT * 4 + 5) break;
     end
 
     // change segment

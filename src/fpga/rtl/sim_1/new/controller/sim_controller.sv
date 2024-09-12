@@ -64,8 +64,7 @@ module sim_controller ();
 
     mod_settings_in.UPDATE = 1'b1;
     mod_settings_in.REQ_RD_SEGMENT = sim_helper_random.range(1'b1, 0);
-    mod_settings_in.TRANSITION_MODE = sim_helper_random.range(8'hFF, 0);
-    mod_settings_in.TRANSITION_VALUE = sim_helper_random.range(64'hFFFFFFFFFFFFFFFF, 0);
+    mod_settings_in.TRANSITION = sim_helper_random.range(64'hFFFFFFFFFFFFFFFF, 0);
     mod_settings_in.CYCLE[0] = sim_helper_random.range(15'h7FFF, 0);
     mod_settings_in.CYCLE[1] = sim_helper_random.range(15'h7FFF, 0);
     mod_settings_in.FREQ_DIV[0] = sim_helper_random.range(16'hFFFF, 0);
@@ -75,8 +74,7 @@ module sim_controller ();
 
     stm_settings_in.UPDATE = 1'b1;
     stm_settings_in.REQ_RD_SEGMENT = sim_helper_random.range(1'b1, 0);
-    stm_settings_in.TRANSITION_MODE = sim_helper_random.range(8'hFF, 0);
-    stm_settings_in.TRANSITION_VALUE = sim_helper_random.range(64'hFFFFFFFFFFFFFFFF, 0);
+    stm_settings_in.TRANSITION = sim_helper_random.range(64'hFFFFFFFFFFFFFFFF, 0);
     stm_settings_in.MODE[0] = sim_helper_random.range(1'b1, 0);
     stm_settings_in.MODE[1] = sim_helper_random.range(1'b1, 0);
     stm_settings_in.CYCLE[0] = sim_helper_random.range(13'h1FFF, 0);
