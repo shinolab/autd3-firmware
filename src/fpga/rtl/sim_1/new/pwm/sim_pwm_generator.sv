@@ -5,7 +5,7 @@ module sim_pwm_generator ();
 
   logic CLK;
   logic locked;
-  logic [63:0] SYS_TIME;
+  logic [55:0] SYS_TIME;
   sim_helper_clk sim_helper_clk (
       .MRCC_25P6M(),
       .CLK(CLK),
