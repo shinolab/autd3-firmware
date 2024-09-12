@@ -33,20 +33,20 @@ TEST(Op, ConfigureDebugOutIdx) {
   const auto ack = _sTx.ack >> 8;
   ASSERT_EQ(ack, header->msg_id);
 
-  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_TYPE0), value[0] & 0xFFFF);
-  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_TYPE1), value[1] & 0xFFFF);
-  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_TYPE2), value[2] & 0xFFFF);
-  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_TYPE3), value[3] & 0xFFFF);
-  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE0_0), (value[0] >> 16) & 0xFFFF);
-  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE0_1), (value[0] >> 32) & 0xFFFF);
-  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE0_2), (value[0] >> 48) & 0xFFFF);
-  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE1_0), (value[1] >> 16) & 0xFFFF);
-  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE1_1), (value[1] >> 32) & 0xFFFF);
-  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE1_2), (value[1] >> 48) & 0xFFFF);
-  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE2_0), (value[2] >> 16) & 0xFFFF);
-  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE2_1), (value[2] >> 32) & 0xFFFF);
-  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE2_2), (value[2] >> 48) & 0xFFFF);
-  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE3_0), (value[3] >> 16) & 0xFFFF);
-  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE3_1), (value[3] >> 32) & 0xFFFF);
-  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE3_2), (value[3] >> 48) & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE0_0), value[0] & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE0_1), (value[0] >> 16) & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE0_2), (value[0] >> 32) & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE0_3), (value[0] >> 48) & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE1_0), value[1] & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE1_1), (value[1] >> 16) & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE1_2), (value[1] >> 32) & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE1_3), (value[1] >> 48) & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE2_0), value[2] & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE2_1), (value[2] >> 16) & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE2_2), (value[2] >> 32) & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE2_3), (value[2] >> 48) & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE3_0), value[3] & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE3_1), (value[3] >> 16) & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE3_2), (value[3] >> 32) & 0xFFFF);
+  ASSERT_EQ(bram_read_controller(ADDR_DEBUG_VALUE3_3), (value[3] >> 48) & 0xFFFF);
 }
