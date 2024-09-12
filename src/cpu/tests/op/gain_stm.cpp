@@ -51,10 +51,10 @@ TEST(Op, GainSTMPhaseIntensityFull) {
       if (cnt == 0) {
         reinterpret_cast<GainSTMHead*>(p)->flag = GAIN_STM_FLAG_BEGIN;
         reinterpret_cast<GainSTMHead*>(p)->mode = mode;
+        reinterpret_cast<GainSTMHead*>(p)->transition.value = transition_value;
         reinterpret_cast<GainSTMHead*>(p)->transition.MODE.mode = transition_mode;
         reinterpret_cast<GainSTMHead*>(p)->freq_div = freq_div;
         reinterpret_cast<GainSTMHead*>(p)->rep = rep;
-        reinterpret_cast<GainSTMHead*>(p)->transition.VALUE.value = transition_value;
         offset = sizeof(GainSTMHead);
       } else {
         offset = sizeof(GainSTMSubseq);
@@ -106,10 +106,10 @@ TEST(Op, GainSTMPhaseIntensityFull) {
       if (cnt == 0) {
         reinterpret_cast<GainSTMHead*>(p)->flag = GAIN_STM_FLAG_BEGIN;
         reinterpret_cast<GainSTMHead*>(p)->mode = mode;
-        reinterpret_cast<GainSTMHead*>(p)->transition.MODE.mode = TRANSITION_MODE_NONE;
         reinterpret_cast<GainSTMHead*>(p)->freq_div = freq_div;
         reinterpret_cast<GainSTMHead*>(p)->rep = rep;
-        reinterpret_cast<GainSTMHead*>(p)->transition.VALUE.value = 0;
+        reinterpret_cast<GainSTMHead*>(p)->transition.value = 0;
+        reinterpret_cast<GainSTMHead*>(p)->transition.MODE.mode = TRANSITION_MODE_NONE;
         offset = sizeof(GainSTMHead);
       } else {
         offset = sizeof(GainSTMSubseq);
@@ -156,8 +156,8 @@ TEST(Op, GainSTMPhaseIntensityFull) {
     auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     reinterpret_cast<FocusSTMUpdate*>(p)->tag = TAG_GAIN_STM_CHANGE_SEGMENT;
     reinterpret_cast<FocusSTMUpdate*>(p)->segment = 1;
+    reinterpret_cast<FocusSTMUpdate*>(p)->transition.value = transition_value;
     reinterpret_cast<FocusSTMUpdate*>(p)->transition.MODE.mode = transition_mode;
-    reinterpret_cast<FocusSTMUpdate*>(p)->transition.VALUE.value = transition_value;
 
     auto frame = to_frame_data(data);
 
@@ -362,7 +362,7 @@ TEST(Op, GainSTMInvalidTransitionMode) {
     reinterpret_cast<GainSTMUpdate*>(p)->tag = TAG_GAIN_STM_CHANGE_SEGMENT;
     reinterpret_cast<GainSTMUpdate*>(p)->segment = 1;
     reinterpret_cast<GainSTMUpdate*>(p)->transition.MODE.mode = TRANSITION_MODE_SYNC_IDX;
-    reinterpret_cast<GainSTMUpdate*>(p)->transition.VALUE.value = 0;
+    reinterpret_cast<GainSTMUpdate*>(p)->transition.value = 0;
     frame = to_frame_data(data);
     recv_ethercat(&frame[0]);
     update();
@@ -690,8 +690,8 @@ TEST(Op, InvalidCompletionStepsIntensityGainSTM) {
     header->msg_id = get_msg_id();
     reinterpret_cast<GainSTMUpdate*>(p)->tag = TAG_GAIN_STM_CHANGE_SEGMENT;
     reinterpret_cast<GainSTMUpdate*>(p)->segment = 1;
+    reinterpret_cast<GainSTMUpdate*>(p)->transition.value = 0;
     reinterpret_cast<GainSTMUpdate*>(p)->transition.MODE.mode = TRANSITION_MODE_IMMIDIATE;
-    reinterpret_cast<GainSTMUpdate*>(p)->transition.VALUE.value = 0;
     frame = to_frame_data(data);
     recv_ethercat(&frame[0]);
     update();
@@ -871,10 +871,10 @@ TEST(Op, STMMissTransitionTime) {
       if (cnt == 0) {
         reinterpret_cast<GainSTMHead*>(p)->flag = GAIN_STM_FLAG_BEGIN;
         reinterpret_cast<GainSTMHead*>(p)->mode = mode;
+        reinterpret_cast<GainSTMHead*>(p)->transition.value = transition_value;
         reinterpret_cast<GainSTMHead*>(p)->transition.MODE.mode = transition_mode;
         reinterpret_cast<GainSTMHead*>(p)->freq_div = freq_div;
         reinterpret_cast<GainSTMHead*>(p)->rep = rep;
-        reinterpret_cast<GainSTMHead*>(p)->transition.VALUE.value = transition_value;
         offset = sizeof(GainSTMHead);
       } else {
         offset = sizeof(GainSTMSubseq);

@@ -44,12 +44,12 @@ TEST(Op, FocusSTM) {
       size_t offset;
       if (cnt == 0) {
         reinterpret_cast<FocusSTMHead*>(p)->flag = FOCUS_STM_FLAG_BEGIN;
-        reinterpret_cast<FocusSTMHead*>(p)->transition.MODE.mode = transition_mode;
         reinterpret_cast<FocusSTMHead*>(p)->freq_div = freq_div;
         reinterpret_cast<FocusSTMHead*>(p)->num_foci = 1;
         reinterpret_cast<FocusSTMHead*>(p)->sound_speed = sound_speed;
         reinterpret_cast<FocusSTMHead*>(p)->rep = rep;
-        reinterpret_cast<FocusSTMHead*>(p)->transition.VALUE.value = transition_value;
+        reinterpret_cast<FocusSTMHead*>(p)->transition.value = transition_value;
+        reinterpret_cast<FocusSTMHead*>(p)->transition.MODE.mode = transition_mode;
         offset = sizeof(FocusSTMHead);
       } else {
         offset = sizeof(FocusSTMSubseq);
@@ -107,13 +107,13 @@ TEST(Op, FocusSTM) {
       size_t offset;
       if (cnt == 0) {
         reinterpret_cast<FocusSTMHead*>(p)->flag = FOCUS_STM_FLAG_BEGIN;
-        reinterpret_cast<FocusSTMHead*>(p)->transition.MODE.mode = TRANSITION_MODE_NONE;
         reinterpret_cast<FocusSTMHead*>(p)->freq_div = freq_div;
         reinterpret_cast<FocusSTMHead*>(p)->segment = 1;
         reinterpret_cast<FocusSTMHead*>(p)->num_foci = 1;
         reinterpret_cast<FocusSTMHead*>(p)->sound_speed = sound_speed;
         reinterpret_cast<FocusSTMHead*>(p)->rep = rep;
-        reinterpret_cast<FocusSTMHead*>(p)->transition.VALUE.value = 0;
+        reinterpret_cast<FocusSTMHead*>(p)->transition.value = 0;
+        reinterpret_cast<FocusSTMHead*>(p)->transition.MODE.mode = TRANSITION_MODE_NONE;
         offset = sizeof(FocusSTMHead);
       } else {
         offset = sizeof(FocusSTMSubseq);
@@ -166,8 +166,8 @@ TEST(Op, FocusSTM) {
     auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     reinterpret_cast<FocusSTMUpdate*>(p)->tag = TAG_FOCI_STM_CHANGE_SEGMENT;
     reinterpret_cast<FocusSTMUpdate*>(p)->segment = 1;
+    reinterpret_cast<FocusSTMUpdate*>(p)->transition.value = transition_value;
     reinterpret_cast<FocusSTMUpdate*>(p)->transition.MODE.mode = transition_mode;
-    reinterpret_cast<FocusSTMUpdate*>(p)->transition.VALUE.value = transition_value;
 
     auto frame = to_frame_data(data);
 
@@ -352,7 +352,7 @@ TEST(Op, FocusSTMInvalidTransitionMode) {
     reinterpret_cast<FocusSTMUpdate*>(p)->tag = TAG_FOCI_STM_CHANGE_SEGMENT;
     reinterpret_cast<FocusSTMUpdate*>(p)->segment = 1;
     reinterpret_cast<FocusSTMUpdate*>(p)->transition.MODE.mode = TRANSITION_MODE_SYNC_IDX;
-    reinterpret_cast<FocusSTMUpdate*>(p)->transition.VALUE.value = 0;
+    reinterpret_cast<FocusSTMUpdate*>(p)->transition.value = 0;
     frame = to_frame_data(data);
     recv_ethercat(&frame[0]);
     update();
@@ -497,8 +497,8 @@ TEST(Op, InvalidCompletionStepsIntensityFocusSTM) {
     header->msg_id = get_msg_id();
     reinterpret_cast<FocusSTMUpdate*>(p)->tag = TAG_FOCI_STM_CHANGE_SEGMENT;
     reinterpret_cast<FocusSTMUpdate*>(p)->segment = 1;
+    reinterpret_cast<FocusSTMUpdate*>(p)->transition.value = 0;
     reinterpret_cast<FocusSTMUpdate*>(p)->transition.MODE.mode = TRANSITION_MODE_IMMIDIATE;
-    reinterpret_cast<FocusSTMUpdate*>(p)->transition.VALUE.value = 0;
     frame = to_frame_data(data);
     recv_ethercat(&frame[0]);
     update();

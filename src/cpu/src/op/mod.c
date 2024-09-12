@@ -25,7 +25,8 @@ extern volatile uint16_t _stm_freq_div[2];
 
 inline static uint8_t mod_segment_update(const uint8_t segment, const Transition transition) {
   bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_REQ_RD_SEGMENT, segment);
-  if (transition.MODE.mode == TRANSITION_MODE_SYS_TIME && (transition.VALUE.value < ECATC.DC_SYS_TIME.LONGLONG + SYS_TIME_TRANSITION_MARGIN))
+  if (transition.MODE.mode == TRANSITION_MODE_SYS_TIME &&
+      ((transition.value & 0x00FFFFFFFFFFFFFF) < ECATC.DC_SYS_TIME.LONGLONG + SYS_TIME_TRANSITION_MARGIN))
     return ERR_MISS_TRANSITION_TIME;
   bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_MOD_TRANSITION_0, (uint16_t*)&transition, sizeof(uint64_t) >> 1);
   set_and_wait_update(CTL_FLAG_MOD_SET);
@@ -108,6 +109,10 @@ uint8_t write_mod(const volatile uint8_t* p_data) {
 }
 
 uint8_t change_mod_segment(const volatile uint8_t* p_data) {
+  static_assert(sizeof(Transition) == 8, "Transition is not valid.");
+  static_assert(offsetof(Transition, MODE) == 0, "Transition is not valid.");
+  static_assert(offsetof(Transition, MODE.mode) == 7, "Transition is not valid.");
+  static_assert(offsetof(Transition, value) == 0, "Transition is not valid.");
   static_assert(sizeof(ModulationUpdate) == 16, "Modulation is not valid.");
   static_assert(offsetof(ModulationUpdate, tag) == 0, "Modulation is not valid.");
   static_assert(offsetof(ModulationUpdate, segment) == 1, "Modulation is not valid.");

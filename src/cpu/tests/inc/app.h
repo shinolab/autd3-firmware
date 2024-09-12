@@ -29,9 +29,7 @@ typedef int bool_t;
 #endif
 
 typedef union {
-  struct {
-    uint64_t value : 56;
-  } VALUE;
+  uint64_t value;
   struct {
     uint8_t _pad[7];
     uint8_t mode;

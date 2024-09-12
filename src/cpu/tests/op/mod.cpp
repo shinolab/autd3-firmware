@@ -46,8 +46,8 @@ TEST(Op, Mod) {
         reinterpret_cast<ModulationHead*>(p)->flag = MODULATION_FLAG_BEGIN;
         reinterpret_cast<ModulationHead*>(p)->freq_div = freq_div;
         reinterpret_cast<ModulationHead*>(p)->rep = rep;
+        reinterpret_cast<ModulationHead*>(p)->transition.value = transition_value;
         reinterpret_cast<ModulationHead*>(p)->transition.MODE.mode = transition_mode;
-        reinterpret_cast<ModulationHead*>(p)->transition.VALUE.value = transition_value;
         offset = sizeof(ModulationHead);
         send = std::min(std::min(size - cnt, sizeof(RX_STR) - sizeof(Header) - offset), (size_t)254);
         reinterpret_cast<ModulationHead*>(p)->size = static_cast<uint8_t>(send);
@@ -102,8 +102,8 @@ TEST(Op, Mod) {
         reinterpret_cast<ModulationHead*>(p)->flag = MODULATION_FLAG_BEGIN;
         reinterpret_cast<ModulationHead*>(p)->freq_div = freq_div;
         reinterpret_cast<ModulationHead*>(p)->rep = rep;
+        reinterpret_cast<ModulationHead*>(p)->transition.value = 0;
         reinterpret_cast<ModulationHead*>(p)->transition.MODE.mode = TRANSITION_MODE_NONE;
-        reinterpret_cast<ModulationHead*>(p)->transition.VALUE.value = 0;
         offset = sizeof(ModulationHead);
         send = std::min(std::min(size - cnt, sizeof(RX_STR) - sizeof(Header) - offset), (size_t)254);
         reinterpret_cast<ModulationHead*>(p)->size = static_cast<uint8_t>(send);
@@ -153,8 +153,8 @@ TEST(Op, Mod) {
     auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     reinterpret_cast<ModulationUpdate*>(p)->tag = TAG_MODULATION_CHANGE_SEGMENT;
     reinterpret_cast<ModulationUpdate*>(p)->segment = 1;
+    reinterpret_cast<ModulationUpdate*>(p)->transition.value = transition_value;
     reinterpret_cast<ModulationUpdate*>(p)->transition.MODE.mode = transition_mode;
-    reinterpret_cast<ModulationUpdate*>(p)->transition.VALUE.value = transition_value;
 
     auto frame = to_frame_data(data);
 
@@ -477,8 +477,8 @@ TEST(Op, ModMissTransitionTime) {
         reinterpret_cast<ModulationHead*>(p)->flag = MODULATION_FLAG_BEGIN;
         reinterpret_cast<ModulationHead*>(p)->freq_div = freq_div;
         reinterpret_cast<ModulationHead*>(p)->rep = rep;
+        reinterpret_cast<ModulationHead*>(p)->transition.value = transition_value;
         reinterpret_cast<ModulationHead*>(p)->transition.MODE.mode = transition_mode;
-        reinterpret_cast<ModulationHead*>(p)->transition.VALUE.value = transition_value;
         offset = sizeof(ModulationHead);
       } else {
         offset = sizeof(ModulationSubseq);
