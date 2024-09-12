@@ -23,10 +23,10 @@ module debug #(
   assign GPIO_OUT = gpio_out;
 
   always_ff @(posedge CLK) begin
-    gpio_out[0] <= debug_signal(DEBUG_SETTINGS.VALUE[0][63:56], DEBUG_SETTINGS.VALUE[55:0]);
-    gpio_out[1] <= debug_signal(DEBUG_SETTINGS.VALUE[1][63:56], DEBUG_SETTINGS.VALUE[55:0]);
-    gpio_out[2] <= debug_signal(DEBUG_SETTINGS.VALUE[2][63:56], DEBUG_SETTINGS.VALUE[55:0]);
-    gpio_out[3] <= debug_signal(DEBUG_SETTINGS.VALUE[3][63:56], DEBUG_SETTINGS.VALUE[55:0]);
+    gpio_out[0] <= debug_signal(DEBUG_SETTINGS.VALUE[0][63:56], DEBUG_SETTINGS.VALUE[0][55:0]);
+    gpio_out[1] <= debug_signal(DEBUG_SETTINGS.VALUE[1][63:56], DEBUG_SETTINGS.VALUE[1][55:0]);
+    gpio_out[2] <= debug_signal(DEBUG_SETTINGS.VALUE[2][63:56], DEBUG_SETTINGS.VALUE[2][55:0]);
+    gpio_out[3] <= debug_signal(DEBUG_SETTINGS.VALUE[3][63:56], DEBUG_SETTINGS.VALUE[3][55:0]);
   end
 
   function automatic logic debug_signal(input logic [7:0] dbg_type, input logic [55:0] value);
