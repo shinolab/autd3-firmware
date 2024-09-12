@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 module modulation_swapchain (
     input wire CLK,
-    input wire [63:0] SYS_TIME,
+    input wire [55:0] SYS_TIME,
     input wire UPDATE_SETTINGS,
     input wire REQ_RD_SEGMENT,
     input wire [7:0] TRANSITION_MODE,
@@ -15,7 +15,7 @@ module modulation_swapchain (
     output wire [14:0] IDX[params::NumSegment]
 );
 
-  localparam int Latency = 6;
+  localparam int Latency = 5;
 
   logic segment = 1'b0;
   logic req_segment;
@@ -28,7 +28,7 @@ module modulation_swapchain (
   logic [14:0] idx_old[params::NumSegment];
   logic [14:0] tic_idx[params::NumSegment];
 
-  logic signed [64:0] time_diff;
+  logic signed [56:0] time_diff;
 
   assign SEGMENT = segment;
   assign STOP = stop;
@@ -47,9 +47,9 @@ module modulation_swapchain (
   idx_mode_t idx_mode = IDX_MODE_SYNC_IDX;
   state_t state = INFINITE_LOOP;
 
-  logic [$clog2(Latency-1)-1:0] addsub_latency;
+  logic [$clog2(Latency)-1:0] addsub_latency;
   logic wait_transition;
-  logic [63:0] transition_time;
+  logic [55:0] transition_time;
   logic transition_time_din_valid = 1'b0;
   logic transition_time_dout_valid;
   ec_time_to_sys_time ec_time_to_sys_time (
@@ -59,7 +59,7 @@ module modulation_swapchain (
       .SYS_TIME(transition_time),
       .DOUT_VALID(transition_time_dout_valid)
   );
-  sub64_64 addsub_diff_time (
+  sub56_56 addsub_diff_time (
       .CLK(CLK),
       .A  (SYS_TIME),
       .B  (transition_time),
@@ -109,7 +109,7 @@ module modulation_swapchain (
                 end
               end else begin
                 if (addsub_latency == Latency - 1) begin
-                  if (~time_diff[64]) begin
+                  if (~time_diff[56]) begin
                     stop <= 1'b0;
                     loop_cnt <= '0;
                     segment <= req_segment;

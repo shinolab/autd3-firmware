@@ -2,7 +2,7 @@
 module modulation_timer (
     input wire CLK,
     input wire UPDATE_SETTINGS_IN,
-    input wire [63:0] SYS_TIME,
+    input wire [55:0] SYS_TIME,
     input wire [14:0] CYCLE[params::NumSegment],
     input wire [15:0] FREQ_DIV[params::NumSegment],
     output wire [14:0] IDX[params::NumSegment],

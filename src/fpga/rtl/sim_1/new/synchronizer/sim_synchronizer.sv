@@ -7,8 +7,8 @@ module sim_synchronizer ();
   logic CLK_25P6M, CLK_25P6M_p50, CLK_25P6M_m50;
 
   logic CLK, CLK_p50, CLK_m50;
-  logic [63:0] SYS_TIME, SYS_TIME_p50, SYS_TIME_m50;
-  logic [63:0] SYS_TIME_WO_SYNC, SYS_TIME_p50_WO_SYNC, SYS_TIME_m50_WO_SYNC;
+  logic [55:0] SYS_TIME, SYS_TIME_p50, SYS_TIME_m50;
+  logic [55:0] SYS_TIME_WO_SYNC, SYS_TIME_p50_WO_SYNC, SYS_TIME_m50_WO_SYNC;
   logic signed [64:0] diff_p50, diff_m50;
 
   logic ECAT_SYNC;

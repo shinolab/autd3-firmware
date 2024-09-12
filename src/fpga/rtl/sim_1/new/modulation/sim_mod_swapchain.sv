@@ -8,7 +8,7 @@ module sim_mod_swapchain ();
 
   logic CLK;
   logic locked;
-  logic [63:0] SYS_TIME;
+  logic [55:0] SYS_TIME;
   sim_helper_clk sim_helper_clk (
       .MRCC_25P6M(),
       .CLK(CLK),
@@ -473,7 +473,7 @@ module sim_mod_swapchain ();
       @(negedge CLK);
       `ASSERT_EQ(1, segment);
       `ASSERT_EQ(0, stop);
-      if (SYS_TIME == ECAT_SYNC_BASE_CNT * 2 + 6) break;
+      if (SYS_TIME == ECAT_SYNC_BASE_CNT * 2 + 5) break;
     end
 
     // change segment
@@ -531,7 +531,7 @@ module sim_mod_swapchain ();
       @(negedge CLK);
       `ASSERT_EQ(0, segment);
       `ASSERT_EQ(1, stop);
-      if (SYS_TIME == ECAT_SYNC_BASE_CNT * 4 + 6) break;
+      if (SYS_TIME == ECAT_SYNC_BASE_CNT * 4 + 5) break;
     end
 
     // change segment
