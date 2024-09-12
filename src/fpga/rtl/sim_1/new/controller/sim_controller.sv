@@ -101,14 +101,10 @@ module sim_controller ();
     sync_settings_in.ECAT_SYNC_TIME = sim_helper_random.range(64'hFFFFFFFFFFFFFFFF, 0);
 
     debug_settings_in.UPDATE = 1'b1;
-    debug_settings_in.TYPE[0] = sim_helper_random.range(8'hFF, 0);
-    debug_settings_in.TYPE[1] = sim_helper_random.range(8'hFF, 0);
-    debug_settings_in.TYPE[2] = sim_helper_random.range(8'hFF, 0);
-    debug_settings_in.TYPE[3] = sim_helper_random.range(8'hFF, 0);
-    debug_settings_in.VALUE[0] = sim_helper_random.range(16'hFFFF, 0);
-    debug_settings_in.VALUE[1] = sim_helper_random.range(16'hFFFF, 0);
-    debug_settings_in.VALUE[2] = sim_helper_random.range(16'hFFFF, 0);
-    debug_settings_in.VALUE[3] = sim_helper_random.range(16'hFFFF, 0);
+    debug_settings_in.VALUE[0] = sim_helper_random.range(64'hFFFF, 0);
+    debug_settings_in.VALUE[1] = sim_helper_random.range(64'hFFFF, 0);
+    debug_settings_in.VALUE[2] = sim_helper_random.range(64'hFFFF, 0);
+    debug_settings_in.VALUE[3] = sim_helper_random.range(64'hFFFF, 0);
 
     @(posedge locked);
 
