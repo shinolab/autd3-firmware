@@ -98,7 +98,7 @@ TEST(Op, SilencerFixedCompletionStepsInvaidStepMod) {
     reinterpret_cast<ModulationHead*>(p)->flag = MODULATION_FLAG_BEGIN | MODULATION_FLAG_END;
     reinterpret_cast<ModulationHead*>(p)->freq_div = freq_div;
     reinterpret_cast<ModulationHead*>(p)->size = 2;
-    reinterpret_cast<ModulationHead*>(p)->transition_mode = TRANSITION_MODE_IMMIDIATE;
+    reinterpret_cast<ModulationHead*>(p)->transition.MODE.mode = TRANSITION_MODE_IMMIDIATE;
     for (size_t i = 0; i < 2; i++) p[sizeof(ModulationHead) + i] = 0xFF;
 
     auto frame = to_frame_data(data);
@@ -227,7 +227,7 @@ TEST(Op, SilencerFixedCompletionStepsInvaidStepSTM) {
     reinterpret_cast<FocusSTMHead*>(p)->segment = 0;
     reinterpret_cast<FocusSTMHead*>(p)->send_num = 2;
     reinterpret_cast<FocusSTMHead*>(p)->freq_div = freq_div;
-    reinterpret_cast<FocusSTMHead*>(p)->transition_mode = TRANSITION_MODE_IMMIDIATE;
+    reinterpret_cast<FocusSTMHead*>(p)->transition.MODE.mode = TRANSITION_MODE_IMMIDIATE;
 
     auto frame = to_frame_data(data);
 

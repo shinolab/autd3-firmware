@@ -7,11 +7,10 @@
 typedef ALIGN2 struct {
   uint8_t tag;
   uint8_t flag;
-  uint8_t size;
-  uint8_t transition_mode;
+  uint16_t size;
   uint16_t freq_div;
   uint16_t rep;
-  uint64_t transition_value;
+  Transition transition;
 } ModulationHead;
 
 typedef ALIGN2 struct {
@@ -28,9 +27,8 @@ typedef ALIGN2 union {
 typedef ALIGN2 struct {
   uint8_t tag;
   uint8_t segment;
-  uint8_t transition_mode;
-  uint8_t _pad[5];
-  uint64_t transition_value;
+  uint8_t _pad[6];
+  Transition transition;
 } ModulationUpdate;
 
 inline static void change_mod_wr_segment(uint16_t segment) {

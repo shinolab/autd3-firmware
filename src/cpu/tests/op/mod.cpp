@@ -46,27 +46,21 @@ TEST(Op, Mod) {
         reinterpret_cast<ModulationHead*>(p)->flag = MODULATION_FLAG_BEGIN;
         reinterpret_cast<ModulationHead*>(p)->freq_div = freq_div;
         reinterpret_cast<ModulationHead*>(p)->rep = rep;
-        reinterpret_cast<ModulationHead*>(p)->transition_mode = transition_mode;
-        reinterpret_cast<ModulationHead*>(p)->transition_value =
-            transition_value;
+        reinterpret_cast<ModulationHead*>(p)->transition.MODE.mode = transition_mode;
+        reinterpret_cast<ModulationHead*>(p)->transition.VALUE.value = transition_value;
         offset = sizeof(ModulationHead);
-        send = std::min(
-            std::min(size - cnt, sizeof(RX_STR) - sizeof(Header) - offset),
-            (size_t)254);
+        send = std::min(std::min(size - cnt, sizeof(RX_STR) - sizeof(Header) - offset), (size_t)254);
         reinterpret_cast<ModulationHead*>(p)->size = static_cast<uint8_t>(send);
       } else {
         offset = sizeof(ModulationSubseq);
         send = std::min(size - cnt, sizeof(RX_STR) - sizeof(Header) - offset);
-        reinterpret_cast<ModulationSubseq*>(p)->size =
-            static_cast<uint16_t>(send);
+        reinterpret_cast<ModulationSubseq*>(p)->size = static_cast<uint16_t>(send);
       }
 
       for (size_t i = 0; i < send; i++) p[offset + i] = m[cnt + i];
       cnt += send;
 
-      if (cnt == size)
-        reinterpret_cast<ModulationHead*>(p)->flag |=
-            MODULATION_FLAG_END | MODULATION_FLAG_UPDATE;
+      if (cnt == size) reinterpret_cast<ModulationHead*>(p)->flag |= MODULATION_FLAG_END | MODULATION_FLAG_UPDATE;
 
       auto frame = to_frame_data(data);
 
@@ -81,15 +75,12 @@ TEST(Op, Mod) {
     ASSERT_EQ(bram_read_controller(ADDR_MOD_CYCLE0), size - 1);
     ASSERT_EQ(bram_read_controller(ADDR_MOD_FREQ_DIV0), 0x5678);
     ASSERT_EQ(bram_read_controller(ADDR_MOD_REP0), 0xDEF0);
-    ASSERT_EQ(bram_read_controller(ADDR_MOD_TRANSITION_MODE), transition_mode);
-    ASSERT_EQ(bram_read_controller(ADDR_MOD_TRANSITION_VALUE_0), 0xCDEF);
-    ASSERT_EQ(bram_read_controller(ADDR_MOD_TRANSITION_VALUE_1), 0x89AB);
-    ASSERT_EQ(bram_read_controller(ADDR_MOD_TRANSITION_VALUE_2), 0x4567);
-    ASSERT_EQ(bram_read_controller(ADDR_MOD_TRANSITION_VALUE_3), 0x0123);
+    ASSERT_EQ(bram_read_controller(ADDR_MOD_TRANSITION_0), 0xCDEF);
+    ASSERT_EQ(bram_read_controller(ADDR_MOD_TRANSITION_1), 0x89AB);
+    ASSERT_EQ(bram_read_controller(ADDR_MOD_TRANSITION_2), 0x4567);
+    ASSERT_EQ(bram_read_controller(ADDR_MOD_TRANSITION_3), (TRANSITION_MODE_EXT << 8) | 0x23);
     for (size_t i = 0; i < size >> 1; i++) {
-      ASSERT_EQ(bram_read_mod(0, i),
-                ((static_cast<uint8_t>((i << 1) + 1)) << 8) |
-                    static_cast<uint8_t>(i << 1));
+      ASSERT_EQ(bram_read_mod(0, i), ((static_cast<uint8_t>((i << 1) + 1)) << 8) | static_cast<uint8_t>(i << 1));
     }
   }
 
@@ -111,27 +102,22 @@ TEST(Op, Mod) {
         reinterpret_cast<ModulationHead*>(p)->flag = MODULATION_FLAG_BEGIN;
         reinterpret_cast<ModulationHead*>(p)->freq_div = freq_div;
         reinterpret_cast<ModulationHead*>(p)->rep = rep;
-        reinterpret_cast<ModulationHead*>(p)->transition_mode =
-            TRANSITION_MODE_NONE;
-        reinterpret_cast<ModulationHead*>(p)->transition_value = 0;
+        reinterpret_cast<ModulationHead*>(p)->transition.MODE.mode = TRANSITION_MODE_NONE;
+        reinterpret_cast<ModulationHead*>(p)->transition.VALUE.value = 0;
         offset = sizeof(ModulationHead);
-        send = std::min(
-            std::min(size - cnt, sizeof(RX_STR) - sizeof(Header) - offset),
-            (size_t)254);
+        send = std::min(std::min(size - cnt, sizeof(RX_STR) - sizeof(Header) - offset), (size_t)254);
         reinterpret_cast<ModulationHead*>(p)->size = static_cast<uint8_t>(send);
       } else {
         offset = sizeof(ModulationSubseq);
         send = std::min(size - cnt, sizeof(RX_STR) - sizeof(Header) - offset);
-        reinterpret_cast<ModulationSubseq*>(p)->size =
-            static_cast<uint16_t>(send);
+        reinterpret_cast<ModulationSubseq*>(p)->size = static_cast<uint16_t>(send);
       }
       reinterpret_cast<ModulationHead*>(p)->flag |= MODULATION_FLAG_SEGMENT;
 
       for (size_t i = 0; i < send; i++) p[offset + i] = m[cnt + i];
       cnt += send;
 
-      if (cnt == size)
-        reinterpret_cast<ModulationHead*>(p)->flag |= MODULATION_FLAG_END;
+      if (cnt == size) reinterpret_cast<ModulationHead*>(p)->flag |= MODULATION_FLAG_END;
 
       auto frame = to_frame_data(data);
 
@@ -146,16 +132,12 @@ TEST(Op, Mod) {
     ASSERT_EQ(bram_read_controller(ADDR_MOD_CYCLE1), size - 1);
     ASSERT_EQ(bram_read_controller(ADDR_MOD_FREQ_DIV1), 0xDEF0);
     ASSERT_EQ(bram_read_controller(ADDR_MOD_REP1), 0x5678);
-    ASSERT_EQ(bram_read_controller(ADDR_MOD_TRANSITION_MODE),
-              TRANSITION_MODE_EXT);
-    ASSERT_EQ(bram_read_controller(ADDR_MOD_TRANSITION_VALUE_0), 0xCDEF);
-    ASSERT_EQ(bram_read_controller(ADDR_MOD_TRANSITION_VALUE_1), 0x89AB);
-    ASSERT_EQ(bram_read_controller(ADDR_MOD_TRANSITION_VALUE_2), 0x4567);
-    ASSERT_EQ(bram_read_controller(ADDR_MOD_TRANSITION_VALUE_3), 0x0123);
+    ASSERT_EQ(bram_read_controller(ADDR_MOD_TRANSITION_0), 0xCDEF);
+    ASSERT_EQ(bram_read_controller(ADDR_MOD_TRANSITION_1), 0x89AB);
+    ASSERT_EQ(bram_read_controller(ADDR_MOD_TRANSITION_2), 0x4567);
+    ASSERT_EQ(bram_read_controller(ADDR_MOD_TRANSITION_3), (TRANSITION_MODE_EXT << 8) | 0x23);
     for (size_t i = 0; i < size >> 1; i++) {
-      ASSERT_EQ(bram_read_mod(1, i),
-                ((static_cast<uint8_t>((i << 1) + 1)) << 8) |
-                    static_cast<uint8_t>(i << 1));
+      ASSERT_EQ(bram_read_mod(1, i), ((static_cast<uint8_t>((i << 1) + 1)) << 8) | static_cast<uint8_t>(i << 1));
     }
   }
 
@@ -171,8 +153,8 @@ TEST(Op, Mod) {
     auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     reinterpret_cast<ModulationUpdate*>(p)->tag = TAG_MODULATION_CHANGE_SEGMENT;
     reinterpret_cast<ModulationUpdate*>(p)->segment = 1;
-    reinterpret_cast<ModulationUpdate*>(p)->transition_mode = transition_mode;
-    reinterpret_cast<ModulationUpdate*>(p)->transition_value = transition_value;
+    reinterpret_cast<ModulationUpdate*>(p)->transition.MODE.mode = transition_mode;
+    reinterpret_cast<ModulationUpdate*>(p)->transition.VALUE.value = transition_value;
 
     auto frame = to_frame_data(data);
 
@@ -183,11 +165,10 @@ TEST(Op, Mod) {
     ASSERT_EQ(ack, header->msg_id);
 
     ASSERT_EQ(bram_read_controller(ADDR_MOD_REQ_RD_SEGMENT), 1);
-    ASSERT_EQ(bram_read_controller(ADDR_MOD_TRANSITION_MODE), transition_mode);
-    ASSERT_EQ(bram_read_controller(ADDR_MOD_TRANSITION_VALUE_0), 0x3210);
-    ASSERT_EQ(bram_read_controller(ADDR_MOD_TRANSITION_VALUE_1), 0x7654);
-    ASSERT_EQ(bram_read_controller(ADDR_MOD_TRANSITION_VALUE_2), 0xBA98);
-    ASSERT_EQ(bram_read_controller(ADDR_MOD_TRANSITION_VALUE_3), 0xFEDC);
+    ASSERT_EQ(bram_read_controller(ADDR_MOD_TRANSITION_0), 0x3210);
+    ASSERT_EQ(bram_read_controller(ADDR_MOD_TRANSITION_1), 0x7654);
+    ASSERT_EQ(bram_read_controller(ADDR_MOD_TRANSITION_2), 0xBA98);
+    ASSERT_EQ(bram_read_controller(ADDR_MOD_TRANSITION_3), (TRANSITION_MODE_SYS_TIME << 8) | 0xDC);
   }
 }
 
@@ -206,8 +187,7 @@ TEST(Op, ModulationInvalidTransitionMode) {
     auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     reinterpret_cast<ModulationHead*>(p)->tag = TAG_MODULATION;
     reinterpret_cast<ModulationHead*>(p)->flag = MODULATION_FLAG_BEGIN;
-    reinterpret_cast<ModulationHead*>(p)->transition_mode =
-        TRANSITION_MODE_SYNC_IDX;
+    reinterpret_cast<ModulationHead*>(p)->transition.MODE.mode = TRANSITION_MODE_SYNC_IDX;
 
     auto frame = to_frame_data(data);
 
@@ -226,11 +206,9 @@ TEST(Op, ModulationInvalidTransitionMode) {
 
     auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     reinterpret_cast<ModulationHead*>(p)->tag = TAG_MODULATION;
-    reinterpret_cast<ModulationHead*>(p)->flag =
-        MODULATION_FLAG_BEGIN | MODULATION_FLAG_SEGMENT;
+    reinterpret_cast<ModulationHead*>(p)->flag = MODULATION_FLAG_BEGIN | MODULATION_FLAG_SEGMENT;
     reinterpret_cast<ModulationHead*>(p)->rep = 0;
-    reinterpret_cast<ModulationHead*>(p)->transition_mode =
-        TRANSITION_MODE_IMMIDIATE;
+    reinterpret_cast<ModulationHead*>(p)->transition.MODE.mode = TRANSITION_MODE_IMMIDIATE;
 
     auto frame = to_frame_data(data);
 
@@ -247,13 +225,11 @@ TEST(Op, ModulationInvalidTransitionMode) {
     header->slot_2_offset = 0;
     auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     reinterpret_cast<ModulationHead*>(p)->tag = TAG_MODULATION;
-    reinterpret_cast<ModulationHead*>(p)->flag =
-        MODULATION_FLAG_BEGIN | MODULATION_FLAG_END | MODULATION_FLAG_SEGMENT;
+    reinterpret_cast<ModulationHead*>(p)->flag = MODULATION_FLAG_BEGIN | MODULATION_FLAG_END | MODULATION_FLAG_SEGMENT;
     reinterpret_cast<ModulationHead*>(p)->size = 2;
     reinterpret_cast<ModulationHead*>(p)->freq_div = 0xFFFF;
     reinterpret_cast<ModulationHead*>(p)->rep = 0xFFFF;
-    reinterpret_cast<ModulationHead*>(p)->transition_mode =
-        TRANSITION_MODE_NONE;
+    reinterpret_cast<ModulationHead*>(p)->transition.MODE.mode = TRANSITION_MODE_NONE;
     auto frame = to_frame_data(data);
     recv_ethercat(&frame[0]);
     update();
@@ -263,9 +239,7 @@ TEST(Op, ModulationInvalidTransitionMode) {
     header->msg_id = get_msg_id();
     reinterpret_cast<ModulationUpdate*>(p)->tag = TAG_MODULATION_CHANGE_SEGMENT;
     reinterpret_cast<ModulationUpdate*>(p)->segment = 1;
-    reinterpret_cast<ModulationUpdate*>(p)->transition_mode =
-        TRANSITION_MODE_SYNC_IDX;
-    reinterpret_cast<ModulationUpdate*>(p)->transition_value = 0;
+    reinterpret_cast<ModulationUpdate*>(p)->transition.MODE.mode = TRANSITION_MODE_SYNC_IDX;
     frame = to_frame_data(data);
     recv_ethercat(&frame[0]);
     update();
@@ -313,12 +287,10 @@ TEST(Op, InvalidCompletionStepsMod) {
 
     auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     reinterpret_cast<ModulationHead*>(p)->tag = TAG_MODULATION;
-    reinterpret_cast<ModulationHead*>(p)->flag =
-        MODULATION_FLAG_BEGIN | MODULATION_FLAG_END;
+    reinterpret_cast<ModulationHead*>(p)->flag = MODULATION_FLAG_BEGIN | MODULATION_FLAG_END;
     reinterpret_cast<ModulationHead*>(p)->freq_div = freq_div;
     reinterpret_cast<ModulationHead*>(p)->size = 2;
-    reinterpret_cast<ModulationHead*>(p)->transition_mode =
-        TRANSITION_MODE_IMMIDIATE;
+    reinterpret_cast<ModulationHead*>(p)->transition.MODE.mode = TRANSITION_MODE_IMMIDIATE;
 
     auto frame = to_frame_data(data);
 
@@ -339,12 +311,10 @@ TEST(Op, InvalidCompletionStepsMod) {
 
     auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     reinterpret_cast<ModulationHead*>(p)->tag = TAG_MODULATION;
-    reinterpret_cast<ModulationHead*>(p)->flag =
-        MODULATION_FLAG_BEGIN | MODULATION_FLAG_END;
+    reinterpret_cast<ModulationHead*>(p)->flag = MODULATION_FLAG_BEGIN | MODULATION_FLAG_END;
     reinterpret_cast<ModulationHead*>(p)->freq_div = freq_div;
     reinterpret_cast<ModulationHead*>(p)->size = 2;
-    reinterpret_cast<ModulationHead*>(p)->transition_mode =
-        TRANSITION_MODE_IMMIDIATE;
+    reinterpret_cast<ModulationHead*>(p)->transition.MODE.mode = TRANSITION_MODE_IMMIDIATE;
 
     auto frame = to_frame_data(data);
 
@@ -362,13 +332,11 @@ TEST(Op, InvalidCompletionStepsMod) {
 
     auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     reinterpret_cast<ModulationHead*>(p)->tag = TAG_MODULATION;
-    reinterpret_cast<ModulationHead*>(p)->flag =
-        MODULATION_FLAG_BEGIN | MODULATION_FLAG_END;
+    reinterpret_cast<ModulationHead*>(p)->flag = MODULATION_FLAG_BEGIN | MODULATION_FLAG_END;
     reinterpret_cast<ModulationHead*>(p)->size = 2;
     reinterpret_cast<ModulationHead*>(p)->freq_div = 0xFFFF;
     reinterpret_cast<ModulationHead*>(p)->rep = 0xFFFF;
-    reinterpret_cast<ModulationHead*>(p)->transition_mode =
-        TRANSITION_MODE_IMMIDIATE;
+    reinterpret_cast<ModulationHead*>(p)->transition.MODE.mode = TRANSITION_MODE_IMMIDIATE;
     auto frame = to_frame_data(data);
     recv_ethercat(&frame[0]);
     update();
@@ -388,13 +356,11 @@ TEST(Op, InvalidCompletionStepsMod) {
 
     header->msg_id = get_msg_id();
     reinterpret_cast<ModulationHead*>(p)->tag = TAG_MODULATION;
-    reinterpret_cast<ModulationHead*>(p)->flag =
-        MODULATION_FLAG_BEGIN | MODULATION_FLAG_END | MODULATION_FLAG_SEGMENT;
+    reinterpret_cast<ModulationHead*>(p)->flag = MODULATION_FLAG_BEGIN | MODULATION_FLAG_END | MODULATION_FLAG_SEGMENT;
     reinterpret_cast<ModulationHead*>(p)->size = 2;
     reinterpret_cast<ModulationHead*>(p)->freq_div = 40;
     reinterpret_cast<ModulationHead*>(p)->rep = 0xFFFF;
-    reinterpret_cast<ModulationHead*>(p)->transition_mode =
-        TRANSITION_MODE_NONE;
+    reinterpret_cast<ModulationHead*>(p)->transition.MODE.mode = TRANSITION_MODE_NONE;
     frame = to_frame_data(data);
     recv_ethercat(&frame[0]);
     update();
@@ -415,9 +381,7 @@ TEST(Op, InvalidCompletionStepsMod) {
     header->msg_id = get_msg_id();
     reinterpret_cast<ModulationUpdate*>(p)->tag = TAG_MODULATION_CHANGE_SEGMENT;
     reinterpret_cast<ModulationUpdate*>(p)->segment = 1;
-    reinterpret_cast<ModulationUpdate*>(p)->transition_mode =
-        TRANSITION_MODE_IMMIDIATE;
-    reinterpret_cast<ModulationUpdate*>(p)->transition_value = 0;
+    reinterpret_cast<ModulationUpdate*>(p)->transition.MODE.mode = TRANSITION_MODE_IMMIDIATE;
     frame = to_frame_data(data);
     recv_ethercat(&frame[0]);
     update();
@@ -466,12 +430,10 @@ TEST(Op, InvalidCompletionStepsWithPermisiveModeMod) {
 
     auto* p = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
     reinterpret_cast<ModulationHead*>(p)->tag = TAG_MODULATION;
-    reinterpret_cast<ModulationHead*>(p)->flag =
-        MODULATION_FLAG_BEGIN | MODULATION_FLAG_END;
+    reinterpret_cast<ModulationHead*>(p)->flag = MODULATION_FLAG_BEGIN | MODULATION_FLAG_END;
     reinterpret_cast<ModulationHead*>(p)->freq_div = freq_div;
     reinterpret_cast<ModulationHead*>(p)->size = 2;
-    reinterpret_cast<ModulationHead*>(p)->transition_mode =
-        TRANSITION_MODE_IMMIDIATE;
+    reinterpret_cast<ModulationHead*>(p)->transition.MODE.mode = TRANSITION_MODE_IMMIDIATE;
 
     auto frame = to_frame_data(data);
 
@@ -515,25 +477,21 @@ TEST(Op, ModMissTransitionTime) {
         reinterpret_cast<ModulationHead*>(p)->flag = MODULATION_FLAG_BEGIN;
         reinterpret_cast<ModulationHead*>(p)->freq_div = freq_div;
         reinterpret_cast<ModulationHead*>(p)->rep = rep;
-        reinterpret_cast<ModulationHead*>(p)->transition_mode = transition_mode;
-        reinterpret_cast<ModulationHead*>(p)->transition_value =
-            transition_value;
+        reinterpret_cast<ModulationHead*>(p)->transition.MODE.mode = transition_mode;
+        reinterpret_cast<ModulationHead*>(p)->transition.VALUE.value = transition_value;
         offset = sizeof(ModulationHead);
       } else {
         offset = sizeof(ModulationSubseq);
       }
       reinterpret_cast<ModulationHead*>(p)->flag |= MODULATION_FLAG_SEGMENT;
 
-      auto send =
-          std::min(size - cnt, sizeof(RX_STR) - sizeof(Header) - offset);
+      auto send = std::min(size - cnt, sizeof(RX_STR) - sizeof(Header) - offset);
       reinterpret_cast<ModulationHead*>(p)->size = static_cast<uint16_t>(send);
 
       for (size_t i = 0; i < send; i++) p[offset + i] = m[cnt + i];
       cnt += send;
 
-      if (cnt == size)
-        reinterpret_cast<ModulationHead*>(p)->flag |=
-            MODULATION_FLAG_END | MODULATION_FLAG_UPDATE;
+      if (cnt == size) reinterpret_cast<ModulationHead*>(p)->flag |= MODULATION_FLAG_END | MODULATION_FLAG_UPDATE;
 
       auto frame = to_frame_data(data);
 

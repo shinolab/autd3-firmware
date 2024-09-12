@@ -49,14 +49,11 @@ uint8_t write_gain(const volatile uint8_t* p_data) {
 
   change_stm_wr_segment(segment);
   change_stm_wr_page(0);
-  bram_cpy_volatile(BRAM_SELECT_STM, 0,
-                    (volatile const uint16_t*)(&p_data[sizeof(Gain)]),
-                    NUM_TRANSDUCERS);
+  bram_cpy_volatile(BRAM_SELECT_STM, 0, (volatile const uint16_t*)(&p_data[sizeof(Gain)]), NUM_TRANSDUCERS);
 
   if ((p->flag & GAIN_FLAG_UPDATE) != 0) {
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_REQ_RD_SEGMENT, segment);
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_TRANSITION_MODE,
-               TRANSITION_MODE_SYNC_IDX);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_TRANSITION_3, TRANSITION_MODE_SYNC_IDX << 8);
     set_and_wait_update(CTL_FLAG_STM_SET);
   }
 
@@ -70,14 +67,12 @@ uint8_t change_gain_segment(const volatile uint8_t* p_data) {
 
   const GainUpdate* p = (const GainUpdate*)p_data;
 
-  if (_stm_mode[p->segment] != STM_MODE_GAIN || _stm_cycle[p->segment] != 1)
-    return ERR_INVALID_SEGMENT_TRANSITION;
+  if (_stm_mode[p->segment] != STM_MODE_GAIN || _stm_cycle[p->segment] != 1) return ERR_INVALID_SEGMENT_TRANSITION;
 
   _stm_segment = p->segment;
 
   bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_REQ_RD_SEGMENT, p->segment);
-  bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_TRANSITION_MODE,
-             TRANSITION_MODE_SYNC_IDX);
+  bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_TRANSITION_3, TRANSITION_MODE_SYNC_IDX << 8);
   set_and_wait_update(CTL_FLAG_STM_SET);
 
   return NO_ERR;

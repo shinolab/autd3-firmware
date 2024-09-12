@@ -27,6 +27,16 @@ typedef long long unsigned int uint64_t;
 typedef int bool_t;
 #endif
 
+typedef union {
+  struct {
+    uint64_t value : 56;
+  } VALUE;
+  struct {
+    uint8_t _pad[7];
+    uint8_t mode;
+  } MODE;
+} Transition;
+
 #define FPGA_BASE (0x44000000) /* CS1 FPGA address */
 
 inline static uint16_t get_addr(uint8_t bram_select, uint16_t bram_addr) { return (((uint16_t)bram_select & 0x0003) << 14) | (bram_addr & 0x3FFF); }

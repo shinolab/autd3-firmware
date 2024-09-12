@@ -6,16 +6,18 @@
 typedef ALIGN2 struct {
   uint8_t tag;
   uint8_t flag;
+  uint8_t size;
   uint8_t mode;
-  uint8_t transition_mode;
   uint16_t freq_div;
   uint16_t rep;
-  uint64_t transition_value;
+  Transition transition;
 } GainSTMHead;
 
 typedef ALIGN2 struct {
   uint8_t tag;
   uint8_t flag;
+  uint8_t size;
+  uint8_t _pad;
 } GainSTMSubseq;
 
 typedef union {
@@ -26,9 +28,8 @@ typedef union {
 typedef ALIGN2 struct {
   uint8_t tag;
   uint8_t segment;
-  uint8_t transition_mode;
-  uint8_t _pad[5];
-  uint64_t transition_value;
+  uint8_t _pad[6];
+  Transition transition;
 } GainSTMUpdate;
 
 #endif  // OP_GAIN_STM_H_

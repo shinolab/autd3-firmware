@@ -21,7 +21,7 @@ uint8_t configure_debug(const volatile uint8_t* p_data) {
 
   const DebugSetting* p = (const DebugSetting*)p_data;
   const uint16_t* vp = (const uint16_t*)(p->value);
-  bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_DEBUG_TYPE0, vp, 4 * sizeof(uint64_t) / sizeof(uint16_t));
+  bram_cpy(BRAM_SELECT_CONTROLLER, ADDR_DEBUG_VALUE0_0, vp, 4 * sizeof(uint64_t) / sizeof(uint16_t));
 
   set_and_wait_update(CTL_FLAG_DEBUG_SET);
 
