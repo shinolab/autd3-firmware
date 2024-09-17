@@ -46,6 +46,7 @@ set_source_files_properties(
   ${PROJECT_SOURCE_DIR}/../src/op/silencer.c
   ${PROJECT_SOURCE_DIR}/../src/op/sync.c
   ${PROJECT_SOURCE_DIR}/../src/op/pulse_width_encoder.c
+  ${PROJECT_SOURCE_DIR}/../src/op/phase_corr.c
   PROPERTIES LANGUAGE CXX
 )
 
