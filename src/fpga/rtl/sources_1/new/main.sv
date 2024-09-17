@@ -140,6 +140,7 @@ module main #(
       .PHASE_OUT(phase_m),
       .DOUT_VALID(dout_valid_m),
       .MOD_BUS(mod_bus.out_port),
+      .PHASE_CORR_BUS(phase_corr_bus.out_port),
       .GPIO_IN(gpio_in),
       .DEBUG_IDX(mod_idx),
       .DEBUG_SEGMENT(mod_segment),
