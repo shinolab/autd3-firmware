@@ -27,6 +27,7 @@ module sim_stm_gain ();
   logic [7:0] phase_buf[params::NumSegment][SIZE][DEPTH];
 
   cnt_bus_if cnt_bus ();
+  phase_corr_bus_if phase_corr_bus ();
   modulation_bus_if mod_bus ();
   stm_bus_if stm_bus ();
   pwe_table_bus_if pwe_table_bus ();
@@ -36,6 +37,7 @@ module sim_stm_gain ();
       .MRCC_25P6M(MRCC_25P6M),
       .MEM_BUS(sim_helper_bram.memory_bus.bram_port),
       .CNT_BUS(cnt_bus.in_port),
+      .PHASE_CORR_BUS(phase_corr_bus.in_port),
       .MOD_BUS(mod_bus.in_port),
       .STM_BUS(stm_bus.in_port),
       .PWE_TABLE_BUS(pwe_table_bus.in_port)
