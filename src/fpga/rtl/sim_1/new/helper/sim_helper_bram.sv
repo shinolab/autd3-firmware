@@ -45,6 +45,13 @@ module sim_helper_bram #(
     bram_write(BRAM_SELECT_CONTROLLER, {2'b00, BRAM_CNT_SELECT_MAIN, addr}, data);
   endtask
 
+  task automatic write_phase_corr(input logic [7:0] value[256]);
+    for (int i = 0; i < 128; i++) begin
+      bram_write(BRAM_SELECT_CONTROLLER, {2'b00, BRAM_CNT_SELECT_PHASE_CORR, i[7:0]}, {
+                 value[2*i+1], value[2*i]});
+    end
+  endtask
+
   task automatic write_pwe_table(input logic [7:0] value[256]);
     for (int i = 0; i < 128; i++) begin
       bram_write(BRAM_SELECT_PWE_TABLE, i[6:0], {value[2*i+1], value[2*i]});

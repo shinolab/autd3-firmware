@@ -12,6 +12,7 @@ module modulation #(
     output wire [7:0] PHASE_OUT,
     output wire DOUT_VALID,
     modulation_bus_if.out_port MOD_BUS,
+    phase_corr_bus_if.out_port PHASE_CORR_BUS,
     input wire GPIO_IN[4],
     output wire [14:0] DEBUG_IDX,
     output wire DEBUG_SEGMENT,
@@ -63,13 +64,16 @@ module modulation #(
       .DEBUG_STOP(DEBUG_STOP)
   );
 
-  delay_fifo #(
-      .WIDTH(8),
-      .DEPTH(6)
-  ) delay_fifo_phase (
-      .CLK (CLK),
-      .DIN (PHASE_IN),
-      .DOUT(PHASE_OUT)
+  logic dbg_phase_correction_dout_valid;
+  phase_correction #(
+      .DEPTH(DEPTH)
+  ) phase_correction (
+      .CLK(CLK),
+      .PHASE_CORR_BUS(PHASE_CORR_BUS),
+      .DIN_VALID(DIN_VALID),
+      .PHASE_IN(PHASE_IN),
+      .PHASE_OUT(PHASE_OUT),
+      .DOUT_VALID(dbg_phase_correction_dout_valid)
   );
 
 endmodule

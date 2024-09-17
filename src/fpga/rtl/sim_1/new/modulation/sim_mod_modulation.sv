@@ -16,6 +16,7 @@ module sim_mod_modulation ();
   settings::mod_settings_t mod_settings;
 
   cnt_bus_if cnt_bus ();
+  phase_corr_bus_if phase_corr_bus ();
   modulation_bus_if mod_bus ();
   stm_bus_if stm_bus ();
   pwe_table_bus_if pwe_table_bus ();
@@ -25,6 +26,7 @@ module sim_mod_modulation ();
       .MRCC_25P6M(MRCC_25P6M),
       .MEM_BUS(sim_helper_bram.memory_bus.bram_port),
       .CNT_BUS(cnt_bus.in_port),
+      .PHASE_CORR_BUS(phase_corr_bus.in_port),
       .MOD_BUS(mod_bus.in_port),
       .STM_BUS(stm_bus.in_port),
       .PWE_TABLE_BUS(pwe_table_bus.in_port)
@@ -59,6 +61,8 @@ module sim_mod_modulation ();
       .PHASE_OUT(phase_out),
       .DOUT_VALID(dout_valid),
       .MOD_BUS(mod_bus.out_port),
+      .PHASE_CORR_BUS(phase_corr_bus.out_port),
+      .GPIO_IN({1'b0, 1'b0, 1'b0, 1'b0}),
       .DEBUG_IDX(idx_debug),
       .DEBUG_SEGMENT(segment_debug),
       .DEBUG_STOP(stop_debug)
@@ -67,6 +71,7 @@ module sim_mod_modulation ();
   logic [14:0] cycle_buf[params::NumSegment];
   logic [15:0] freq_div_buf[params::NumSegment];
   logic [7:0] mod_buf[params::NumSegment][SIZE];
+  logic [7:0] phase_corr_buf[256];
   logic [7:0] intensity_buf[DEPTH];
   logic [7:0] phase_buf[DEPTH];
 
@@ -110,7 +115,7 @@ module sim_mod_modulation ();
       end
       expect_phase = phase_buf[i];
       `ASSERT_EQ(expect_intensity, intensity_out);
-      `ASSERT_EQ(phase_buf[i], phase_out);
+      `ASSERT_EQ((phase_buf[i] + phase_corr_buf[i]) % 256, phase_out);
       @(posedge CLK);
     end
   endtask
@@ -138,6 +143,12 @@ module sim_mod_modulation ();
     mod_buf[1] = '{SIZE{'0}};
 
     @(posedge locked);
+
+
+    for (int i = 0; i < 256; i++) begin
+      phase_corr_buf[i] = sim_helper_random.range(8'hFF, 0);
+    end
+    sim_helper_bram.write_phase_corr(phase_corr_buf);
 
     // Manual
     for (int i = 0; i < SIZE; i++) begin

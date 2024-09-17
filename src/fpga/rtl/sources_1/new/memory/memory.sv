@@ -4,6 +4,7 @@ module memory (
     input wire MRCC_25P6M,
     memory_bus_if.bram_port MEM_BUS,
     cnt_bus_if.in_port CNT_BUS,
+    phase_corr_bus_if.in_port PHASE_CORR_BUS,
     modulation_bus_if.in_port MOD_BUS,
     stm_bus_if.in_port STM_BUS,
     pwe_table_bus_if.in_port PWE_TABLE_BUS
@@ -49,6 +50,31 @@ module memory (
       .doutb(CNT_BUS.DOUT)
   );
   ///////////////////////////// Controller ////////////////////////////
+
+  ///////////////////////// Phase correction //////////////////////////
+  logic phase_corr_en;
+
+  logic [7:0] phase_corr_idx;
+  logic [7:0] phase_corr_dout;
+
+  assign phase_corr_en = (cnt_sel == BRAM_CNT_SELECT_PHASE_CORR) & (select == BRAM_SELECT_CONTROLLER) & en;
+  assign phase_corr_idx = PHASE_CORR_BUS.IDX;
+  assign PHASE_CORR_BUS.VALUE = phase_corr_dout;
+
+  BRAM_PHASE_CORR phase_corr_bram (
+      .clka (bus_clk),
+      .ena  (phase_corr_en),
+      .wea  (we),
+      .addra(addr[6:0]),
+      .dina (data_in),
+      .douta(),
+      .clkb (CLK),
+      .web  (1'b0),
+      .addrb(phase_corr_idx),
+      .dinb (),
+      .doutb(phase_corr_dout)
+  );
+  ///////////////////////// Phase correction //////////////////////////
 
   ///////////////////////////// PWE table ////////////////////////////
   logic pwe_table_en;
