@@ -15,7 +15,9 @@ Please install following softwares.
         * Lab edition requires only about 6GB of disk space, while ML edition requires more than 60GB
     * Tested with Vivado 2024.1
 * J-Link Software (https://www.segger.com/downloads/jlink/)
-    * Tested with J-Link Software v7.94d (x64)
+    * **legacy USB Driver for J-Link** is required for old J-Link devices
+        * See [here](https://wiki.segger.com/J-Link_Model_Overview) and if your J-Link device has WinUSB feature, you don't need to install the legacy driver
+    * Tested with J-Link Software V8.10 (x64)
 
 Also, the following cables are required
 
