@@ -7,8 +7,6 @@ module ec_time_to_sys_time (
     output wire DOUT_VALID
 );
 
-  localparam logic [15:0] ECATSyncBase = 16'd50000;
-
   logic [63:0] lap;
   logic [15:0] lap_rem_unused;
 
@@ -20,7 +18,7 @@ module ec_time_to_sys_time (
       .s_axis_dividend_tdata(ec_time),
       .s_axis_dividend_tvalid(din_valid),
       .s_axis_dividend_tready(din_ready),
-      .s_axis_divisor_tdata(ECATSyncBase),
+      .s_axis_divisor_tdata(16'd3125),
       .s_axis_divisor_tvalid(1'b1),
       .s_axis_divisor_tready(),
       .aclk(CLK),
@@ -28,7 +26,7 @@ module ec_time_to_sys_time (
       .m_axis_dout_tvalid(DOUT_VALID)
   );
 
-  assign SYS_TIME = {lap[46:0], 9'h00};
+  assign SYS_TIME = {lap[50:0], 5'h00};
 
   always_ff @(posedge CLK) begin
     if (din_valid && din_ready) begin
