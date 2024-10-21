@@ -21,7 +21,6 @@ TEST(Op, PulseWidthEncoder) {
   Header* header = reinterpret_cast<Header*>(data.data);
   header->slot_2_offset = 0;
 
-  size_t cnt = 0;
   header->msg_id = get_msg_id();
 
   auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
@@ -29,9 +28,7 @@ TEST(Op, PulseWidthEncoder) {
   auto offset = 2;
   auto send = 256;
 
-  for (size_t i = 0; i < send; i++) data_body[offset + i] = buf[cnt + i];
-
-  cnt += send;
+  for (size_t i = 0; i < send; i++) data_body[offset + i] = buf[i];
 
   auto frame = to_frame_data(data);
 

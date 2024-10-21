@@ -6,7 +6,7 @@
 #define GAIN_STM_SIZE (1024)
 #define NUM_FOCI_MAX (8)
 #define VERSION_NUM_MAJOR (0xA2)
-#define VERSION_NUM_MINOR (0x00)
+#define VERSION_NUM_MINOR (0x01)
 
 #define CTL_FLAG_BIT_MOD_SET (0)
 #define CTL_FLAG_MOD_SET (1 << CTL_FLAG_BIT_MOD_SET)

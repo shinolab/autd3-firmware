@@ -1,3 +1,7 @@
+# 10.0.1
+
+- phase correction bram and pulse width encoder table reset to default in clear op
+
 # 10.0.0
 
 - Change silencer minimum update rate from 2pi/256 to 2pi/65536
