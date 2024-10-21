@@ -9,7 +9,7 @@ package params;
   localparam int NumFociMax = 8;
 
   localparam bit [7:0] VersionNumMajor = 8'hA2;
-  localparam bit [7:0] VersionNumMinor = 8'h00;
+  localparam bit [7:0] VersionNumMinor = 8'h01;
 
   typedef enum int {
     CTL_FLAG_BIT_MOD_SET = 0,
