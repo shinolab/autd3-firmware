@@ -17,7 +17,6 @@ extern uint8_t firmware_info(const volatile uint8_t*);
 extern uint8_t write_mod(const volatile uint8_t*);
 extern uint8_t change_mod_segment(const volatile uint8_t*);
 extern uint8_t config_silencer(const volatile uint8_t*);
-extern uint8_t config_silencer2(const volatile uint8_t*);
 extern uint8_t write_gain(const volatile uint8_t*);
 extern uint8_t change_gain_segment(const volatile uint8_t*);
 extern uint8_t write_foci_stm(const volatile uint8_t*);
