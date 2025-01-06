@@ -1,6 +1,8 @@
 //`define USE_BLOCK_RAM
 //`define USE_DIST_RAM
 
+//`define DYNAMIC_FREQ
+
 `ifndef RAM
 `ifdef USE_BLOCK_RAM
 `ifdef USE_DIST_RAM

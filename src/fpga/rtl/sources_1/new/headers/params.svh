@@ -39,7 +39,8 @@ package params;
 
   typedef enum logic [5:0] {
     BRAM_CNT_SELECT_MAIN = 6'h00,
-    BRAM_CNT_SELECT_PHASE_CORR = 6'h01
+    BRAM_CNT_SELECT_PHASE_CORR = 6'h01,
+    BRAM_CNT_SELECT_CLOCK = 6'h02
   } bram_cnt_select_t;
 
   typedef enum logic [7:0] {
