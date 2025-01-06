@@ -10,7 +10,7 @@ module bram_stm (
     output wire [511:0] doutb
 );
 
-  blk_mem_gen_v8_4_8 #(
+  blk_mem_gen_v8_4_9 #(
       .C_FAMILY("artix7"),
       .C_XDEVICEFAMILY("artix7"),
       .C_ELABORATION_DIR("./"),

@@ -13,6 +13,9 @@ module main #(
     output wire GPIO_OUT[4]
 );
 
+`ifdef DYNAMIC_FREQ
+  clock_bus_if clock_bus ();
+`endif
   cnt_bus_if cnt_bus ();
   phase_corr_bus_if phase_corr_bus ();
   modulation_bus_if mod_bus ();
@@ -59,6 +62,9 @@ module main #(
       .MRCC_25P6M(MRCC_25P6M),
       .CLK(clk),
       .MEM_BUS(MEM_BUS),
+`ifdef DYNAMIC_FREQ
+      .CLOCK_BUS(clock_bus.in_port),
+`endif
       .CNT_BUS(cnt_bus.in_port),
       .PHASE_CORR_BUS(phase_corr_bus.in_port),
       .MOD_BUS(mod_bus.in_port),
@@ -68,7 +74,11 @@ module main #(
 
   clock clock (
       .MRCC_25P6M(MRCC_25P6M),
+`ifdef DYNAMIC_FREQ
+      .CLOCK_BUS(clock_bus.out_port),
+`else
       .RESET(RESET),
+`endif
       .CLK(clk),
       .LOCKED()
   );
