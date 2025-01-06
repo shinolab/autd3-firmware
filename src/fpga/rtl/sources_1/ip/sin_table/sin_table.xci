@@ -89,7 +89,7 @@
         "OUTPUTDIR": [ { "value": "../../../../autd3-fpga.gen/sources_1/ip/sin_table" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "." } ],
-        "SWVERSION": [ { "value": "2024.1" } ],
+        "SWVERSION": [ { "value": "2024.2" } ],
         "SYNTHESISFLOW": [ { "value": "GLOBAL" } ]
       }
     },

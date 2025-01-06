@@ -3,7 +3,7 @@
   "ip_inst": {
     "xci_name": "div_16_16",
     "component_reference": "xilinx.com:ip:div_gen:5.1",
-    "ip_revision": "22",
+    "ip_revision": "23",
     "gen_directory": "../../../../autd3-fpga.gen/sources_1/ip/div_16_16",
     "parameters": {
       "component_parameters": {
@@ -73,12 +73,12 @@
       },
       "runtime_parameters": {
         "IPCONTEXT": [ { "value": "IP_Flow" } ],
-        "IPREVISION": [ { "value": "22" } ],
+        "IPREVISION": [ { "value": "23" } ],
         "MANAGED": [ { "value": "TRUE" } ],
         "OUTPUTDIR": [ { "value": "../../../../autd3-fpga.gen/sources_1/ip/div_16_16" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "." } ],
-        "SWVERSION": [ { "value": "2024.1" } ],
+        "SWVERSION": [ { "value": "2024.2" } ],
         "SYNTHESISFLOW": [ { "value": "GLOBAL" } ]
       }
     },
