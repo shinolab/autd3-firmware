@@ -112,9 +112,11 @@ module controller (
     REQ_ECAT_SYNC_TIME_1,
     REQ_ECAT_SYNC_TIME_2,
     REQ_ECAT_SYNC_TIME_3_RD_ECAT_SYNC_TIME_0,
-    RD_ECAT_SYNC_TIME_1,
-    RD_ECAT_SYNC_TIME_2,
+    REQ_UFREQ_MULT_RD_ECAT_SYNC_TIME_1,
+    REQ_BASE_CNT_RD_ECAT_SYNC_TIME_2,
     RD_ECAT_SYNC_TIME_3,
+    RD_UFREQ_MULT,
+    RD_BASE_CNT,
     SYNC_CLR_UPDATE_SETTINGS_BIT
   } state_t;
 
@@ -581,26 +583,36 @@ module controller (
       REQ_ECAT_SYNC_TIME_3_RD_ECAT_SYNC_TIME_0: begin
         addr <= params::ADDR_ECAT_SYNC_TIME_3;
         SYNC_SETTINGS.ECAT_SYNC_TIME[15:0] <= dout;
-        state <= RD_ECAT_SYNC_TIME_1;
+        state <= REQ_UFREQ_MULT_RD_ECAT_SYNC_TIME_1;
       end
-      RD_ECAT_SYNC_TIME_1: begin
+      REQ_UFREQ_MULT_RD_ECAT_SYNC_TIME_1: begin
+        addr <= params::ADDR_UFREQ_MULT;
         SYNC_SETTINGS.ECAT_SYNC_TIME[31:16] <= dout;
+        state <= REQ_BASE_CNT_RD_ECAT_SYNC_TIME_2;
+      end
+      REQ_BASE_CNT_RD_ECAT_SYNC_TIME_2: begin
+        addr <= params::ADDR_BASE_CNT;
+        SYNC_SETTINGS.ECAT_SYNC_TIME[47:32] <= dout;
+        state <= RD_ECAT_SYNC_TIME_3;
+      end
+      RD_ECAT_SYNC_TIME_3: begin
+        SYNC_SETTINGS.ECAT_SYNC_TIME[63:48] <= dout;
         we <= 1'b1;
         addr <= params::ADDR_CTL_FLAG;
         din <= ctl_flags;
-        state <= RD_ECAT_SYNC_TIME_2;
+        state <= RD_UFREQ_MULT;
       end
-      RD_ECAT_SYNC_TIME_2: begin
-        SYNC_SETTINGS.ECAT_SYNC_TIME[47:32] <= dout;
+      RD_UFREQ_MULT: begin
+        SYNC_SETTINGS.UFREQ_MULT <= dout[8:0];
         we <= 1'b1;
         addr <= params::ADDR_FPGA_STATE;
         din <= {
           8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO
         };
-        state <= RD_ECAT_SYNC_TIME_3;
+        state <= RD_BASE_CNT;
       end
-      RD_ECAT_SYNC_TIME_3: begin
-        SYNC_SETTINGS.ECAT_SYNC_TIME[63:48] <= dout;
+      RD_BASE_CNT: begin
+        SYNC_SETTINGS.BASE_CNT <= dout[12:0];
         SYNC_SETTINGS.UPDATE <= 1'b1;
         we <= 1'b0;
         addr <= params::ADDR_CTL_FLAG;
@@ -661,6 +673,8 @@ module controller (
     DEBUG_SETTINGS.VALUE[3] = {params::DBG_NONE, 56'd0};
     SYNC_SETTINGS.UPDATE = 1'b0;
     SYNC_SETTINGS.ECAT_SYNC_TIME = 64'd0;
+    SYNC_SETTINGS.UFREQ_MULT = 9'd320;
+    SYNC_SETTINGS.BASE_CNT = 13'd5120;
   end
 
 endmodule

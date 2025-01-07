@@ -10,8 +10,6 @@ module synchronizer (
 
   localparam int AddSubLatency = 5;
 
-  localparam logic [12:0] ECATSyncBaseCnt = 13'd5120;  // 10.24MHz * 500000ns
-
   logic [63:0] ecat_sync_time;
   logic [55:0] sync_time;
 
@@ -38,6 +36,7 @@ module synchronizer (
       .CLK(CLK),
       .EC_TIME(ecat_sync_time),
       .DIN_VALID(1'b1),
+      .UFREQ_MULT(SYNC_SETTINGS.UFREQ_MULT),
       .SYS_TIME(sync_time),
       .DOUT_VALID()
   );
@@ -82,7 +81,7 @@ module synchronizer (
         sys_time <= sys_time + 1;
       end
       diff_cnt <= '0;
-      next_sync_cnt <= {1'b0, ECATSyncBaseCnt[12:1]};
+      next_sync_cnt <= {1'b0, SYNC_SETTINGS.BASE_CNT[12:1]};
       skip_one_assert <= 1'b0;
     end else begin
       if (diff_cnt == AddSubLatency + 1) begin
@@ -109,10 +108,10 @@ module synchronizer (
         skip_one_assert <= 1'b0;
       end
 
-      if (next_sync_cnt == ECATSyncBaseCnt - 1) begin
+      if (next_sync_cnt == SYNC_SETTINGS.BASE_CNT - 1) begin
         next_sync_cnt <= 0;
         a_next <= next_sync_time;
-        b_next <= {43'd0, ECATSyncBaseCnt};
+        b_next <= {43'd0, SYNC_SETTINGS.BASE_CNT};
         next_cnt <= 0;
       end else begin
         if (next_cnt == AddSubLatency + 1) begin

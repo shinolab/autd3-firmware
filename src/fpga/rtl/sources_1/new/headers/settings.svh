@@ -34,6 +34,10 @@ package settings;
 
   typedef struct {
     logic UPDATE;
+    // The ultrasound frequency is 125*UFREQ_MULT[Hz].
+    logic [8:0] UFREQ_MULT;
+    // BASE_CNT is just 125*UFREQ_MULT*256[Hz] * 500[us]. To avoid calculation in FPGA, this value is pre-calculated in the host.
+    logic [12:0] BASE_CNT;
     logic [63:0] ECAT_SYNC_TIME;
   } sync_settings_t;
 

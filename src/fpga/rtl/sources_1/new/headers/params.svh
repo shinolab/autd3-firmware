@@ -86,6 +86,8 @@ package params;
     ADDR_ECAT_SYNC_TIME_1 = 8'h11,
     ADDR_ECAT_SYNC_TIME_2 = 8'h12,
     ADDR_ECAT_SYNC_TIME_3 = 8'h13,
+    ADDR_UFREQ_MULT       = 8'h14,
+    ADDR_BASE_CNT         = 8'h15,
 
     ADDR_MOD_MEM_WR_SEGMENT     = 8'h20,
     ADDR_MOD_REQ_RD_SEGMENT     = 8'h21,

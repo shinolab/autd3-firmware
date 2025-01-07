@@ -35,6 +35,7 @@ module sim_mod_swapchain ();
       .REQ_RD_SEGMENT(req_rd_segment),
       .TRANSITION_MODE(transition_mode),
       .TRANSITION_VALUE(transition_value),
+      .UFREQ_MULT(320),
       .CYCLE(cycle),
       .REP(rep),
       .SYNC_IDX(sync_idx),
