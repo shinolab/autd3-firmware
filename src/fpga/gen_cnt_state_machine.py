@@ -191,6 +191,14 @@ module controller (
     output var GPIO_IN[4]
 );
 
+`ifdef DYNAMIC_FREQ
+  localparam bit [7:0] FuncDynamicFreq = 8'h01;
+`else
+  localparam bit [7:0] FuncDynamicFreq = 8'h00;
+`endif
+  localparam bit [7:0] FunctionBits = (FuncDynamicFreq << params::FuncDynamicFreqBit)
+                                      | (1'b0 << params::FuncEmulatorBit);
+
   logic [15:0] ctl_flags;
 
   logic we;
