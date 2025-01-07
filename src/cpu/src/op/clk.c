@@ -28,7 +28,8 @@ uint8_t configure_clk(const volatile uint8_t* p_data) {
 
   if ((p->flag & CLK_FLAG_BEGIN) == CLK_FLAG_BEGIN) _clk_write = 0;
 
-  bram_cpy_volatile(BRAM_SELECT_CONTROLLER, BRAM_CNT_SELECT_CLOCK << 8, (volatile const uint16_t*)(&p_data[sizeof(Clk)]), size << 2);
+  bram_cpy_volatile(BRAM_SELECT_CONTROLLER, (BRAM_CNT_SELECT_CLOCK << 8) | (_clk_write << 2), (volatile const uint16_t*)(&p_data[sizeof(Clk)]),
+                    size << 2);
   _clk_write = _clk_write + size;
 
   if ((p->flag & CLK_FLAG_END) == CLK_FLAG_END)
