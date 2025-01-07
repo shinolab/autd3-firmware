@@ -93,6 +93,8 @@ module sim_synchronizer ();
     SYS_TIME_WO_SYNC = 0;
     SYS_TIME_p50_WO_SYNC = 0;
     SYS_TIME_m50_WO_SYNC = 0;
+    SYNC_SETTINGS.UFREQ_MULT = 320;  // 40kHz
+    SYNC_SETTINGS.BASE_CNT = 5120;
 
     set = 0;
 
