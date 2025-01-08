@@ -45,9 +45,7 @@ def find_vivado() -> str | None:
                 lambda x: x[0] == "DisplayName" and re.search("Vivado|Vitis", x[1]),
                 values,
             ):
-                install_location = next(
-                    filter(lambda x: x[0] == "InstallLocation", values)
-                )[1]
+                install_location = next(filter(lambda x: x[0] == "InstallLocation", values))[1]
             winreg.CloseKey(subkey)
 
         winreg.CloseKey(key)
@@ -86,10 +84,7 @@ def glob_norm(path, recursive):
 
 def rm_glob_f(path, exclude=None, recursive=True):
     if exclude is not None:
-        for f in list(
-            set(glob_norm(path, recursive=recursive))
-            - set(glob_norm(exclude, recursive=recursive))
-        ):
+        for f in list(set(glob_norm(path, recursive=recursive)) - set(glob_norm(exclude, recursive=recursive))):
             rm_f(f)
     else:
         for f in glob.glob(path, recursive=recursive):
@@ -117,11 +112,7 @@ class Config:
             err(f'platform "{platform.system()}" is not supported.')
             sys.exit(-1)
 
-        self.cmake_extra = (
-            args.cmake_extra.split(" ")
-            if hasattr(args, "cmake_extra") and args.cmake_extra is not None
-            else None
-        )
+        self.cmake_extra = args.cmake_extra.split(" ") if hasattr(args, "cmake_extra") and args.cmake_extra is not None else None
 
     def is_windows(self):
         return self._platform == "Windows"
@@ -152,9 +143,7 @@ def cpu_test(args):
             target_dir = "."
             if config.is_windows():
                 target_dir = "Debug"
-            subprocess.run(
-                [f"{target_dir}/test_autd3-firmware{config.exe_ext()}"]
-            ).check_returncode()
+            subprocess.run([f"{target_dir}/test_autd3-firmware{config.exe_ext()}"]).check_returncode()
 
 
 def cpu_cov(args):
@@ -177,34 +166,15 @@ def cpu_cov(args):
             target_dir = "."
             if config.is_windows():
                 target_dir = "Debug"
-            subprocess.run(
-                [f"{target_dir}/test_autd3-firmware{config.exe_ext()}"]
-            ).check_returncode()
+            subprocess.run([f"{target_dir}/test_autd3-firmware{config.exe_ext()}"]).check_returncode()
 
             with working_dir("CMakeFiles/test_autd3-firmware.dir"):
-                command = ["lcov", "-d", ".", "-c", "-o", "coverage.raw.info"]
+                command = ["lcov", "-d", ".", "-c", "--ignore-errors", "mismatch", "-o", "coverage.raw.info"]
                 subprocess.run(command).check_returncode()
-                command = [
-                    "lcov",
-                    "-r",
-                    "coverage.raw.info",
-                    "*/googletest/*",
-                    "*/tests/*",
-                    "*/c++/*",
-                    "*/gcc/*",
-                    "-o",
-                    "coverage.info",
-                ]
+                command = ["lcov", "-r", "coverage.raw.info", "*/googletest/*", "*/tests/*", "*/c++/*", "*/gcc/*",  "--ignore-errors", "unused", "-o", "coverage.info"]
                 subprocess.run(command).check_returncode()
                 if args.html:
-                    command = [
-                        "genhtml",
-                        "-o",
-                        "html",
-                        "--num-spaces",
-                        "4",
-                        "coverage.info",
-                    ]
+                    command = ["genhtml", "-o", "html", "--num-spaces", "4", "coverage.info"]
                     subprocess.run(command).check_returncode()
 
 
@@ -253,11 +223,7 @@ def fpga_build(args):
                 if not os.path.exists(vivado_path):
                     err("Vivado is not found. Install Vivado.")
                     sys.exit(1)
-                vivados = [
-                    d
-                    for d in os.listdir(vivado_path)
-                    if os.path.isdir(os.path.join(vivado_path, d))
-                ]
+                vivados = [d for d in os.listdir(vivado_path) if os.path.isdir(os.path.join(vivado_path, d))]
                 if not vivados:
                     err("Vivado is not found. Install Vivado.")
                     sys.exit(1)
@@ -309,9 +275,7 @@ if __name__ == "__main__":
 
         # build
         parser_fpga_build = subparsers_fpga.add_parser("build", help="see `build -h`")
-        parser_fpga_build.add_argument(
-            "--vivado-dir", default=None, help="Vivado installation directory"
-        )
+        parser_fpga_build.add_argument("--vivado-dir", default=None, help="Vivado installation directory")
         parser_fpga_build.set_defaults(handler=fpga_build)
 
         # help
