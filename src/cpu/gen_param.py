@@ -1,3 +1,4 @@
+import os
 import pathlib
 import re
 
@@ -26,8 +27,10 @@ class Enum:
         self.consts = consts
 
 
+cwd = os.getcwd()
+
 path = (
-    pathlib.Path(__file__).parent.parent
+    pathlib.Path(cwd).parent
     / "fpga"
     / "rtl"
     / "sources_1"
@@ -40,7 +43,7 @@ consts = []
 enums = []
 
 with pathlib.Path.open(
-    pathlib.Path(__file__).parent.parent
+    pathlib.Path(cwd).parent
     / "fpga"
     / "rtl"
     / "sources_1"
@@ -82,7 +85,7 @@ def to_hex(value: str) -> str:
 
 
 with pathlib.Path.open(
-    pathlib.Path(__file__).parent / "inc" / "params_fpga.h",
+    pathlib.Path(cwd) / "inc" / "params_fpga.h",
     "w",
 ) as f:
     f.writelines(

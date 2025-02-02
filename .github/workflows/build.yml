@@ -36,8 +36,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: taiki-e/install-action@v2
         with:
-          python-version: "3.12"
+          tool: cargo-make
       - run: |
-          python3 build.py cpu test --cmake-extra="-DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12"
+          cd src/cpu
+          cargo make test

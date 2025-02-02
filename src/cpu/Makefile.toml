@@ -1,0 +1,70 @@
+[config]
+default_to_workspace = false
+skip_core_tasks = true
+
+[tasks.clean]
+script_runner = "@shell"
+script = '''
+rm -rf tests/build
+'''
+
+[tasks.test]
+dependencies = ["generate-param", "pre-test", "build-cmake-test", "build-test", "run-test"]
+
+[tasks.cov]
+dependencies = ["generate-param", "pre-test", "cov-cmake-test", "build-test", "run-test", "lcov"]
+
+[tasks.pre-test]
+cwd = "./tests"
+ignore_errors = true
+script_runner = "@shell"
+script = '''
+mkdir build
+'''
+
+[tasks.build-cmake-test]
+cwd = "./tests/build"
+command = "cmake"
+args = ["..", "${@}"]
+
+[tasks.build-test]
+cwd = "./tests/build"
+command = "cmake"
+args = ["--build", ".", "--parallel", "8"]
+
+[tasks.run-test]
+windows_alias = "windows-run-test"
+linux_alias = "nix-run-test"
+mac_alias = "nix-run-test"
+
+[tasks.windows-run-test]
+cwd = "./tests/build"
+script_runner = "@shell"
+script = '''
+./Debug/test_autd3-firmware.exe
+'''
+
+[tasks.nix-run-test]
+cwd = "./tests/build"
+script_runner = "@shell"
+script = '''
+./test_autd3-firmware
+'''
+
+[tasks.cov-cmake-test]
+cwd = "./tests/build"
+command = "cmake"
+args = ["..", "-DCOVERAGE=ON", "${@}"]
+
+[tasks.lcov]
+cwd = "./tests/build/CMakeFiles/test_autd3-firmware.dir"
+script_runner = "@shell"
+script = '''
+lcov -d . -c --ignore-errors mismatch -o coverage.raw.info
+lcov -r coverage.raw.info "*/googletest/*" "*/tests/*" "*/c++/*" "*/gcc/*" --ignore-errors unused -o coverage.info
+'''
+
+[tasks.generate-param]
+script_runner = "python"
+script_extension = "py"
+script = { file = "./gen_param.py" }
