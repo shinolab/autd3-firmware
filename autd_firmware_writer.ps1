@@ -118,7 +118,6 @@ function UpdateFPGA([string]$fpgaFirmwareFile, [string]$vivado_dir) {
 
 Start-Transcript "autd_firmware_writer.log" | Out-Null
 Write-Host "AUTD3 Firmware Writer"
-ColorEcho "Green" "INFO" "Make sure that you connected configuration cabels and AUTD's power is on."
 
 if (-not (Test-Path "tmp")) {
     New-Item -ItemType directory -Path "tmp" | Out-Null
@@ -130,8 +129,13 @@ if (-not (Test-Path "tmp/v$version")) {
   Expand-Archive -Path "tmp.zip" -DestinationPath "tmp/v$version" -Force
   Remove-Item -Path "tmp.zip"
 }
-ColorEcho "Green" "INFO" "Found firmwares are..."
 $firmwares = Get-ChildItem "tmp/v$version"
+if ($firmwares.Length -eq 0) {
+    ColorEcho "Red" "ERROR" "Firmware files are not found."
+    Stop-Transcript | Out-Null
+    exit -1
+}
+ColorEcho "Green" "INFO" "Found firmwares are..."
 $fpga_firmware = ""
 $cpu_firmware = ""
 foreach ($firmware in $firmwares) {
@@ -146,6 +150,7 @@ foreach ($firmware in $firmwares) {
     }
 }
 
+ColorEcho "Green" "INFO" "Make sure that you connected configuration cabels and AUTD's power is on."
 ColorEcho "Green" "INFO" "Select which firmware to be updated."
 Write-Host "[0]: Both (Default)"
 Write-Host "[1]: FPGA"

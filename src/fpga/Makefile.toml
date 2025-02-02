@@ -1,0 +1,88 @@
+[config]
+default_to_workspace = false
+skip_core_tasks = true
+
+[tasks.clean]
+script_runner = "@shell"
+script = '''
+rm *.jou
+rm *.log
+rm *.zip
+rm *.prm
+rm *.str
+rm *.pb
+rm *.mcs
+rm *.xpr
+rm -rf .Xil
+rm -rf autd3-fpga.ip_user_files
+rm -rf autd3-fpga.cache
+rm -rf autd3-fpga.gen
+rm -rf autd3-fpga.hw
+rm -rf autd3-fpga.runs
+rm -rf autd3-fpga.sim
+rm -rf autd3-fpga.srcs
+'''
+
+[tasks.build]
+script_runner = "python"
+script_extension = "py"
+script = '''
+import os
+import re
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+
+def find_vivado() -> str | None:
+    import winreg
+
+    try:
+        key = winreg.OpenKey(
+            winreg.HKEY_LOCAL_MACHINE,
+            r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
+        )
+        subkey_n, _, _ = winreg.QueryInfoKey(key)
+
+        install_location = None
+        for i in range(subkey_n):
+            subkey = winreg.OpenKey(key, winreg.EnumKey(key, i))
+            _, vn, _ = winreg.QueryInfoKey(subkey)
+            values: list[tuple[str, str, str]] = []
+            for v in range(vn):
+                values.append(winreg.EnumValue(subkey, v))
+            for v in filter(
+                lambda x: x[0] == "DisplayName" and re.search("Vivado|Vitis", x[1]),
+                values,
+            ):
+                install_location = next(
+                    filter(lambda x: x[0] == "InstallLocation", values)
+                )[1]
+            winreg.CloseKey(subkey)
+
+        winreg.CloseKey(key)
+        return install_location
+    except WindowsError:
+        return None
+
+
+if shutil.which("vivado") is None:
+    xilinx_path = find_vivado()
+    if xilinx_path is None:
+        sys.exit(1)
+    vivado_path = Path(xilinx_path) / "Vivado"
+    if not vivado_path.exists():
+        sys.exit(1)
+    vivados = [d for d in vivado_path.glob("*") if d.is_dir()]
+    if not vivados:
+        sys.exit(1)
+    vivado_dir = vivados[-1]
+
+    vivado_bin = vivado_dir / "bin"
+    vivado_lib = vivado_dir / "lib" / "win64.o"
+    os.environ["PATH"] += os.pathsep + str(vivado_bin) + os.pathsep + str(vivado_lib)
+
+command = "vivado -mode batch -source proj_gen.tcl"
+subprocess.run(command, shell=True).check_returncode()
+'''

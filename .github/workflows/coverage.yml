@@ -15,12 +15,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: taiki-e/install-action@v2
         with:
-          python-version: "3.12"
+          tool: cargo-make
       - run: sudo apt update && sudo apt -y install lcov
       - run: |
-          python3 build.py cpu cov
+          cd src/cpu
+          cargo make cov
       - uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
