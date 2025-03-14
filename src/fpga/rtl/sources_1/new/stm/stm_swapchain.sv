@@ -1,12 +1,11 @@
 `timescale 1ns / 1ps
 module stm_swapchain (
     input wire CLK,
-    input wire [55:0] SYS_TIME,
+    input wire [60:0] SYS_TIME,
     input wire UPDATE_SETTINGS,
     input wire REQ_RD_SEGMENT,
     input wire [7:0] TRANSITION_MODE,
     input wire [63:0] TRANSITION_VALUE,
-    input wire [8:0] UFREQ_MULT,
     input wire [12:0] CYCLE[params::NumSegment],
     input wire [15:0] REP[params::NumSegment],
     input wire [12:0] SYNC_IDX[params::NumSegment],
@@ -57,11 +56,10 @@ module stm_swapchain (
       .CLK(CLK),
       .EC_TIME(TRANSITION_VALUE),
       .DIN_VALID(transition_time_din_valid),
-      .UFREQ_MULT(UFREQ_MULT),
       .SYS_TIME(transition_time),
       .DOUT_VALID(transition_time_dout_valid)
   );
-  sub56_56 addsub_diff_time (
+  sub61_61 addsub_diff_time (
       .CLK(CLK),
       .A  (SYS_TIME),
       .B  (transition_time),

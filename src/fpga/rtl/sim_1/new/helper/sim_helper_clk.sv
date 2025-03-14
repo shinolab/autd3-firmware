@@ -3,19 +3,20 @@ module sim_helper_clk (
     output var MRCC_25P6M,
     output var CLK,
     output var LOCKED,
-    output var [55:0] SYS_TIME
+    output var [60:0] SYS_TIME
 );
 
   logic mrcc_25p6m;
 
   logic clk;
   logic locked;
-  logic [55:0] sys_time;
+  logic [60:0] sys_time;
 
-  clock clock (
-      .MRCC_25P6M(mrcc_25p6m),
-      .CLK(clk),
-      .LOCKED(locked)
+  clk_wiz clk_wiz (
+      .clk_in1(mrcc_25p6m),
+      .clk_out1(clk),
+      .reset(),
+      .locked(locked)
   );
 
   assign MRCC_25P6M = mrcc_25p6m;

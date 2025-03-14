@@ -7,8 +7,8 @@ module sim_synchronizer ();
   logic CLK_25P6M, CLK_25P6M_p50, CLK_25P6M_m50;
 
   logic CLK, CLK_p50, CLK_m50;
-  logic [55:0] SYS_TIME, SYS_TIME_p50, SYS_TIME_m50;
-  logic [55:0] SYS_TIME_WO_SYNC, SYS_TIME_p50_WO_SYNC, SYS_TIME_m50_WO_SYNC;
+  logic [60:0] SYS_TIME, SYS_TIME_p50, SYS_TIME_m50;
+  logic [60:0] SYS_TIME_WO_SYNC, SYS_TIME_p50_WO_SYNC, SYS_TIME_m50_WO_SYNC;
   logic signed [64:0] diff_p50, diff_m50;
 
   logic ECAT_SYNC;
@@ -22,22 +22,25 @@ module sim_synchronizer ();
   assign diff_p50 = SYS_TIME_p50 - SYS_TIME;
   assign diff_m50 = SYS_TIME_m50 - SYS_TIME;
 
-  clock clock (
-      .MRCC_25P6M(CLK_25P6M),
-      .CLK(CLK),
-      .LOCKED(lock)
+  clk_wiz clk_wiz (
+      .clk_in1(CLK_25P6M),
+      .clk_out1(CLK),
+      .reset(),
+      .locked(lock)
   );
 
-  clock clock_p50 (
-      .MRCC_25P6M(CLK_25P6M_p50),
-      .CLK(CLK_p50),
-      .LOCKED(lock_p50)
+  clk_wiz clk_wiz_p50 (
+      .clk_in1(CLK_25P6M_p50),
+      .clk_out1(CLK_p50),
+      .reset(),
+      .locked(lock_p50)
   );
 
-  clock clock_m50 (
-      .MRCC_25P6M(CLK_25P6M_m50),
-      .CLK(CLK_m50),
-      .LOCKED(lock_m50)
+  clk_wiz clk_wiz_m50 (
+      .clk_in1(CLK_25P6M_m50),
+      .clk_out1(CLK_m50),
+      .reset(),
+      .locked(lock_m50)
   );
 
   synchronizer synchronizer (
@@ -93,8 +96,6 @@ module sim_synchronizer ();
     SYS_TIME_WO_SYNC = 0;
     SYS_TIME_p50_WO_SYNC = 0;
     SYS_TIME_m50_WO_SYNC = 0;
-    SYNC_SETTINGS.UFREQ_MULT = 320;  // 40kHz
-    SYNC_SETTINGS.BASE_CNT = 5120;
 
     set = 0;
 

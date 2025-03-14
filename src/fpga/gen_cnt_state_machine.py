@@ -12,7 +12,9 @@ class Param:
     name: str
     default: int | str
 
-    def __init__(self: "Param", addr: str, width: int, name: str, default: int | str) -> None:
+    def __init__(
+        self: "Param", addr: str, width: int, name: str, default: int | str
+    ) -> None:
         self.addr = addr
         self.width = width
         self.name = name
@@ -89,7 +91,9 @@ silencer_params = Params(
         ),
         Param("SILENCER_UPDATE_RATE_INTENSITY", 16, "UPDATE_RATE_INTENSITY", 256),
         Param("SILENCER_UPDATE_RATE_PHASE", 16, "UPDATE_RATE_PHASE", 256),
-        Param("SILENCER_COMPLETION_STEPS_INTENSITY", 16, "COMPLETION_STEPS_INTENSITY", 10),
+        Param(
+            "SILENCER_COMPLETION_STEPS_INTENSITY", 16, "COMPLETION_STEPS_INTENSITY", 10
+        ),
         Param("SILENCER_COMPLETION_STEPS_PHASE", 16, "COMPLETION_STEPS_PHASE", 40),
     ],
 )
@@ -108,8 +112,6 @@ sync_params = Params(
     "SYNC",
     [
         Param("ECAT_SYNC_TIME", 64, "ECAT_SYNC_TIME", 0),
-        Param("UFREQ_MULT", 9, "UFREQ_MULT", 320),
-        Param("BASE_CNT", 13, "BASE_CNT", 5120),
     ],
 )
 
@@ -122,7 +124,14 @@ all_params: list[Params] = [
 ]
 
 
-path = pathlib.Path(__file__).parent / "rtl" / "sources_1" / "new" / "controller" / "controller.sv"
+path = (
+    pathlib.Path(__file__).parent
+    / "rtl"
+    / "sources_1"
+    / "new"
+    / "controller"
+    / "controller.sv"
+)
 
 
 class State:
@@ -157,10 +166,14 @@ def gen_states(params: Params) -> list[State]:
                 ],
             )
     states: list[State] = []
-    for req_param, param in zip(sub_params + [Param.null()] * 3, [Param.null()] * 3 + sub_params, strict=True):
+    for req_param, param in zip(
+        sub_params + [Param.null()] * 3, [Param.null()] * 3 + sub_params, strict=True
+    ):
         if param.width >= 0:
             states.append(gen_state(req_param, param))
-    states.append(State(f"{params.name}_CLR_UPDATE_SETTINGS_BIT", Param.null(), Param.null()))
+    states.append(
+        State(f"{params.name}_CLR_UPDATE_SETTINGS_BIT", Param.null(), Param.null())
+    )
     return states
 
 
@@ -191,12 +204,7 @@ module controller (
     output var GPIO_IN[4]
 );
 
-`ifdef DYNAMIC_FREQ
-  localparam bit [7:0] FuncDynamicFreq = 8'h01;
-`else
-  localparam bit [7:0] FuncDynamicFreq = 8'h00;
-`endif
-  localparam bit [7:0] FunctionBits = (FuncDynamicFreq << params::FuncDynamicFreqBit)
+  localparam bit [7:0] FunctionBits = (1'b0 << params::FuncDynamicFreqBit)
                                       | (1'b0 << params::FuncEmulatorBit);
 
   logic [15:0] ctl_flags;
@@ -394,7 +402,11 @@ module controller (
         for param in params.params:
             if param.name == "":
                 continue
-            default_value = param.default if isinstance(param.default, str) else f"{param.width}'d{param.default}"
+            default_value = (
+                param.default
+                if isinstance(param.default, str)
+                else f"{param.width}'d{param.default}"
+            )
             f.writelines(
                 f"""
     {params.name}_SETTINGS.{param.name} = {default_value};""",
@@ -414,7 +426,7 @@ endmodule
 command = [
     "verible-verilog-format",
     str(path),
-    "--column_limit=100",
+    "--column_limit=150",
     "--inplace",
 ]
 subprocess.run(command, check=True).check_returncode()  # noqa: S603

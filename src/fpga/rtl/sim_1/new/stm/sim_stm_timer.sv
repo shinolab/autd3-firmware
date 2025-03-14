@@ -8,7 +8,7 @@ module sim_stm_timer ();
 
   logic CLK;
   logic locked;
-  logic [55:0] sys_time;
+  logic [60:0] sys_time;
   sim_helper_clk sim_helper_clk (
       .MRCC_25P6M(),
       .CLK(CLK),
