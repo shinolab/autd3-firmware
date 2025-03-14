@@ -52,9 +52,9 @@ module sim_helper_bram #(
     end
   endtask
 
-  task automatic write_pwe_table(input logic [7:0] value[256]);
-    for (int i = 0; i < 128; i++) begin
-      bram_write(BRAM_SELECT_PWE_TABLE, i[6:0], {value[2*i+1], value[2*i]});
+  task automatic write_pwe_table(input logic [8:0] value[256]);
+    for (int i = 0; i < 256; i++) begin
+      bram_write(BRAM_SELECT_PWE_TABLE, i[7:0], value[i]);
     end
   endtask
 
