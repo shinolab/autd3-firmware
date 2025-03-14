@@ -80,24 +80,24 @@ module memory (
   logic pwe_table_en;
 
   logic [7:0] pwe_table_idx;
-  logic [7:0] pwe_table_dout;
+  logic [15:0] pwe_table_dout;
 
   assign pwe_table_en = (select == BRAM_SELECT_PWE_TABLE) & en;
   assign pwe_table_idx = PWE_TABLE_BUS.IDX;
-  assign PWE_TABLE_BUS.VALUE = pwe_table_dout;
+  assign PWE_TABLE_BUS.VALUE = pwe_table_dout[8:0];
 
   BRAM_PWE_TABLE pwe_table_bram (
-      .clka (CLK),
-      .wea  (1'b0),
-      .addra(pwe_table_idx),
-      .dina (),
-      .douta(pwe_table_dout),
-      .clkb (bus_clk),
-      .enb  (pwe_table_en),
-      .web  (we),
-      .addrb(addr[6:0]),
-      .dinb (data_in),
-      .doutb()
+      .clka (bus_clk),
+      .ena  (pwe_table_en),
+      .wea  (we),
+      .addra(addr[7:0]),
+      .dina (data_in),
+      .douta(),
+      .clkb (CLK),
+      .web  (1'b0),
+      .addrb(pwe_table_idx),
+      .dinb (),
+      .doutb(pwe_table_dout)
   );
   ///////////////////////////// PWE table ////////////////////////////
 

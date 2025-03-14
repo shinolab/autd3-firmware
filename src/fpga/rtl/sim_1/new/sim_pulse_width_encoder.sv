@@ -38,13 +38,13 @@ module sim_pulse_width_encoder ();
 
   logic din_valid, dout_valid;
   logic [7:0] intensity_in;
-  logic [7:0] pulse_width_out;
+  logic [8:0] pulse_width_out;
   logic [7:0] phase;
   logic [7:0] phase_out;
 
   logic [7:0] intensity_buf[DEPTH];
   logic [7:0] phase_buf[DEPTH];
-  logic [7:0] pwe_table[TABLE_SIZE];
+  logic [8:0] pwe_table[TABLE_SIZE];
 
   pulse_width_encoder #(
       .DEPTH(DEPTH)
@@ -84,7 +84,7 @@ module sim_pulse_width_encoder ();
     end
 
     for (int i = 0; i < DEPTH; i++) begin
-      expect_pulse_width = int'(($asin($itor(intensity_buf[i]) / 255.0) * 2.0 / `M_PI * 128.0));
+      expect_pulse_width = int'(($asin($itor(intensity_buf[i]) / 255.0) * 2.0 / `M_PI * 256.0));
       `ASSERT_EQ(expect_pulse_width, pulse_width_out);
       `ASSERT_EQ(phase_buf[i], phase_out);
       @(posedge CLK);
@@ -130,7 +130,7 @@ module sim_pulse_width_encoder ();
 
     // config bram
     for (int i = 0; i < TABLE_SIZE; i++) begin
-      pwe_table[i] = sim_helper_random.range(8'hFF, 0);
+      pwe_table[i] = sim_helper_random.range(9'h1FF, 0);
     end
     sim_helper_bram.write_pwe_table(pwe_table);
 

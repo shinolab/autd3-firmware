@@ -36,10 +36,10 @@ module sim_mem_pwe_table ();
       .SYS_TIME()
   );
 
-  logic [7:0] buffer[SIZE];
+  logic [8:0] buffer[SIZE];
 
   logic [7:0] idx;
-  logic [7:0] value;
+  logic [8:0] value;
 
   assign pwe_table_bus.out_port.IDX = idx;
   assign value = pwe_table_bus.out_port.VALUE;
@@ -53,19 +53,19 @@ module sim_mem_pwe_table ();
 
   task automatic check_initial_asin();
     logic [7:0] cur_idx;
-    logic [7:0] expect_value;
+    logic [8:0] expect_value;
     repeat (3) @(posedge CLK);
     for (int i = 0; i < SIZE; i++) begin
       @(posedge CLK);
       cur_idx = (idx + SIZE - 2) % SIZE;
-      expect_value = int'($asin(cur_idx / 255.0) / $acos(-1) * 256.0);
+      expect_value = int'($asin(cur_idx / 255.0) / $acos(-1) * 512.0);
       `ASSERT_EQ(expect_value, value);
     end
   endtask
 
   task automatic check();
     logic [7:0] cur_idx;
-    logic [7:0] expect_value;
+    logic [8:0] expect_value;
     repeat (3) @(posedge CLK);
     for (int i = 0; i < SIZE; i++) begin
       @(posedge CLK);
@@ -89,7 +89,7 @@ module sim_mem_pwe_table ();
 
     idx = 0;
     for (int i = 0; i < SIZE; i++) begin
-      buffer[i] = sim_helper_random.range(8'hFF, 0);
+      buffer[i] = sim_helper_random.range(9'h1FF, 0);
     end
     sim_helper_bram.write_pwe_table(buffer);
     $display("memory initialized");
