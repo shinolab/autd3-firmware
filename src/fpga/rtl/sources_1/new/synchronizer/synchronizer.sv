@@ -9,7 +9,7 @@ module synchronizer (
 );
 
   localparam int AddSubLatency = 6;
-  localparam bit [13:0] EcatSyncCntBase = 13'd5120;  // 500us * 10.24MHz
+  localparam bit [14:0] EcatSyncCntBase = 14'd10240;  // 500us * 20.48MHz
 
   logic [63:0] ecat_sync_time;
   logic [60:0] sync_time;
@@ -20,11 +20,11 @@ module synchronizer (
 
   logic [60:0] sys_time;
   logic [60:0] next_sync_time;
-  logic signed [12:0] sync_time_diff;
+  logic signed [13:0] sync_time_diff;
   logic [$clog2(AddSubLatency+1)-1:0] diff_cnt;
   logic [$clog2(AddSubLatency+1)-1:0] next_cnt;
   logic set;
-  logic [13:0] next_sync_cnt;
+  logic [14:0] next_sync_cnt;
 
   logic [60:0] a_diff, b_diff;
   logic signed [61:0] s_diff;
@@ -81,14 +81,14 @@ module synchronizer (
         sys_time <= sys_time + 1;
       end
       diff_cnt <= '0;
-      next_sync_cnt <= {1'b0, EcatSyncCntBase[12:1]};
+      next_sync_cnt <= {1'b0, EcatSyncCntBase[13:1]};
       skip_one_assert <= 1'b0;
     end else begin
       if (diff_cnt == AddSubLatency + 1) begin
         if (sync_time_diff == '0) begin
           sys_time <= sys_time + 1;
           skip_one_assert <= 1'b0;
-        end else if (sync_time_diff < 13'sd0) begin
+        end else if (sync_time_diff < 14'sd0) begin
           sys_time <= sys_time;
           skip_one_assert <= 1'b0;
           sync_time_diff <= sync_time_diff + 1;
@@ -98,7 +98,7 @@ module synchronizer (
           sync_time_diff <= sync_time_diff - 1;
         end
       end else if (diff_cnt == AddSubLatency) begin
-        sync_time_diff <= {s_diff[61], s_diff[11:0]};
+        sync_time_diff <= {s_diff[61], s_diff[12:0]};
         diff_cnt <= diff_cnt + 1;
         sys_time <= sys_time + 1;
         skip_one_assert <= 1'b0;
