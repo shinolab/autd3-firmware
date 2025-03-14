@@ -15,15 +15,16 @@ module sim_pwm_preconditioner ();
   sim_helper_random sim_helper_random ();
 
   localparam int DEPTH = 249;
+  localparam int T = 512;
 
-  logic [7:0] pulse_width;
+  logic [8:0] pulse_width;
   logic [7:0] phase;
 
-  logic [7:0] rise[DEPTH];
-  logic [7:0] fall[DEPTH];
+  logic [8:0] rise[DEPTH];
+  logic [8:0] fall[DEPTH];
   logic din_valid, dout_valid;
 
-  logic [7:0] pulse_width_buf[DEPTH];
+  logic [8:0] pulse_width_buf[DEPTH];
   logic [7:0] phase_buf[DEPTH];
 
   pwm_preconditioner #(
@@ -38,11 +39,11 @@ module sim_pwm_preconditioner ();
       .DOUT_VALID(dout_valid)
   );
 
-  task automatic set(int idx, logic [7:0] d, logic [7:0] p);
+  task automatic set(int idx, logic [8:0] d, logic [8:0] p);
     for (int i = 0; i < DEPTH; i++) begin
       if (i === idx) begin
         pulse_width_buf[i] = d;
-        phase_buf[i] = p;
+        phase_buf[i] = p / 2;
       end else begin
         pulse_width_buf[i] = 0;
         phase_buf[i] = 0;
@@ -58,7 +59,7 @@ module sim_pwm_preconditioner ();
     din_valid <= 1'b0;
   endtask
 
-  task automatic check_manual(int idx, logic [7:0] rise_e, logic [7:0] fall_e);
+  task automatic check_manual(int idx, logic [8:0] rise_e, logic [8:0] fall_e);
     while (1) begin
       @(posedge CLK);
       if (dout_valid) begin
@@ -79,8 +80,8 @@ module sim_pwm_preconditioner ();
 
   task automatic set_random();
     for (int i = 0; i < DEPTH; i++) begin
-      pulse_width_buf[i] = sim_helper_random.range(255, 0);
-      phase_buf[i] = sim_helper_random.range(255, 0);
+      pulse_width_buf[i] = sim_helper_random.range(T - 1, 0);
+      phase_buf[i] = sim_helper_random.range(T / 2 - 1, 0);
     end
     for (int i = 0; i < DEPTH; i++) begin
       @(posedge CLK);
@@ -101,52 +102,53 @@ module sim_pwm_preconditioner ();
     end
 
     for (int i = 0; i < DEPTH; i++) begin
-      `ASSERT_EQ(((256 + phase_buf[i] - pulse_width_buf[i] / 2) % 256), rise[i]);
-      `ASSERT_EQ(((phase_buf[i] + (pulse_width_buf[i] + 1) / 2) % 256), fall[i]);
+      `ASSERT_EQ(((T + phase_buf[i] * 2 - pulse_width_buf[i] / 2) % T), rise[i]);
+      `ASSERT_EQ(((phase_buf[i] * 2 + (pulse_width_buf[i] + 1) / 2) % T), fall[i]);
     end
   endtask
 
   initial begin
+    din_valid = 1'b0;
     @(posedge locked);
 
     fork
-      set(0, 128, 128);  // normal, D=T/2
-      check_manual(0, 64, 192);
+      set(0, T / 2, T / 2);  // normal, D=T/2
+      check_manual(0, T / 2 - T / 4, T / 2 + T / 4);
     join
 
     fork
-      set(0, 127, 128);  // normal, D=T/2-1
-      check_manual(0, 65, 192);
+      set(0, T / 2 - 1, T / 2);  // normal, D=T/2-1
+      check_manual(0, T / 2 - T / 4 + 1, T / 2 + T / 4);
     join
 
     fork
-      set(0, 1, 128);  // normal, D=1
-      check_manual(0, 128, 129);
+      set(0, 1, T / 2);  // normal, D=1
+      check_manual(0, T / 2, T / 2 + 1);
     join
 
     fork
-      set(0, 0, 128);  // normal, D=0
-      check_manual(0, 128, 128);
+      set(0, 0, T / 2);  // normal, D=0
+      check_manual(0, T / 2, T / 2);
     join
 
     fork
-      set(0, 128, 64);  // normal, D=T/2, left edge
-      check_manual(0, 0, 128);
+      set(0, T / 2, T / 4);  // normal, D=T/2, left edge
+      check_manual(0, 0, T / 2);
     join
 
     fork
-      set(0, 128, 192);  // normal, D=T/2, right edge
-      check_manual(0, 128, 0);
+      set(0, T / 2, T / 2 + T / 4);  // normal, D=T/2, right edge
+      check_manual(0, T / 2, 0);
     join
 
     fork
-      set(0, 128, 1);  // left over, D=T/2
-      check_manual(0, 193, 65);
+      set(0, T / 2, 2);  // left over, D=T/2
+      check_manual(0, T / 2 + T / 4 + 2, T / 4 + 2);
     join
 
     fork
-      set(0, 128, 255);  // right over, D=T/2
-      check_manual(0, 191, 63);
+      set(0, T / 2, T - 2);  // right over, D=T/2
+      check_manual(0, T / 2 + T / 4 - 2, T / 4 - 2);
     join
 
     // at random
