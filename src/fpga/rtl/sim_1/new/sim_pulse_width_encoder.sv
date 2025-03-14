@@ -1,5 +1,6 @@
 `timescale 1ns / 1ps
 module sim_pulse_width_encoder ();
+  `include "define.vh"
 
   `define M_PI 3.14159265358979323846
 
