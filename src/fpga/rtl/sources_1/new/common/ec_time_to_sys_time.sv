@@ -3,12 +3,12 @@ module ec_time_to_sys_time (
     input wire CLK,
     input wire [63:0] EC_TIME,
     input wire DIN_VALID,
-    input wire [8:0] UFREQ_MULT,
-    output wire [55:0] SYS_TIME,
+    output wire [60:0] SYS_TIME,
     output wire DOUT_VALID
 );
+  localparam int MultLatency = 4;
 
-  localparam int MultLatency = 5;
+  logic [54:0] sys_time;
 
   logic [63:0] lap;
   logic [15:0] lap_rem_unused;
@@ -18,7 +18,7 @@ module ec_time_to_sys_time (
   logic din_ready;
 
   logic div_dout_valid;
-  logic [$clog2(MultLatency+1)-1:0] mult_cnt;
+  logic [$clog2(MultLatency)-1:0] mult_cnt;
   logic dout_valid;
 
   assign DOUT_VALID = dout_valid;
@@ -35,12 +35,15 @@ module ec_time_to_sys_time (
       .m_axis_dout_tvalid(div_dout_valid)
   );
 
-  mult_47_9 mult (
+  // multiple by 5
+  add_53_51 add_53_51 (
       .CLK(CLK),
-      .A  (lap[46:0]),
-      .B  (UFREQ_MULT),
-      .P  (SYS_TIME)
+      .A  ({lap[50:0], 2'b00}),
+      .B  (lap[50:0]),
+      .S  (sys_time)
   );
+  // and then multiple by 64, resulting multiple by 320
+  assign SYS_TIME = {sys_time, 6'd0};
 
   typedef enum logic [1:0] {
     WAIT,

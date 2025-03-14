@@ -15,13 +15,7 @@ module controller (
     output var GPIO_IN[4]
 );
 
-`ifdef DYNAMIC_FREQ
-  localparam bit [7:0] FuncDynamicFreq = 8'h01;
-`else
-  localparam bit [7:0] FuncDynamicFreq = 8'h00;
-`endif
-  localparam bit [7:0] FunctionBits = (FuncDynamicFreq << params::FuncDynamicFreqBit)
-                                      | (1'b0 << params::FuncEmulatorBit);
+  localparam bit [7:0] FunctionBits = (1'b0 << params::FuncDynamicFreqBit) | (1'b0 << params::FuncEmulatorBit);
 
   logic [15:0] ctl_flags;
 
@@ -120,11 +114,9 @@ module controller (
     REQ_ECAT_SYNC_TIME_1,
     REQ_ECAT_SYNC_TIME_2,
     REQ_ECAT_SYNC_TIME_3_RD_ECAT_SYNC_TIME_0,
-    REQ_UFREQ_MULT_RD_ECAT_SYNC_TIME_1,
-    REQ_BASE_CNT_RD_ECAT_SYNC_TIME_2,
+    RD_ECAT_SYNC_TIME_1,
+    RD_ECAT_SYNC_TIME_2,
     RD_ECAT_SYNC_TIME_3,
-    RD_UFREQ_MULT,
-    RD_BASE_CNT,
     SYNC_CLR_UPDATE_SETTINGS_BIT
   } state_t;
 
@@ -160,11 +152,9 @@ module controller (
       end
 
       WAIT_0: begin
-        we <= 1'b1;
+        we   <= 1'b1;
         addr <= params::ADDR_FPGA_STATE;
-        din <= {
-          8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO
-        };
+        din  <= {8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO};
 
         if (ctl_flags[params::CTL_FLAG_BIT_MOD_SET]) begin
           ctl_flags <= ctl_flags & ~(1 << params::CTL_FLAG_BIT_MOD_SET);
@@ -261,9 +251,7 @@ module controller (
         MOD_SETTINGS.REP[0] <= dout;
         we <= 1'b1;
         addr <= params::ADDR_FPGA_STATE;
-        din <= {
-          8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO
-        };
+        din <= {8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO};
         state <= RD_MOD_REP1;
       end
       RD_MOD_REP1: begin
@@ -276,9 +264,7 @@ module controller (
       MOD_CLR_UPDATE_SETTINGS_BIT: begin
         we <= 1'b1;
         addr <= params::ADDR_FPGA_STATE;
-        din <= {
-          8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO
-        };
+        din <= {8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO};
         ctl_flags <= dout;
         MOD_SETTINGS.UPDATE <= 1'b0;
         state <= WAIT_1;
@@ -383,9 +369,7 @@ module controller (
         STM_SETTINGS.NUM_FOCI[0] <= dout[7:0];
         we <= 1'b1;
         addr <= params::ADDR_FPGA_STATE;
-        din <= {
-          8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO
-        };
+        din <= {8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO};
         state <= RD_STM_NUM_FOCI1;
       end
       RD_STM_NUM_FOCI1: begin
@@ -398,9 +382,7 @@ module controller (
       STM_CLR_UPDATE_SETTINGS_BIT: begin
         we <= 1'b1;
         addr <= params::ADDR_FPGA_STATE;
-        din <= {
-          8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO
-        };
+        din <= {8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO};
         ctl_flags <= dout;
         STM_SETTINGS.UPDATE <= 1'b0;
         state <= WAIT_1;
@@ -440,9 +422,7 @@ module controller (
         SILENCER_SETTINGS.COMPLETION_STEPS_INTENSITY <= dout;
         we <= 1'b1;
         addr <= params::ADDR_FPGA_STATE;
-        din <= {
-          8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO
-        };
+        din <= {8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO};
         state <= RD_SILENCER_COMPLETION_STEPS_PHASE;
       end
       RD_SILENCER_COMPLETION_STEPS_PHASE: begin
@@ -455,9 +435,7 @@ module controller (
       SILENCER_CLR_UPDATE_SETTINGS_BIT: begin
         we <= 1'b1;
         addr <= params::ADDR_FPGA_STATE;
-        din <= {
-          8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO
-        };
+        din <= {8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO};
         ctl_flags <= dout;
         SILENCER_SETTINGS.UPDATE <= 1'b0;
         state <= WAIT_1;
@@ -552,9 +530,7 @@ module controller (
         DEBUG_SETTINGS.VALUE[3][47:32] <= dout;
         we <= 1'b1;
         addr <= params::ADDR_FPGA_STATE;
-        din <= {
-          8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO
-        };
+        din <= {8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO};
         state <= RD_DEBUG_VALUE3_3;
       end
       RD_DEBUG_VALUE3_3: begin
@@ -567,9 +543,7 @@ module controller (
       DEBUG_CLR_UPDATE_SETTINGS_BIT: begin
         we <= 1'b1;
         addr <= params::ADDR_FPGA_STATE;
-        din <= {
-          8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO
-        };
+        din <= {8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO};
         ctl_flags <= dout;
         DEBUG_SETTINGS.UPDATE <= 1'b0;
         state <= WAIT_1;
@@ -591,36 +565,24 @@ module controller (
       REQ_ECAT_SYNC_TIME_3_RD_ECAT_SYNC_TIME_0: begin
         addr <= params::ADDR_ECAT_SYNC_TIME_3;
         SYNC_SETTINGS.ECAT_SYNC_TIME[15:0] <= dout;
-        state <= REQ_UFREQ_MULT_RD_ECAT_SYNC_TIME_1;
+        state <= RD_ECAT_SYNC_TIME_1;
       end
-      REQ_UFREQ_MULT_RD_ECAT_SYNC_TIME_1: begin
-        addr <= params::ADDR_UFREQ_MULT;
+      RD_ECAT_SYNC_TIME_1: begin
         SYNC_SETTINGS.ECAT_SYNC_TIME[31:16] <= dout;
-        state <= REQ_BASE_CNT_RD_ECAT_SYNC_TIME_2;
+        we <= 1'b1;
+        addr <= params::ADDR_CTL_FLAG;
+        din <= ctl_flags;
+        state <= RD_ECAT_SYNC_TIME_2;
       end
-      REQ_BASE_CNT_RD_ECAT_SYNC_TIME_2: begin
-        addr <= params::ADDR_BASE_CNT;
+      RD_ECAT_SYNC_TIME_2: begin
         SYNC_SETTINGS.ECAT_SYNC_TIME[47:32] <= dout;
+        we <= 1'b1;
+        addr <= params::ADDR_FPGA_STATE;
+        din <= {8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO};
         state <= RD_ECAT_SYNC_TIME_3;
       end
       RD_ECAT_SYNC_TIME_3: begin
         SYNC_SETTINGS.ECAT_SYNC_TIME[63:48] <= dout;
-        we <= 1'b1;
-        addr <= params::ADDR_CTL_FLAG;
-        din <= ctl_flags;
-        state <= RD_UFREQ_MULT;
-      end
-      RD_UFREQ_MULT: begin
-        SYNC_SETTINGS.UFREQ_MULT <= dout[8:0];
-        we <= 1'b1;
-        addr <= params::ADDR_FPGA_STATE;
-        din <= {
-          8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO
-        };
-        state <= RD_BASE_CNT;
-      end
-      RD_BASE_CNT: begin
-        SYNC_SETTINGS.BASE_CNT <= dout[12:0];
         SYNC_SETTINGS.UPDATE <= 1'b1;
         we <= 1'b0;
         addr <= params::ADDR_CTL_FLAG;
@@ -629,9 +591,7 @@ module controller (
       SYNC_CLR_UPDATE_SETTINGS_BIT: begin
         we <= 1'b1;
         addr <= params::ADDR_FPGA_STATE;
-        din <= {
-          8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO
-        };
+        din <= {8'h00, 1'h0  /* reserved */, 3'h0, STM_CYCLE == '0, STM_SEGMENT, MOD_SEGMENT, THERMO};
         ctl_flags <= dout;
         SYNC_SETTINGS.UPDATE <= 1'b0;
         state <= WAIT_1;
@@ -681,8 +641,6 @@ module controller (
     DEBUG_SETTINGS.VALUE[3] = {params::DBG_NONE, 56'd0};
     SYNC_SETTINGS.UPDATE = 1'b0;
     SYNC_SETTINGS.ECAT_SYNC_TIME = 64'd0;
-    SYNC_SETTINGS.UFREQ_MULT = 9'd320;
-    SYNC_SETTINGS.BASE_CNT = 13'd5120;
   end
 
 endmodule

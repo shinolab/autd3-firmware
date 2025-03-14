@@ -4,10 +4,9 @@ module stm #(
     parameter string MODE = "NearestEven"
 ) (
     input wire CLK,
-    input wire [55:0] SYS_TIME,
+    input wire [60:0] SYS_TIME,
     input wire UPDATE,
     input settings::stm_settings_t STM_SETTINGS,
-    input settings::sync_settings_t SYNC_SETTINGS,
     stm_bus_if.stm_port STM_BUS,
     stm_bus_if.out_focus_port STM_BUS_FOCUS,
     stm_bus_if.out_gain_port STM_BUS_GAIN,
@@ -67,7 +66,6 @@ module stm #(
       .REQ_RD_SEGMENT(STM_SETTINGS.REQ_RD_SEGMENT),
       .TRANSITION_MODE(STM_SETTINGS.TRANSITION_MODE),
       .TRANSITION_VALUE(STM_SETTINGS.TRANSITION_VALUE),
-      .UFREQ_MULT(SYNC_SETTINGS.UFREQ_MULT),
       .CYCLE(STM_SETTINGS.CYCLE),
       .REP(STM_SETTINGS.REP),
       .SYNC_IDX(timer_idx),

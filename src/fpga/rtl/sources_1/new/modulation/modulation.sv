@@ -3,9 +3,8 @@ module modulation #(
     parameter int DEPTH = 249
 ) (
     input wire CLK,
-    input wire [55:0] SYS_TIME,
+    input wire [60:0] SYS_TIME,
     input wire settings::mod_settings_t MOD_SETTINGS,
-    input settings::sync_settings_t SYNC_SETTINGS,
     input wire DIN_VALID,
     input wire [7:0] INTENSITY_IN,
     output wire [7:0] INTENSITY_OUT,
@@ -39,7 +38,6 @@ module modulation #(
       .REQ_RD_SEGMENT(MOD_SETTINGS.REQ_RD_SEGMENT),
       .TRANSITION_MODE(MOD_SETTINGS.TRANSITION_MODE),
       .TRANSITION_VALUE(MOD_SETTINGS.TRANSITION_VALUE),
-      .UFREQ_MULT(SYNC_SETTINGS.UFREQ_MULT),
       .CYCLE(MOD_SETTINGS.CYCLE),
       .REP(MOD_SETTINGS.REP),
       .SYNC_IDX(sync_idx),

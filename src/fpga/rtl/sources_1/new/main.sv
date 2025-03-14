@@ -13,9 +13,6 @@ module main #(
     output wire GPIO_OUT[4]
 );
 
-`ifdef DYNAMIC_FREQ
-  clock_bus_if clock_bus ();
-`endif
   cnt_bus_if cnt_bus ();
   phase_corr_bus_if phase_corr_bus ();
   modulation_bus_if mod_bus ();
@@ -30,7 +27,7 @@ module main #(
 
   logic clk;
 
-  logic [55:0] sys_time;
+  logic [60:0] sys_time;
   logic skip_one_assert;
 
   logic [7:0] time_cnt;
@@ -58,29 +55,22 @@ module main #(
   assign gpio_in[2] = GPIO_IN_HARD[2] | gpio_in_soft[2];
   assign gpio_in[3] = GPIO_IN_HARD[3] | gpio_in_soft[3];
 
+  clk_wiz clk_wiz (
+      .clk_in1(MRCC_25P6M),
+      .clk_out1(clk),
+      .reset(RESET),
+      .locked()
+  );
+
   memory memory (
       .MRCC_25P6M(MRCC_25P6M),
       .CLK(clk),
       .MEM_BUS(MEM_BUS),
-`ifdef DYNAMIC_FREQ
-      .CLOCK_BUS(clock_bus.in_port),
-`endif
       .CNT_BUS(cnt_bus.in_port),
       .PHASE_CORR_BUS(phase_corr_bus.in_port),
       .MOD_BUS(mod_bus.in_port),
       .STM_BUS(stm_bus.in_port),
       .PWE_TABLE_BUS(pwe_table_bus.in_port)
-  );
-
-  clock clock (
-      .MRCC_25P6M(MRCC_25P6M),
-`ifdef DYNAMIC_FREQ
-      .CLOCK_BUS(clock_bus.out_port),
-`else
-      .RESET(RESET),
-`endif
-      .CLK(clk),
-      .LOCKED()
   );
 
   controller controller (
@@ -125,7 +115,6 @@ module main #(
       .SYS_TIME(sys_time),
       .UPDATE(update),
       .STM_SETTINGS(stm_settings),
-      .SYNC_SETTINGS(sync_settings),
       .STM_BUS(stm_bus.stm_port),
       .STM_BUS_FOCUS(stm_bus.out_focus_port),
       .STM_BUS_GAIN(stm_bus.out_gain_port),
@@ -144,7 +133,6 @@ module main #(
       .CLK(clk),
       .SYS_TIME(sys_time),
       .MOD_SETTINGS(mod_settings),
-      .SYNC_SETTINGS(sync_settings),
       .DIN_VALID(dout_valid),
       .INTENSITY_IN(intensity),
       .INTENSITY_OUT(intensity_m),

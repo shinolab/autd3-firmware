@@ -8,7 +8,7 @@ module sim_mod_swapchain ();
 
   logic CLK;
   logic locked;
-  logic [55:0] SYS_TIME;
+  logic [60:0] SYS_TIME;
   sim_helper_clk sim_helper_clk (
       .MRCC_25P6M(),
       .CLK(CLK),
@@ -35,7 +35,6 @@ module sim_mod_swapchain ();
       .REQ_RD_SEGMENT(req_rd_segment),
       .TRANSITION_MODE(transition_mode),
       .TRANSITION_VALUE(transition_value),
-      .UFREQ_MULT(320),
       .CYCLE(cycle),
       .REP(rep),
       .SYNC_IDX(sync_idx),

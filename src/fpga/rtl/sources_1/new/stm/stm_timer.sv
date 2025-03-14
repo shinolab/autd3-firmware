@@ -2,7 +2,7 @@
 module stm_timer (
     input wire CLK,
     input wire UPDATE_SETTINGS_IN,
-    input wire [55:0] SYS_TIME,
+    input wire [60:0] SYS_TIME,
     input wire [12:0] CYCLE[params::NumSegment],
     input wire [15:0] FREQ_DIV[params::NumSegment],
     output wire [12:0] IDX[params::NumSegment],
