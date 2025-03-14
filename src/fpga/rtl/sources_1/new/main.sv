@@ -39,6 +39,9 @@ module main #(
   logic [7:0] intensity_m, phase_m;
   logic dout_valid_m;
 
+  logic [7:0] intensity_s, phase_s;
+  logic dout_valid_s;
+
   logic [7:0] pulse_width_e, phase_e;
   logic dout_valid_e;
 
@@ -147,15 +150,27 @@ module main #(
       .DEBUG_STOP()
   );
 
-  silencer_pwe_selector #(
+  silencer #(
       .DEPTH(DEPTH)
   ) silencer (
       .CLK(clk),
-      .PWE_TABLE_BUS(pwe_table_bus.out_port),
-      .SILENCER_SETTINGS(silencer_settings),
       .DIN_VALID(dout_valid_m),
+      .SILENCER_SETTINGS(silencer_settings),
       .INTENSITY_IN(intensity_m),
       .PHASE_IN(phase_m),
+      .INTENSITY_OUT(intensity_s),
+      .PHASE_OUT(phase_s),
+      .DOUT_VALID(dout_valid_s)
+  );
+
+  pulse_width_encoder #(
+      .DEPTH(DEPTH)
+  ) pulse_width_encoder (
+      .CLK(clk),
+      .PWE_TABLE_BUS(pwe_table_bus.out_port),
+      .DIN_VALID(dout_valid_s),
+      .INTENSITY_IN(intensity_s),
+      .PHASE_IN(phase_s),
       .PULSE_WIDTH_OUT(pulse_width_e),
       .PHASE_OUT(phase_e),
       .DOUT_VALID(dout_valid_e)
