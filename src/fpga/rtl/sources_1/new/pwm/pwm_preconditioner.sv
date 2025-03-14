@@ -4,23 +4,23 @@ module pwm_preconditioner #(
 ) (
     input wire CLK,
     input wire DIN_VALID,
-    input wire [7:0] PULSE_WIDTH,
+    input wire [8:0] PULSE_WIDTH,
     input wire [7:0] PHASE,
-    output var [7:0] RISE[DEPTH],
-    output var [7:0] FALL[DEPTH],
+    output var [8:0] RISE[DEPTH],
+    output var [8:0] FALL[DEPTH],
     output var DOUT_VALID
 );
 
   `include "define.vh"
 
-  logic [7:0] rise[DEPTH], fall[DEPTH];
+  logic [8:0] rise[DEPTH], fall[DEPTH];
 
   `RAM
-  logic [7:0] rise_buf[DEPTH];
+  logic [8:0] rise_buf[DEPTH];
   `RAM
-  logic [7:0] fall_buf[DEPTH];
+  logic [8:0] fall_buf[DEPTH];
 
-  logic [7:0] s_rise, s_fall;
+  logic [8:0] s_rise, s_fall;
 
   logic [$clog2(DEPTH+1)-1:0] cnt;
 
@@ -37,8 +37,8 @@ module pwm_preconditioner #(
   } state_t;
 
   always_ff @(posedge CLK) begin
-    s_rise <= {1'b1, PHASE} - {2'b00, PULSE_WIDTH[7:1]};
-    s_fall <= {1'b0, PHASE} + {2'b00, PULSE_WIDTH[7:1]} + PULSE_WIDTH[0];
+    s_rise <= {1'b1, PHASE, 1'b0} - {2'b00, PULSE_WIDTH[8:1]};
+    s_fall <= {1'b0, PHASE, 1'b0} + {2'b00, PULSE_WIDTH[8:1]} + PULSE_WIDTH[0];
   end
 
   state_t state = IDLE;

@@ -30,7 +30,7 @@ module main #(
   logic [60:0] sys_time;
   logic skip_one_assert;
 
-  logic [7:0] time_cnt;
+  logic [8:0] time_cnt;
   logic update;
 
   logic [7:0] intensity, phase;
