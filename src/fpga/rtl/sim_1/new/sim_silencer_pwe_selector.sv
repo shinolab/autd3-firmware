@@ -98,8 +98,8 @@ module sim_silencer_pwe_selector ();
   endtask
 
   task automatic reset(logic [7:0] expect_pulse_width, logic [7:0] expect_phase);
-    silencer_settings.UPDATE_RATE_INTENSITY = 8'hFF;
-    silencer_settings.UPDATE_RATE_PHASE = 8'hFF;
+    silencer_settings.UPDATE_RATE_INTENSITY = 16'hFFFF;
+    silencer_settings.UPDATE_RATE_PHASE = 16'hFFFF;
     phase_buf[0] = expect_phase;
     intensity_buf[0] = expect_pulse_width;
     check_manual(2 * expect_pulse_width, expect_phase);
@@ -111,8 +111,8 @@ module sim_silencer_pwe_selector ();
     //////////////// Manual check 1 ////////////////
     reset(0, 0);
 
-    silencer_settings.UPDATE_RATE_INTENSITY = 1;
-    silencer_settings.UPDATE_RATE_PHASE     = 1;
+    silencer_settings.UPDATE_RATE_INTENSITY = 256;
+    silencer_settings.UPDATE_RATE_PHASE     = 256;
     phase_buf[0]                            = 10;
     intensity_buf[0]                        = 10;
 
@@ -134,8 +134,8 @@ module sim_silencer_pwe_selector ();
     //////////////// Manual check 2 ////////////////
     reset(0, 0);
 
-    silencer_settings.UPDATE_RATE_INTENSITY = 10;
-    silencer_settings.UPDATE_RATE_PHASE     = 10;
+    silencer_settings.UPDATE_RATE_INTENSITY = 2560;
+    silencer_settings.UPDATE_RATE_PHASE     = 2560;
     phase_buf[0]                            = 100;
     intensity_buf[0]                        = 100;
 
@@ -161,8 +161,8 @@ module sim_silencer_pwe_selector ();
     //////////////// Manual check 1 ////////////////
     reset(0, 0);
 
-    silencer_settings.UPDATE_RATE_INTENSITY = 1;
-    silencer_settings.UPDATE_RATE_PHASE     = 1;
+    silencer_settings.UPDATE_RATE_INTENSITY = 256;
+    silencer_settings.UPDATE_RATE_PHASE     = 256;
     phase_buf[0]                            = 10;
     intensity_buf[0]                        = 5;
 
@@ -184,8 +184,8 @@ module sim_silencer_pwe_selector ();
     //////////////// Manual check 2 ////////////////
     reset(0, 0);
 
-    silencer_settings.UPDATE_RATE_INTENSITY = 10;
-    silencer_settings.UPDATE_RATE_PHASE     = 10;
+    silencer_settings.UPDATE_RATE_INTENSITY = 2560;
+    silencer_settings.UPDATE_RATE_PHASE     = 2560;
     phase_buf[0]                            = 100;
     intensity_buf[0]                        = 50;
 
