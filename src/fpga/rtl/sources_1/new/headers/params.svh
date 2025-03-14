@@ -58,10 +58,7 @@ package params;
     STM_MODE_GAIN  = 1'b1
   } stm_mode_t;
 
-  typedef enum int {
-    SILENCER_FLAG_BIT_FIXED_UPDATE_RATE_MODE = 0,
-    SILENCER_FLAG_BIT_PULSE_WIDTH = 1
-  } silencer_mode_bit_t;
+  typedef enum int {SILENCER_FLAG_BIT_FIXED_UPDATE_RATE_MODE = 0} silencer_mode_bit_t;
 
   typedef enum logic [7:0] {
     DBG_NONE = 8'h00,
