@@ -27,7 +27,7 @@ module ec_time_to_sys_time (
       .s_axis_dividend_tdata(ec_time),
       .s_axis_dividend_tvalid(din_valid),
       .s_axis_dividend_tready(din_ready),
-      .s_axis_divisor_tdata(16'd31250),
+      .s_axis_divisor_tdata(16'd15625),
       .s_axis_divisor_tvalid(1'b1),
       .s_axis_divisor_tready(),
       .aclk(CLK),
