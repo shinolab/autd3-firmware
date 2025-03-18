@@ -2,7 +2,7 @@
 module stm_timer (
     input wire CLK,
     input wire UPDATE_SETTINGS_IN,
-    input wire [60:0] SYS_TIME,
+    input wire [56:0] SYS_TIME,
     input wire [12:0] CYCLE[params::NumSegment],
     input wire [15:0] FREQ_DIV[params::NumSegment],
     output wire [12:0] IDX[params::NumSegment],
@@ -45,7 +45,7 @@ module stm_timer (
     end
 
     div_48_16 div_cnt (
-        .s_axis_dividend_tdata(SYS_TIME[55:8]),
+        .s_axis_dividend_tdata(SYS_TIME[56:9]),
         .s_axis_dividend_tvalid(1'b1),
         .s_axis_dividend_tready(),
         .s_axis_divisor_tdata(freq_div),

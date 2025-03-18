@@ -33,7 +33,7 @@ module sim_mem_cnt ();
       .MRCC_25P6M(MRCC_25P6M),
       .CLK(CLK),
       .LOCKED(locked),
-      .SYS_TIME(sys_time)
+      .SYS_TIME()
   );
 
   logic [ 7:0] addr;

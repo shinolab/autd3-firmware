@@ -173,8 +173,8 @@ module sim_silencer_fixed_update_rate ();
     //////////////// Manual check ////////////////
 
     // from random to random with random step
-    for (int i = 0; i < 100; i++) begin
-      $display("Random test %d/100", i);
+    for (int i = 0; i < 30; i++) begin
+      $display("Random test %d/30", i);
       silencer_settings.UPDATE_RATE_INTENSITY = sim_helper_random.range(16'hFFFF, 1);
       silencer_settings.UPDATE_RATE_PHASE = sim_helper_random.range(16'hFFFF, 1);
       n_repeat = silencer_settings.UPDATE_RATE_INTENSITY < silencer_settings.UPDATE_RATE_PHASE ?

@@ -27,7 +27,7 @@ module main #(
 
   logic clk;
 
-  logic [60:0] sys_time;
+  logic [56:0] sys_time;
   logic skip_one_assert;
 
   logic [8:0] time_cnt;

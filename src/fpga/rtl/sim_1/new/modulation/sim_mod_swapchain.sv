@@ -4,11 +4,11 @@ module sim_mod_swapchain ();
   `include "define.vh"
 
   localparam int DEPTH = 249;
-  localparam int ECAT_SYNC_BASE_CNT = 40000 * 256 / 2000;
+  localparam int ECAT_SYNC_BASE_CNT = 10240;
 
   logic CLK;
   logic locked;
-  logic [60:0] SYS_TIME;
+  logic [56:0] SYS_TIME;
   sim_helper_clk sim_helper_clk (
       .MRCC_25P6M(),
       .CLK(CLK),
