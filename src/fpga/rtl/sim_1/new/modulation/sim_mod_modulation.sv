@@ -8,7 +8,7 @@ module sim_mod_modulation ();
 
   logic CLK;
   logic locked;
-  logic [60:0] sys_time;
+  logic [56:0] sys_time;
 
   sim_helper_random sim_helper_random ();
   sim_helper_bram #(.DEPTH(DEPTH)) sim_helper_bram ();

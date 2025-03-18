@@ -4,7 +4,7 @@ module stm #(
     parameter string MODE = "NearestEven"
 ) (
     input wire CLK,
-    input wire [60:0] SYS_TIME,
+    input wire [56:0] SYS_TIME,
     input wire UPDATE,
     input settings::stm_settings_t STM_SETTINGS,
     stm_bus_if.stm_port STM_BUS,

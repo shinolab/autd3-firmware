@@ -8,7 +8,7 @@ module sim_stm_timer_normal ();
 
   logic CLK;
   logic locked;
-  logic [60:0] sys_time;
+  logic [56:0] sys_time;
   sim_helper_clk sim_helper_clk (
       .MRCC_25P6M(),
       .CLK(CLK),
@@ -43,6 +43,7 @@ module sim_stm_timer_normal ();
     stm_settings.FREQ_DIV[1] = 3;
     stm_settings.REP[0] = 16'hFFFF;
     stm_settings.REP[1] = 16'hFFFF;
+    update_settings = 1'b0;
 
     @(posedge locked);
 

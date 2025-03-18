@@ -5,7 +5,7 @@ module debug #(
     input wire CLK,
     settings::debug_settings_t DEBUG_SETTINGS,
     input wire [8:0] TIME_CNT,
-    input wire [60:0] SYS_TIME,
+    input wire [56:0] SYS_TIME,
     input wire PWM_OUT[DEPTH],
     input wire THERMO,
     input wire FORCE_FAN,
@@ -62,7 +62,7 @@ module debug #(
         debug_signal = STM_CYCLE != '0;
       end
       params::DBG_SYS_TIME_EQ: begin
-        debug_signal = SYS_TIME[60:8] == value[60:8];
+        debug_signal = SYS_TIME[56:9] == value[56:9];
       end
       params::DBG_PWM_OUT: begin
         debug_signal = PWM_OUT[value[7:0]];

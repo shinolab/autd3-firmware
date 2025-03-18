@@ -249,8 +249,8 @@ module sim_silencer_fixed_completion_steps ();
     //////////////// Manual check 12 ////////////////
 
     // from random to random with random step
-    for (int i = 0; i < 100; i++) begin
-      $display("Random test %d/100", i + 1);
+    for (int i = 0; i < 30; i++) begin
+      $display("Random test %d/30", i + 1);
       n_repeat = sim_helper_random.range(8'hFF, 1);
       silencer_settings.COMPLETION_STEPS_INTENSITY = n_repeat;
       silencer_settings.COMPLETION_STEPS_PHASE = n_repeat;

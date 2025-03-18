@@ -8,7 +8,7 @@ module sim_mod_timer ();
 
   logic CLK;
   logic locked;
-  logic [60:0] sys_time;
+  logic [56:0] sys_time;
   sim_helper_clk sim_helper_clk (
       .MRCC_25P6M(),
       .CLK(CLK),
@@ -35,7 +35,7 @@ module sim_mod_timer ();
 
   logic [14:0] expect_idx[params::NumSegment];
   for (genvar i = 0; i < params::NumSegment; i++) begin
-    assign expect_idx[i] = ((sys_time - 2 * DivLatency - 2) / 256 / mod_settings.FREQ_DIV[i]) % (mod_settings.CYCLE[i] + 1);
+    assign expect_idx[i] = ((sys_time - 2 * DivLatency - 2) / 512 / mod_settings.FREQ_DIV[i]) % (mod_settings.CYCLE[i] + 1);
   end
 
   task automatic check(int segment);

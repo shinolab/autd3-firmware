@@ -3,14 +3,14 @@ module sim_helper_clk (
     output var MRCC_25P6M,
     output var CLK,
     output var LOCKED,
-    output var [60:0] SYS_TIME
+    output var [56:0] SYS_TIME
 );
 
   logic mrcc_25p6m;
 
   logic clk;
   logic locked;
-  logic [60:0] sys_time;
+  logic [56:0] sys_time;
 
   clk_wiz clk_wiz (
       .clk_in1(mrcc_25p6m),
