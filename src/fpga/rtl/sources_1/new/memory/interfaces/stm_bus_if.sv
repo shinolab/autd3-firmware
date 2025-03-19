@@ -1,16 +1,16 @@
 `timescale 1ns / 1ps
 interface stm_bus_if ();
 
-  logic [12:0] ADDR;
-  logic [511:0] VALUE;
+  logic [15:0] ADDR;
+  logic [63:0] VALUE;
   logic MODE;
   logic SEGMENT;
 
   logic [9:0] GAIN_IDX;
   logic [7:0] GAIN_ADDR;
-  logic [12:0] FOCUS_IDX;
+  logic [15:0] FOCUS_IDX;
 
-  assign ADDR = MODE ? {GAIN_IDX, GAIN_ADDR[7:5]} : FOCUS_IDX;
+  assign ADDR = MODE ? {GAIN_IDX, GAIN_ADDR[7:2]} : FOCUS_IDX;
 
   modport in_port(input ADDR, output VALUE, input SEGMENT);
   modport stm_port(output MODE, output SEGMENT);

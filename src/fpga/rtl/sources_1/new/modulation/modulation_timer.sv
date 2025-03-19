@@ -28,9 +28,9 @@ module modulation_timer (
     logic [15:0] freq_div;
     logic [15:0] cycle;
     logic [47:0] quo;
-    logic [15:0] _unused_rem;
+    logic [23:0] _unused_rem;
     logic [47:0] _unused_quo;
-    logic [15:0] rem;
+    logic [23:0] rem;
     logic idx_dout_valid;
     logic [14:0] idx;
 
@@ -44,22 +44,22 @@ module modulation_timer (
       end
     end
 
-    div_48_16 div_cnt (
+    div_48_24 div_cnt (
         .s_axis_dividend_tdata(SYS_TIME[56:9]),
         .s_axis_dividend_tvalid(1'b1),
         .s_axis_dividend_tready(),
-        .s_axis_divisor_tdata(freq_div),
+        .s_axis_divisor_tdata({8'd0, freq_div}),
         .s_axis_divisor_tvalid(1'b1),
         .s_axis_divisor_tready(),
         .aclk(CLK),
         .m_axis_dout_tdata({quo, _unused_rem}),
         .m_axis_dout_tvalid()
     );
-    div_48_16 div_idx (
+    div_48_24 div_idx (
         .s_axis_dividend_tdata(quo),
         .s_axis_dividend_tvalid(1'b1),
         .s_axis_dividend_tready(),
-        .s_axis_divisor_tdata(cycle),
+        .s_axis_divisor_tdata({8'd0, cycle}),
         .s_axis_divisor_tvalid(1'b1),
         .s_axis_divisor_tready(),
         .aclk(CLK),

@@ -86,24 +86,20 @@ module sim_helper_bram #(
     end
   endtask
 
-  task automatic write_stm_focus(input logic segment, input logic signed [17:0] x[][8],
-                                 input logic signed [17:0] y[][8], input logic signed [17:0] z[][8],
-                                 input logic [7:0] intensity_and_offsets[][8], int cnt, int n);
+  task automatic write_stm_focus(input logic segment, input logic signed [17:0] x[],
+                                 input logic signed [17:0] y[], input logic signed [17:0] z[],
+                                 input logic [7:0] intensity_and_offsets[], input int cnt);
     logic [ 3:0] page = 0;
-    logic [13:0] base_addr = 0;
     logic [13:0] addr = 0;
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MEM_WR_SEGMENT, {15'h000, segment});
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MEM_WR_PAGE, {12'h000, page});
     for (int i = 0; i < cnt; i++) begin
-      base_addr = i << 5;
-      for (int j = 0; j < n; j++) begin
-        addr = base_addr + 4 * j;
-        bram_write(BRAM_SELECT_STM, addr, x[i][j][15:0]);
-        bram_write(BRAM_SELECT_STM, addr + 1, {y[i][j][13:0], x[i][j][17:16]});
-        bram_write(BRAM_SELECT_STM, addr + 2, {z[i][j][11:0], y[i][j][17:14]});
-        bram_write(BRAM_SELECT_STM, addr + 3, {2'd0, intensity_and_offsets[i][j], z[i][j][17:12]});
-      end
-      if (i % 512 == 511) begin
+      bram_write(BRAM_SELECT_STM, addr, x[i][15:0]);
+      bram_write(BRAM_SELECT_STM, addr + 1, {y[i][13:0], x[i][17:16]});
+      bram_write(BRAM_SELECT_STM, addr + 2, {z[i][11:0], y[i][17:14]});
+      bram_write(BRAM_SELECT_STM, addr + 3, {2'd0, intensity_and_offsets[i], z[i][17:12]});
+      addr = addr + 4;
+      if (i % 4096 == 4095) begin
         page = page + 1;
         bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MEM_WR_PAGE, {12'h000, page});
       end
