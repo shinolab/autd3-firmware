@@ -17,12 +17,12 @@ module sim_stm_focus ();
 
   logic [13:0] cycle_buf[params::NumSegment];
   logic [15:0] freq_div_buf[params::NumSegment];
-  logic signed [17:0] focus_x[params::NumSegment][SIZE][params::NumFociMax];
-  logic signed [17:0] focus_y[params::NumSegment][SIZE][params::NumFociMax];
-  logic signed [17:0] focus_z[params::NumSegment][SIZE][params::NumFociMax];
-  logic [7:0] intensity_buf[params::NumSegment][SIZE][params::NumFociMax];
+  logic signed [17:0] focus_x[params::NumSegment][SIZE];
+  logic signed [17:0] focus_y[params::NumSegment][SIZE];
+  logic signed [17:0] focus_z[params::NumSegment][SIZE];
+  logic [7:0] intensity_buf[params::NumSegment][SIZE];
 
-  logic [12:0] debug_idx;
+  logic [15:0] debug_idx;
   logic debug_segment;
   logic [7:0] intensity;
   logic [7:0] phase;
@@ -133,9 +133,9 @@ module sim_stm_focus ();
         if ((iy === 1) && (ix === 1 || ix === 2 || ix === 16)) begin
           continue;
         end
-        x = focus_x[segment][debug_idx_buf][0] - int'(10.16 * ix / 0.025);  // [0.025mm]
-        y = focus_y[segment][debug_idx_buf][0] - int'(10.16 * iy / 0.025);  // [0.025mm]
-        z = focus_z[segment][debug_idx_buf][0];  // [0.025mm]
+        x = focus_x[segment][debug_idx_buf] - int'(10.16 * ix / 0.025);  // [0.025mm]
+        y = focus_y[segment][debug_idx_buf] - int'(10.16 * iy / 0.025);  // [0.025mm]
+        z = focus_z[segment][debug_idx_buf];  // [0.025mm]
         r = $rtoi($sqrt($itor(x * x + y * y + z * z)));  // [0.025mm]
         lambda = (r << 14) / stm_settings.SOUND_SPEED[segment];
         p = lambda % 256;
@@ -143,7 +143,7 @@ module sim_stm_focus ();
         cos = sin_table[(p+64)%256];
         phase_expect = atan_table[{sin[7:1], cos[7:1]}];
 
-        `ASSERT_EQ(intensity_buf[segment][debug_idx_buf][0], intensity);
+        `ASSERT_EQ(intensity_buf[segment][debug_idx_buf], intensity);
         `ASSERT_EQ(phase_expect, phase);
         @(posedge CLK);
         idx++;
@@ -180,13 +180,13 @@ module sim_stm_focus ();
 
     for (int segment = 0; segment < params::NumSegment; segment++) begin
       for (int i = 0; i < SIZE; i++) begin
-        focus_x[segment][i][0] = sim_helper_random.range(131071, -131072 + 6908);
-        focus_y[segment][i][0] = sim_helper_random.range(131071, -131072 + 5283);
-        focus_z[segment][i][0] = sim_helper_random.range(131071, -131072);
-        intensity_buf[segment][i][0] = sim_helper_random.range(8'hFF, 0);
+        focus_x[segment][i] = sim_helper_random.range(131071, -131072 + 6908);
+        focus_y[segment][i] = sim_helper_random.range(131071, -131072 + 5283);
+        focus_z[segment][i] = sim_helper_random.range(131071, -131072);
+        intensity_buf[segment][i] = sim_helper_random.range(8'hFF, 0);
       end
       sim_helper_bram.write_stm_focus(segment, focus_x[segment], focus_y[segment], focus_z[segment],
-                                      intensity_buf[segment], cycle_buf[segment], 1);
+                                      intensity_buf[segment], cycle_buf[segment]);
     end
     $display("memory initialized");
 

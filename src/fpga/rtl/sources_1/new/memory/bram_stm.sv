@@ -6,8 +6,8 @@ module bram_stm (
     input wire [17:0] addra,
     input wire [15:0] dina,
     input wire clkb,
-    input wire [12:0] addrb,
-    output wire [511:0] doutb
+    input wire [15:0] addrb,
+    output wire [63:0] doutb
 );
 
   blk_mem_gen_v8_4_9 #(
@@ -54,10 +54,10 @@ module bram_stm (
       .C_USE_BYTE_WEB(0),
       .C_WEB_WIDTH(1),
       .C_WRITE_MODE_B("WRITE_FIRST"),
-      .C_WRITE_WIDTH_B(512),
-      .C_READ_WIDTH_B(512),
-      .C_WRITE_DEPTH_B(params::GainSTMSize * 8),
-      .C_READ_DEPTH_B(params::GainSTMSize * 8),
+      .C_WRITE_WIDTH_B(64),
+      .C_READ_WIDTH_B(64),
+      .C_WRITE_DEPTH_B(params::GainSTMSize * 64),
+      .C_READ_DEPTH_B(params::GainSTMSize * 64),
       .C_ADDRB_WIDTH(params::STMRdAddrWidth),
       .C_HAS_MEM_OUTPUT_REGS_A(0),
       .C_HAS_MEM_OUTPUT_REGS_B(1),

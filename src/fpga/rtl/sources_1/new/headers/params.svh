@@ -5,7 +5,7 @@ package params;
 
   localparam int GainSTMSize = 1024;
   localparam int STMWrAddrWidth = $clog2(GainSTMSize * 256);
-  localparam int STMRdAddrWidth = $clog2(GainSTMSize * 8);
+  localparam int STMRdAddrWidth = $clog2(GainSTMSize * 64);
   localparam int NumFociMax = 8;
 
   localparam int FuncDynamicFreqBit = 1;

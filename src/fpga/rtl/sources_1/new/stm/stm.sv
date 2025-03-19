@@ -16,14 +16,14 @@ module stm #(
     input wire GPIO_IN[4],
     output wire [12:0] DEBUG_IDX,
     output wire DEBUG_SEGMENT,
-    output wire [12:0] DEBUG_CYCLE
+    output wire [15:0] DEBUG_CYCLE
 );
 
   logic mode = params::STM_MODE_GAIN;
   logic start = 1'b0;
   logic segment = '0;
-  logic [12:0] idx = '0;
-  logic [12:0] cycle = '0;
+  logic [15:0] idx = '0;
+  logic [15:0] cycle = '0;
   logic [15:0] sound_speed = '0;
   logic [7:0] num_foci = 8'd1;
 
@@ -45,7 +45,7 @@ module stm #(
   assign DEBUG_SEGMENT = segment;
   assign DEBUG_CYCLE = cycle;
 
-  logic [12:0] timer_idx[params::NumSegment];
+  logic [15:0] timer_idx[params::NumSegment];
   stm_timer stm_timer (
       .CLK(CLK),
       .UPDATE_SETTINGS_IN(STM_SETTINGS.UPDATE),
@@ -56,7 +56,7 @@ module stm #(
       .UPDATE_SETTINGS_OUT(update_settings)
   );
 
-  logic [12:0] swapchain_idx[params::NumSegment];
+  logic [15:0] swapchain_idx[params::NumSegment];
   logic swapchain_segment;
   logic swapchain_stop;
   stm_swapchain stm_swapchain (
