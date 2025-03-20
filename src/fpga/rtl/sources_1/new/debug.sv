@@ -12,9 +12,9 @@ module debug #(
     input wire SYNC,
     input wire STM_SEGMENT,
     input wire MOD_SEGMENT,
-    input wire [12:0] STM_IDX,
+    input wire [15:0] STM_IDX,
     input wire [14:0] MOD_IDX,
-    input wire [12:0] STM_CYCLE,
+    input wire [15:0] STM_CYCLE,
     output wire GPIO_OUT[4]
 );
 
@@ -62,7 +62,7 @@ module debug #(
         debug_signal = STM_CYCLE != '0;
       end
       params::DBG_SYS_TIME_EQ: begin
-        debug_signal = SYS_TIME[56:9] == value[56:9];
+        debug_signal = SYS_TIME[56:9] == value[47:0];
       end
       params::DBG_PWM_OUT: begin
         debug_signal = PWM_OUT[value[7:0]];

@@ -14,7 +14,7 @@ module stm #(
     output wire [7:0] PHASE,
     output wire DOUT_VALID,
     input wire GPIO_IN[4],
-    output wire [12:0] DEBUG_IDX,
+    output wire [15:0] DEBUG_IDX,
     output wire DEBUG_SEGMENT,
     output wire [15:0] DEBUG_CYCLE
 );
