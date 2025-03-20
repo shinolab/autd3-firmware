@@ -42,12 +42,13 @@ module main #(
   logic [7:0] intensity_s, phase_s;
   logic dout_valid_s;
 
-  logic [7:0] pulse_width_e, phase_e;
+  logic [8:0] pulse_width_e;
+  logic [7:0] phase_e;
   logic dout_valid_e;
 
-  logic [12:0] stm_idx;
+  logic [15:0] stm_idx;
   logic stm_segment;
-  logic [12:0] stm_cycle;
+  logic [15:0] stm_cycle;
   logic mod_segment;
   logic [14:0] mod_idx;
   logic gpio_in_soft[4];

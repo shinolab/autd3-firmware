@@ -59,6 +59,7 @@ module stm_focus #(
 
   state_t state = IDLE;
 
+  logic [7:0] _idx_unused;
   mult #(
       .WIDTH_A(16),
       .WIDTH_B(8)
@@ -66,7 +67,7 @@ module stm_focus #(
       .CLK(CLK),
       .A  (IDX),
       .B  (NUM_FOCI),
-      .P  (base_idx)
+      .P  ({_idx_unused, base_idx})
   );
 
   assign STM_BUS.FOCUS_IDX = idx;
