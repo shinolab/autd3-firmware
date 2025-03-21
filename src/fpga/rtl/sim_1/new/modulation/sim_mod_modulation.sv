@@ -46,7 +46,7 @@ module sim_mod_modulation ();
   logic dout_valid;
   logic [7:0] intensity_out;
   logic [7:0] phase_out;
-  logic [14:0] idx_debug;
+  logic [15:0] idx_debug;
 
   modulation #(
       .DEPTH(DEPTH)
@@ -68,7 +68,7 @@ module sim_mod_modulation ();
       .DEBUG_STOP(stop_debug)
   );
 
-  logic [14:0] cycle_buf[params::NumSegment];
+  logic [16:0] cycle_buf[params::NumSegment];
   logic [15:0] freq_div_buf[params::NumSegment];
   logic [7:0] mod_buf[params::NumSegment][SIZE];
   logic [7:0] phase_corr_buf[256];

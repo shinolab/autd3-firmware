@@ -4,7 +4,7 @@
 - The period of ultrasound is changed from 256 to 512
     - The maximum value of pulse width is changed from 255 to 511
 - Remove silencer target
-- FPGA (estimated) power consumption increased from 367mW to 449mW
+- FPGA (estimated) power consumption increased from 367mW to 456mW
 
 # 10.0.1
 

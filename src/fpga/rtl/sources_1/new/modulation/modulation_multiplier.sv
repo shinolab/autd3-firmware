@@ -8,10 +8,10 @@ module modulation_multiplier #(
     output wire [7:0] INTENSITY_OUT,
     output wire DOUT_VALID,
     modulation_bus_if.out_port MOD_BUS,
-    input wire [14:0] IDX[params::NumSegment],
+    input wire [15:0] IDX[params::NumSegment],
     input wire SEGMENT,
     input wire STOP,
-    output wire [14:0] DEBUG_IDX,
+    output wire [15:0] DEBUG_IDX,
     output wire DEBUG_SEGMENT,
     output wire DEBUG_STOP
 );
@@ -19,7 +19,7 @@ module modulation_multiplier #(
   logic dout_valid = 1'b0;
 
   logic [7:0] mod;
-  logic [14:0] idx = '0;
+  logic [15:0] idx = '0;
   logic stop = 1'b0, segment = 1'b0;
   logic [$clog2(DEPTH)-1:0] cnt;
   logic [7:0] intensity_buf;

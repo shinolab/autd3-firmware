@@ -104,10 +104,11 @@ module memory (
   ///////////////////////////// Modulator /////////////////////////////
   logic mod_en[NumSegment];
 
-  logic [14:0] mod_idx;
+  logic [15:0] mod_idx;
   logic [7:0] mod_value[NumSegment];
 
   logic mod_mem_wr_segment;
+  logic mod_mem_wr_page;
 
   assign mod_idx = MOD_BUS.IDX;
   assign MOD_BUS.VALUE = mod_value[MOD_BUS.SEGMENT];
@@ -117,7 +118,7 @@ module memory (
         .clka (bus_clk),
         .ena  (mod_en[i]),
         .wea  (we),
-        .addra(addr),
+        .addra({mod_mem_wr_page, addr}),
         .dina (data_in),
         .douta(),
         .clkb (CLK),
@@ -163,6 +164,7 @@ module memory (
         ADDR_MOD_MEM_WR_SEGMENT: mod_mem_wr_segment <= data_in[0];
         ADDR_STM_MEM_WR_SEGMENT: stm_mem_wr_segment <= data_in[0];
         ADDR_STM_MEM_WR_PAGE: stm_mem_wr_page <= data_in[3:0];
+        ADDR_MOD_MEM_WR_PAGE: mod_mem_wr_page <= data_in[0];
         default: begin
         end
       endcase

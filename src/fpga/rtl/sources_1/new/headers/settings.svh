@@ -5,7 +5,7 @@ package settings;
     logic REQ_RD_SEGMENT;
     logic [7:0] TRANSITION_MODE;
     logic [63:0] TRANSITION_VALUE;
-    logic [14:0] CYCLE[2];
+    logic [15:0] CYCLE[2];
     logic [15:0] FREQ_DIV[2];
     logic [15:0] REP[2];
   } mod_settings_t;

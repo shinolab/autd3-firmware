@@ -50,7 +50,7 @@ module main #(
   logic stm_segment;
   logic [15:0] stm_cycle;
   logic mod_segment;
-  logic [14:0] mod_idx;
+  logic [15:0] mod_idx;
   logic gpio_in_soft[4];
 
   logic gpio_in[4];

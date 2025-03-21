@@ -22,9 +22,9 @@ module sim_mod_swapchain ();
   logic [63:0] transition_value;
   logic gpio_in[4];
   logic [15:0] rep[params::NumSegment];
-  logic [14:0] cycle[params::NumSegment];
-  logic [14:0] sync_idx[params::NumSegment];
-  logic [14:0] idx[params::NumSegment];
+  logic [15:0] cycle[params::NumSegment];
+  logic [15:0] sync_idx[params::NumSegment];
+  logic [15:0] idx[params::NumSegment];
   logic segment;
   logic stop;
 
