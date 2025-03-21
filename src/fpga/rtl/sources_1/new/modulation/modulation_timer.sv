@@ -3,9 +3,9 @@ module modulation_timer (
     input wire CLK,
     input wire UPDATE_SETTINGS_IN,
     input wire [56:0] SYS_TIME,
-    input wire [14:0] CYCLE[params::NumSegment],
+    input wire [15:0] CYCLE[params::NumSegment],
     input wire [15:0] FREQ_DIV[params::NumSegment],
-    output wire [14:0] IDX[params::NumSegment],
+    output wire [15:0] IDX[params::NumSegment],
     output wire UPDATE_SETTINGS_OUT
 );
 
@@ -26,18 +26,18 @@ module modulation_timer (
 
   for (genvar i = 0; i < params::NumSegment; i++) begin : gen_mod_timer_idx
     logic [15:0] freq_div;
-    logic [15:0] cycle;
+    logic [16:0] cycle;
     logic [47:0] quo;
     logic [23:0] _unused_rem;
     logic [47:0] _unused_quo;
     logic [23:0] rem;
     logic idx_dout_valid;
-    logic [14:0] idx;
+    logic [15:0] idx;
 
     assign IDX[i] = idx;
 
     always_ff @(posedge CLK) begin
-      idx <= (idx_dout_valid) ? rem[14:0] : idx;
+      idx <= (idx_dout_valid) ? rem[15:0] : idx;
       if ((state == IDLE) & UPDATE_SETTINGS_IN) begin
         freq_div <= FREQ_DIV[i];
         cycle <= CYCLE[i] + 1;
@@ -59,7 +59,7 @@ module modulation_timer (
         .s_axis_dividend_tdata(quo),
         .s_axis_dividend_tvalid(1'b1),
         .s_axis_dividend_tready(),
-        .s_axis_divisor_tdata({8'd0, cycle}),
+        .s_axis_divisor_tdata({7'd0, cycle}),
         .s_axis_divisor_tvalid(1'b1),
         .s_axis_divisor_tready(),
         .aclk(CLK),

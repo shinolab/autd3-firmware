@@ -14,12 +14,12 @@ module modulation #(
     modulation_bus_if.out_port MOD_BUS,
     phase_corr_bus_if.out_port PHASE_CORR_BUS,
     input wire GPIO_IN[4],
-    output wire [14:0] DEBUG_IDX,
+    output wire [15:0] DEBUG_IDX,
     output wire DEBUG_SEGMENT,
     output wire DEBUG_STOP
 );
 
-  logic [14:0] sync_idx[params::NumSegment];
+  logic [15:0] sync_idx[params::NumSegment];
   modulation_timer modulation_timer (
       .CLK(CLK),
       .UPDATE_SETTINGS_IN(MOD_SETTINGS.UPDATE),
@@ -30,7 +30,7 @@ module modulation #(
       .UPDATE_SETTINGS_OUT(update_settings)
   );
 
-  logic [14:0] idx[params::NumSegment];
+  logic [15:0] idx[params::NumSegment];
   modulation_swapchain modulation_swapchain (
       .CLK(CLK),
       .SYS_TIME(SYS_TIME),

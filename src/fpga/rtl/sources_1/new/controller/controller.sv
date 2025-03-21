@@ -227,12 +227,12 @@ module controller (
       end
       REQ_MOD_FREQ_DIV1_RD_MOD_CYCLE0: begin
         addr <= params::ADDR_MOD_FREQ_DIV1;
-        MOD_SETTINGS.CYCLE[0] <= dout[14:0];
+        MOD_SETTINGS.CYCLE[0] <= dout;
         state <= REQ_MOD_REP0_RD_MOD_CYCLE1;
       end
       REQ_MOD_REP0_RD_MOD_CYCLE1: begin
         addr <= params::ADDR_MOD_REP0;
-        MOD_SETTINGS.CYCLE[1] <= dout[14:0];
+        MOD_SETTINGS.CYCLE[1] <= dout;
         state <= REQ_MOD_REP1_RD_MOD_FREQ_DIV0;
       end
       REQ_MOD_REP1_RD_MOD_FREQ_DIV0: begin
@@ -606,8 +606,8 @@ module controller (
     MOD_SETTINGS.REQ_RD_SEGMENT = 1'd0;
     MOD_SETTINGS.TRANSITION_MODE = params::TRANSITION_MODE_SYNC_IDX;
     MOD_SETTINGS.TRANSITION_VALUE = 64'd0;
-    MOD_SETTINGS.CYCLE[0] = 15'd1;
-    MOD_SETTINGS.CYCLE[1] = 15'd1;
+    MOD_SETTINGS.CYCLE[0] = 16'd1;
+    MOD_SETTINGS.CYCLE[1] = 16'd1;
     MOD_SETTINGS.FREQ_DIV[0] = 16'd10;
     MOD_SETTINGS.FREQ_DIV[1] = 16'd10;
     MOD_SETTINGS.REP[0] = 16'hFFFF;

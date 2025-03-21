@@ -4,7 +4,7 @@ module sim_mem_mod ();
   `include "define.vh"
 
   localparam int DEPTH = 249;
-  localparam int SIZE = 32768;
+  localparam int SIZE = 65536;
 
   logic CLK;
   logic locked;
@@ -36,7 +36,7 @@ module sim_mem_mod ();
       .SYS_TIME()
   );
 
-  logic [14:0] idx;
+  logic [15:0] idx;
   logic [7:0] value;
   logic segment;
 
@@ -54,7 +54,7 @@ module sim_mem_mod ();
   endtask
 
   task automatic check(input logic segment);
-    logic [14:0] cur_idx;
+    logic [15:0] cur_idx;
     logic [ 7:0] expect_value;
     repeat (3) @(posedge CLK);
     for (int i = 0; i < SIZE; i++) begin

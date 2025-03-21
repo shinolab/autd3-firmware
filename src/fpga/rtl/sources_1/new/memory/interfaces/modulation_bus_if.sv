@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 interface modulation_bus_if ();
 
-  logic [14:0] IDX;
+  logic [15:0] IDX;
   logic [7:0] VALUE;
   logic SEGMENT;
 

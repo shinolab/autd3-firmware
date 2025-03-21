@@ -6,13 +6,13 @@ module modulation_swapchain (
     input wire REQ_RD_SEGMENT,
     input wire [7:0] TRANSITION_MODE,
     input wire [63:0] TRANSITION_VALUE,
-    input wire [14:0] CYCLE[params::NumSegment],
+    input wire [15:0] CYCLE[params::NumSegment],
     input wire [15:0] REP[params::NumSegment],
-    input wire [14:0] SYNC_IDX[params::NumSegment],
+    input wire [15:0] SYNC_IDX[params::NumSegment],
     input wire GPIO_IN[4],
     output wire STOP,
     output wire SEGMENT,
-    output wire [14:0] IDX[params::NumSegment]
+    output wire [15:0] IDX[params::NumSegment]
 );
 
   localparam int Latency = 5;
@@ -25,8 +25,8 @@ module modulation_swapchain (
   logic [15:0] loop_cnt;
 
   logic idx_changed[params::NumSegment];
-  logic [14:0] idx_old[params::NumSegment];
-  logic [14:0] tic_idx[params::NumSegment];
+  logic [15:0] idx_old[params::NumSegment];
+  logic [15:0] tic_idx[params::NumSegment];
 
   logic signed [57:0] time_diff;
 
