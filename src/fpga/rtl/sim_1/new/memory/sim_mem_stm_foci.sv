@@ -4,7 +4,7 @@ module sim_mem_stm_foci ();
   `include "define.vh"
 
   localparam int DEPTH = 249;
-  localparam int SIZE = 8192;
+  localparam int SIZE = 65536;
 
   logic CLK;
   logic locked;
@@ -37,7 +37,7 @@ module sim_mem_stm_foci ();
   );
 
   logic [15:0] idx;
-  logic [511:0] value;
+  logic [63:0] value;
   logic segment;
 
   assign stm_bus.stm_port.MODE = params::STM_MODE_FOCUS;
@@ -45,21 +45,17 @@ module sim_mem_stm_foci ();
   assign stm_bus.out_focus_port.FOCUS_IDX = idx;
   assign value = stm_bus.out_focus_port.VALUE;
 
-  logic [17:0] x[params::NumFociMax];
-  logic [17:0] y[params::NumFociMax];
-  logic [17:0] z[params::NumFociMax];
-  logic [7:0] intensity_or_offsets[params::NumFociMax];
-  for (genvar i = 0; i < params::NumFociMax; i++) begin
-    assign x[i] = value[64*i+17:64*i];
-    assign y[i] = value[64*i+35:64*i+18];
-    assign z[i] = value[64*i+53:64*i+36];
-    assign intensity_or_offsets[i] = value[64*i+61:64*i+54];
-  end
+  logic [17:0] x, y, z;
+  logic [7:0] intensity_or_offsets;
+  assign x = value[17:0];
+  assign y = value[35:18];
+  assign z = value[53:36];
+  assign intensity_or_offsets = value[61:54];
 
-  logic signed [17:0] x_buf[params::NumSegment][SIZE][params::NumFociMax];
-  logic signed [17:0] y_buf[params::NumSegment][SIZE][params::NumFociMax];
-  logic signed [17:0] z_buf[params::NumSegment][SIZE][params::NumFociMax];
-  logic [7:0] intensity_or_offsets_buf[params::NumSegment][SIZE][params::NumFociMax];
+  logic signed [17:0] x_buf[params::NumSegment][SIZE];
+  logic signed [17:0] y_buf[params::NumSegment][SIZE];
+  logic signed [17:0] z_buf[params::NumSegment][SIZE];
+  logic [7:0] intensity_or_offsets_buf[params::NumSegment][SIZE];
 
   task automatic progress();
     for (int i = 0; i < SIZE + 3; i++) begin
@@ -70,24 +66,20 @@ module sim_mem_stm_foci ();
 
   task automatic check(input logic segment);
     logic [15:0] cur_idx;
-    logic [17:0] expect_x[params::NumFociMax];
-    logic [17:0] expect_y[params::NumFociMax];
-    logic [17:0] expect_z[params::NumFociMax];
-    logic [7:0] expect_intensity_or_offset[params::NumFociMax];
+    logic [17:0] expect_x, expect_y, expect_z;
+    logic [7:0] expect_intensity_or_offset;
     repeat (3) @(posedge CLK);
     for (int i = 0; i < SIZE; i++) begin
       @(posedge CLK);
       cur_idx = (idx + SIZE - 2) % SIZE;
-      for (int k = 0; k < params::NumFociMax; k++) begin
-        expect_x[k] = x_buf[segment][cur_idx][k];
-        expect_y[k] = y_buf[segment][cur_idx][k];
-        expect_z[k] = z_buf[segment][cur_idx][k];
-        expect_intensity_or_offset[k] = intensity_or_offsets_buf[segment][cur_idx][k];
-        `ASSERT_EQ(expect_x[k], x[k]);
-        `ASSERT_EQ(expect_y[k], y[k]);
-        `ASSERT_EQ(expect_z[k], z[k]);
-        `ASSERT_EQ(expect_intensity_or_offset[k], intensity_or_offsets[k]);
-      end
+      expect_x = x_buf[segment][cur_idx];
+      expect_y = y_buf[segment][cur_idx];
+      expect_z = z_buf[segment][cur_idx];
+      expect_intensity_or_offset = intensity_or_offsets_buf[segment][cur_idx];
+      `ASSERT_EQ(expect_x, x);
+      `ASSERT_EQ(expect_y, y);
+      `ASSERT_EQ(expect_z, z);
+      `ASSERT_EQ(expect_intensity_or_offset, intensity_or_offsets);
       if (i % 512 == 511) $display("segment %d: %d/%d...done", segment, i + 1, SIZE);
     end
   endtask
@@ -102,15 +94,13 @@ module sim_mem_stm_foci ();
 
     for (int s = 0; s < params::NumSegment; s++) begin
       for (int i = 0; i < SIZE; i++) begin
-        for (int k = 0; k < params::NumFociMax; k++) begin
-          x_buf[s][i][k] = sim_helper_random.range(17'h1FFFF, 0);
-          y_buf[s][i][k] = sim_helper_random.range(17'h1FFFF, 0);
-          z_buf[s][i][k] = sim_helper_random.range(17'h1FFFF, 0);
-          intensity_or_offsets_buf[s][i][k] = sim_helper_random.range(8'hFF, 0);
-        end
+        x_buf[s][i] = sim_helper_random.range(17'h1FFFF, 0);
+        y_buf[s][i] = sim_helper_random.range(17'h1FFFF, 0);
+        z_buf[s][i] = sim_helper_random.range(17'h1FFFF, 0);
+        intensity_or_offsets_buf[s][i] = sim_helper_random.range(8'hFF, 0);
       end
       sim_helper_bram.write_stm_focus(s, x_buf[s], y_buf[s], z_buf[s], intensity_or_offsets_buf[s],
-                                      SIZE, params::NumFociMax);
+                                      SIZE);
     end
     $display("memory initialized");
 
