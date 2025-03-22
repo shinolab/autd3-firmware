@@ -38,7 +38,7 @@ module sim_mem_stm_gain ();
 
   logic [9:0] idx;
   logic [7:0] addr;
-  logic [511:0] value;
+  logic [63:0] value;
   logic segment;
 
   assign stm_bus.stm_port.MODE = params::STM_MODE_GAIN;
@@ -70,7 +70,7 @@ module sim_mem_stm_gain ();
       cur_idx = (addr + DEPTH - 2) % DEPTH;
       expect_phase = phase_buf[segment][index][cur_idx];
       expect_intensity = intensity_buf[segment][index][cur_idx];
-      offset = (16 * cur_idx) % 512;
+      offset = (16 * cur_idx) % 64;
       tmp = value >> offset;
       `ASSERT_EQ(expect_phase, tmp[7:0]);
       `ASSERT_EQ(expect_intensity, tmp[15:8]);
