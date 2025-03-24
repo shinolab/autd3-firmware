@@ -57,18 +57,15 @@ inline static void bram_cpy_volatile(uint8_t bram_select, uint16_t base_bram_add
   while (cnt-- > 0) *dst++ = *values++;
 }
 
-inline static void bram_cpy_focus_stm(uint16_t base_bram_addr, const volatile uint16_t *values, uint32_t cnt, uint8_t num_foci) {
+inline static void bram_cpy_focus_stm(uint16_t base_bram_addr, const volatile uint16_t *values, uint32_t cnt) {
   uint16_t base_addr = get_addr(BRAM_SELECT_STM, base_bram_addr);
   volatile uint16_t *base = (volatile uint16_t *)FPGA_BASE;
   volatile uint16_t *dst = &base[base_addr];
   while (cnt--) {
-    for (uint8_t i = 0; i < num_foci; i++) {
-      *dst++ = *values++;
-      *dst++ = *values++;
-      *dst++ = *values++;
-      *dst++ = *values++;
-    }
-    dst += 4 * (8 - num_foci);
+    *dst++ = *values++;
+    *dst++ = *values++;
+    *dst++ = *values++;
+    *dst++ = *values++;
   }
 }
 

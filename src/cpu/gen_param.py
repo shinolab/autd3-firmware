@@ -66,6 +66,15 @@ with pathlib.Path.open(
         elif line.startswith("typedef enum"):
             read_enum = True
             enum_consts = []
+
+            param = re.match(r".*{(\w+)\s+=\s+(\d+|\d+'[bhd][\da-fA-F]+)}.*", line)
+            if param:
+                enum_consts.append(Const(param.group(1), param.group(2)))
+            if "}" in line:
+                read_enum = False
+                enum_name = re.match(r".*} (\w+);", line).group(1)
+                enums.append(Enum(enum_name, enum_consts))
+
         elif read_enum:
             if line.startswith("}"):
                 read_enum = False

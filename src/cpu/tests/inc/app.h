@@ -43,7 +43,6 @@ uint16_t bram_read_controller(uint32_t bram_addr);
 uint16_t bram_read_mod(uint32_t segment, uint32_t bram_addr);
 uint16_t bram_read_pwe_table(uint32_t bram_addr);
 uint16_t bram_read_phase_corr(uint32_t bram_addr);
-uint16_t bram_read_clk(uint32_t bram_addr);
 uint16_t bram_read_stm(uint32_t segment, uint32_t bram_addr);
 
 inline static uint16_t get_addr(uint8_t bram_select, uint16_t bram_addr) { return (((uint16_t)bram_select & 0x0003) << 14) | (bram_addr & 0x3FFF); }
@@ -68,14 +67,13 @@ inline static void bram_cpy_volatile(uint8_t bram_select, uint16_t base_bram_add
   for (auto i = 0; i < cnt; i++) fpga_write(addr++, *(values + i));
 }
 
-inline static void bram_cpy_focus_stm(uint16_t base_bram_addr, const volatile uint16_t *values, uint32_t cnt, uint8_t num_foci) {
+inline static void bram_cpy_focus_stm(uint16_t base_bram_addr, const volatile uint16_t *values, uint32_t cnt) {
   uint16_t base_addr = get_addr(BRAM_SELECT_STM, base_bram_addr);
   while (cnt--) {
     fpga_write(base_addr++, *values++);
     fpga_write(base_addr++, *values++);
     fpga_write(base_addr++, *values++);
     fpga_write(base_addr++, *values++);
-    base_addr += (8 - num_foci) * 4;
   }
 }
 

@@ -227,6 +227,7 @@ TEST(Op, SilencerFixedCompletionStepsInvaidStepSTM) {
     reinterpret_cast<FocusSTMHead*>(p)->segment = 0;
     reinterpret_cast<FocusSTMHead*>(p)->send_num = 2;
     reinterpret_cast<FocusSTMHead*>(p)->freq_div = freq_div;
+    reinterpret_cast<FocusSTMHead*>(p)->num_foci = 1;
     reinterpret_cast<FocusSTMHead*>(p)->transition_mode = TRANSITION_MODE_IMMIDIATE;
 
     auto frame = to_frame_data(data);

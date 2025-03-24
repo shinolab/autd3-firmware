@@ -26,20 +26,18 @@ uint8_t get_msg_id(void) {
 
 uint16_t* controller_bram = new uint16_t[256];
 uint16_t* phase_corr_bram = new uint16_t[256 / sizeof(uint16_t)];
-uint16_t* modulation_bram_0 = new uint16_t[32768 / sizeof(uint16_t)];
-uint16_t* modulation_bram_1 = new uint16_t[32768 / sizeof(uint16_t)];
-uint16_t* pwe_table_bram = new uint16_t[256 / sizeof(uint16_t)];
-uint16_t* clk_bram = new uint16_t[256 / sizeof(uint16_t)];
+uint16_t* modulation_bram_0 = new uint16_t[65536 / sizeof(uint16_t)];
+uint16_t* modulation_bram_1 = new uint16_t[65536 / sizeof(uint16_t)];
+uint16_t* pwe_table_bram = new uint16_t[256];
 uint16_t* stm_op_bram_0 = new uint16_t[1024 * 256];
 uint16_t* stm_op_bram_1 = new uint16_t[1024 * 256];
 
 uint32_t mod_wr_segment = 0;
+uint32_t mod_wr_page = 0;
 uint32_t stm_wr_segment = 0;
 uint32_t stm_wr_page = 0;
 
 uint16_t bram_read_controller(uint32_t bram_addr) { return controller_bram[bram_addr]; }
-
-uint16_t bram_read_clk(uint32_t bram_addr) { return clk_bram[bram_addr]; }
 
 uint16_t bram_read_mod(uint32_t segment, uint32_t bram_addr) {
   switch (segment) {
@@ -91,15 +89,14 @@ void fpga_write(uint16_t bram_addr, uint16_t value) {
             stm_wr_segment = value;
           } else if (addr == ADDR_STM_MEM_WR_PAGE) {
             stm_wr_page = value;
+          } else if (addr == ADDR_MOD_MEM_WR_PAGE) {
+            mod_wr_page = value;
           } else {
             controller_bram[addr] = value;
           }
           break;
         case BRAM_CNT_SELECT_PHASE_CORR:
           phase_corr_bram[addr & 0xFF] = value;
-          break;
-        case BRAM_CNT_SELECT_CLOCK:
-          clk_bram[addr & 0xFF] = value;
           break;
         default:
           exit(1);
@@ -108,10 +105,10 @@ void fpga_write(uint16_t bram_addr, uint16_t value) {
     case BRAM_SELECT_MOD:
       switch (mod_wr_segment) {
         case 0:
-          modulation_bram_0[addr] = value;
+          modulation_bram_0[(mod_wr_page << 14) | addr] = value;
           break;
         case 1:
-          modulation_bram_1[addr] = value;
+          modulation_bram_1[(mod_wr_page << 14) | addr] = value;
           break;
         default:
           exit(1);
@@ -143,10 +140,9 @@ void set_and_wait_update(uint16_t) {}
 int main(int argc, char** argv) {
   std::memset(controller_bram, 0, sizeof(uint16_t) * 256);
   std::memset(phase_corr_bram, 0, sizeof(uint8_t) * 256);
-  std::memset(modulation_bram_0, 0, sizeof(uint8_t) * 32768);
-  std::memset(modulation_bram_1, 0, sizeof(uint8_t) * 32768);
-  std::memset(pwe_table_bram, 0, sizeof(uint8_t) * 256);
-  std::memset(clk_bram, 0, sizeof(uint8_t) * 256);
+  std::memset(modulation_bram_0, 0, sizeof(uint8_t) * 65536);
+  std::memset(modulation_bram_1, 0, sizeof(uint8_t) * 65536);
+  std::memset(pwe_table_bram, 0, sizeof(uint16_t) * 256);
   std::memset(stm_op_bram_0, 0, sizeof(uint64_t) * 1024 * 64);
   std::memset(stm_op_bram_1, 0, sizeof(uint64_t) * 1024 * 64);
 

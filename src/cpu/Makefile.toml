@@ -2,6 +2,33 @@
 default_to_workspace = false
 skip_core_tasks = true
 
+[tasks.format]
+windows_alias = "format-win"
+linux_alias = "format-nix"
+mac_alias = "format-nix"
+
+[tasks.format-nix]
+script_runner = "@shell"
+script = '''
+clang-format -i ./inc/**.h ./src/**.h ./src/**.c ./tests/**.h ./tests/**.hpp ./tests/**.cpp
+'''
+
+[tasks.format-win]
+script_runner = "pwsh"
+script_extension = "ps1"
+script = '''
+Function Format($root){
+    Get-ChildItem -Path $root -Recurse  -Include *.h,*.hpp,*.cpp |
+        foreach {
+            &clang-format -i $_.FullName
+        }
+}
+
+Format inc
+Format src
+Format tests
+'''
+
 [tasks.clean]
 script_runner = "@shell"
 script = '''
