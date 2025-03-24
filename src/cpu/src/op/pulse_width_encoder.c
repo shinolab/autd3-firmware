@@ -21,7 +21,7 @@ uint8_t config_pwe(const volatile uint8_t* p_data) {
 
   const uint16_t* data = (const uint16_t*)(&p_data[sizeof(PWE)]);
 
-  bram_cpy(BRAM_SELECT_PWE_TABLE, 0, data, (256 >> 1));
+  bram_cpy(BRAM_SELECT_PWE_TABLE, 0, data, 256);
 
   return NO_ERR;
 }

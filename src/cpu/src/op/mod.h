@@ -39,4 +39,10 @@ inline static void change_mod_wr_segment(uint16_t segment) {
   asm("dmb");
 }
 
+inline static void change_mod_wr_page(uint16_t page) {
+  asm("dmb");
+  bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_MEM_WR_PAGE, page);
+  asm("dmb");
+}
+
 #endif  // OP_MOD_H_

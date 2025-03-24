@@ -12,7 +12,6 @@ extern "C" {
 
 extern uint8_t clear(void);
 extern uint8_t synchronize(const volatile uint8_t*);
-extern uint8_t configure_clk(const volatile uint8_t*);
 extern uint8_t firmware_info(const volatile uint8_t*);
 extern uint8_t write_mod(const volatile uint8_t*);
 extern uint8_t change_mod_segment(const volatile uint8_t*);
@@ -62,8 +61,6 @@ uint8_t handle_payload(const volatile uint8_t* p_data) {
       return clear();
     case TAG_SYNC:
       return synchronize(p_data);
-    case TAG_CONFIG_FPGA_CLK:
-      return configure_clk(p_data);
     case TAG_FIRM_INFO:
       return firmware_info(p_data);
     case TAG_MODULATION:
@@ -110,8 +107,7 @@ void update(void) {
   volatile uint8_t* p_data;
   Header* header;
 
-  if ((ECATC.AL_STATUS_CODE.WORD == AL_STATUS_CODE_SYNC_ERR) ||
-      (ECATC.AL_STATUS_CODE.WORD == AL_STATUS_CODE_SYNC_MANAGER_WATCHDOG)) {
+  if ((ECATC.AL_STATUS_CODE.WORD == AL_STATUS_CODE_SYNC_ERR) || (ECATC.AL_STATUS_CODE.WORD == AL_STATUS_CODE_SYNC_MANAGER_WATCHDOG)) {
     if (_wdt_cnt < 0) return;
     if (_wdt_cnt == 0) clear();
     _wdt_cnt = _wdt_cnt - 1;

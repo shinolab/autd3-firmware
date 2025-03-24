@@ -35,8 +35,7 @@ TEST(Op, ConfigureForceFan) {
     const auto ack = _sTx.ack >> 8;
     ASSERT_EQ(ack, header->msg_id);
 
-    ASSERT_TRUE((bram_read_controller(ADDR_CTL_FLAG) & CTL_FLAG_FORCE_FAN) ==
-                CTL_FLAG_FORCE_FAN);
+    ASSERT_TRUE((bram_read_controller(ADDR_CTL_FLAG) & CTL_FLAG_FORCE_FAN) == CTL_FLAG_FORCE_FAN);
   }
 
   {
@@ -55,7 +54,6 @@ TEST(Op, ConfigureForceFan) {
     const auto ack = _sTx.ack >> 8;
     ASSERT_EQ(ack, header->msg_id);
 
-    ASSERT_TRUE((bram_read_controller(ADDR_CTL_FLAG) & CTL_FLAG_FORCE_FAN) ==
-                0);
+    ASSERT_TRUE((bram_read_controller(ADDR_CTL_FLAG) & CTL_FLAG_FORCE_FAN) == 0);
   }
 }

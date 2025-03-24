@@ -1,6 +1,5 @@
 target_sources(test_autd3-firmware PRIVATE
   ${PROJECT_SOURCE_DIR}/../src/op/clear.c
-  ${PROJECT_SOURCE_DIR}/../src/op/clk.c
   ${PROJECT_SOURCE_DIR}/../src/op/cpu_gpio.c
   ${PROJECT_SOURCE_DIR}/../src/op/debug.c
   ${PROJECT_SOURCE_DIR}/../src/op/gpio_in.c
@@ -16,7 +15,6 @@ target_sources(test_autd3-firmware PRIVATE
   ${PROJECT_SOURCE_DIR}/../src/op/silencer.c
   ${PROJECT_SOURCE_DIR}/../src/op/sync.c
   clear.cpp
-  clk.cpp
   cpu_gpio.cpp
   silencer.cpp
   debug.cpp
