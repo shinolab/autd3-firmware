@@ -3,7 +3,7 @@
   "ip_inst": {
     "xci_name": "mult_8x8",
     "component_reference": "xilinx.com:ip:mult_gen:12.0",
-    "ip_revision": "22",
+    "ip_revision": "23",
     "gen_directory": "../../../../autd3-fpga.gen/sources_1/ip/mult_8x8",
     "parameters": {
       "component_parameters": {
@@ -67,12 +67,12 @@
       },
       "runtime_parameters": {
         "IPCONTEXT": [ { "value": "IP_Flow" } ],
-        "IPREVISION": [ { "value": "22" } ],
+        "IPREVISION": [ { "value": "23" } ],
         "MANAGED": [ { "value": "TRUE" } ],
         "OUTPUTDIR": [ { "value": "../../../../autd3-fpga.gen/sources_1/ip/mult_8x8" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "." } ],
-        "SWVERSION": [ { "value": "2024.2" } ],
+        "SWVERSION": [ { "value": "2025.1" } ],
         "SYNTHESISFLOW": [ { "value": "GLOBAL" } ]
       }
     },
