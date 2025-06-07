@@ -3,7 +3,7 @@
   "ip_inst": {
     "xci_name": "sqrt_36",
     "component_reference": "xilinx.com:ip:cordic:6.0",
-    "ip_revision": "23",
+    "ip_revision": "24",
     "gen_directory": "../../../../autd3-fpga.gen/sources_1/ip/sqrt_36",
     "parameters": {
       "component_parameters": {
@@ -81,12 +81,12 @@
       },
       "runtime_parameters": {
         "IPCONTEXT": [ { "value": "IP_Flow" } ],
-        "IPREVISION": [ { "value": "23" } ],
+        "IPREVISION": [ { "value": "24" } ],
         "MANAGED": [ { "value": "TRUE" } ],
         "OUTPUTDIR": [ { "value": "../../../../autd3-fpga.gen/sources_1/ip/sqrt_36" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "." } ],
-        "SWVERSION": [ { "value": "2024.2" } ],
+        "SWVERSION": [ { "value": "2025.1" } ],
         "SYNTHESISFLOW": [ { "value": "GLOBAL" } ]
       }
     },

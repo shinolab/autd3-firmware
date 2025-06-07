@@ -3,7 +3,7 @@
   "ip_inst": {
     "xci_name": "sin_table",
     "component_reference": "xilinx.com:ip:dist_mem_gen:8.0",
-    "ip_revision": "15",
+    "ip_revision": "17",
     "gen_directory": "../../../../autd3-fpga.gen/sources_1/ip/sin_table",
     "parameters": {
       "component_parameters": {
@@ -84,12 +84,12 @@
       },
       "runtime_parameters": {
         "IPCONTEXT": [ { "value": "IP_Flow" } ],
-        "IPREVISION": [ { "value": "15" } ],
+        "IPREVISION": [ { "value": "17" } ],
         "MANAGED": [ { "value": "TRUE" } ],
         "OUTPUTDIR": [ { "value": "../../../../autd3-fpga.gen/sources_1/ip/sin_table" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "." } ],
-        "SWVERSION": [ { "value": "2024.2" } ],
+        "SWVERSION": [ { "value": "2025.1" } ],
         "SYNTHESISFLOW": [ { "value": "GLOBAL" } ]
       }
     },

@@ -3,7 +3,7 @@
   "ip_inst": {
     "xci_name": "dist_mem_tr",
     "component_reference": "xilinx.com:ip:dist_mem_gen:8.0",
-    "ip_revision": "15",
+    "ip_revision": "17",
     "gen_directory": "../../../../autd3-fpga.gen/sources_1/ip/dist_mem_tr",
     "parameters": {
       "component_parameters": {
@@ -84,12 +84,12 @@
       },
       "runtime_parameters": {
         "IPCONTEXT": [ { "value": "IP_Flow" } ],
-        "IPREVISION": [ { "value": "15" } ],
+        "IPREVISION": [ { "value": "17" } ],
         "MANAGED": [ { "value": "TRUE" } ],
         "OUTPUTDIR": [ { "value": "../../../../autd3-fpga.gen/sources_1/ip/dist_mem_tr" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "." } ],
-        "SWVERSION": [ { "value": "2024.2" } ],
+        "SWVERSION": [ { "value": "2025.1" } ],
         "SYNTHESISFLOW": [ { "value": "GLOBAL" } ]
       }
     },

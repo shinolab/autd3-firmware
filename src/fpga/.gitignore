@@ -8,3 +8,4 @@
 !/*.tcl
 !*.coe
 !Makefile.toml
+!find_vivado.py
