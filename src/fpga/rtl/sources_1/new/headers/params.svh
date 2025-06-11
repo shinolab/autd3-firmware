@@ -11,7 +11,7 @@ package params;
   localparam int FuncDynamicFreqBit = 1;
   localparam int FuncEmulatorBit = 7;  // reserved
 
-  localparam bit [7:0] VersionNumMajor = 8'hA3;
+  localparam bit [7:0] VersionNumMajor = 8'hA4;
   localparam bit [7:0] VersionNumMinor = 8'h00;
 
   typedef enum int {
