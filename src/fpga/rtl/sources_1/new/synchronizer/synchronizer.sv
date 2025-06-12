@@ -5,7 +5,8 @@ module synchronizer (
     input wire ECAT_SYNC,
     output var [56:0] SYS_TIME,
     output var SYNC,
-    output var SKIP_ONE_ASSERT
+    output var SKIP_ONE_ASSERT,
+    output var signed [13:0] SYNC_TIME_DIFF
 );
 
   localparam int AddSubLatency = 5;
@@ -32,6 +33,7 @@ module synchronizer (
 
   logic skip_one_assert;
   assign SKIP_ONE_ASSERT = skip_one_assert;
+  assign SYNC_TIME_DIFF  = sync_time_diff;
 
   ec_time_to_sys_time ec_time_to_sys_time (
       .CLK(CLK),

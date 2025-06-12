@@ -101,10 +101,10 @@ silencer_params = Params(
 debug_params = Params(
     "DEBUG",
     [
-        Param("DEBUG_VALUE0", 64, "VALUE[0]", "{params::DBG_NONE, 56'd0}"),
-        Param("DEBUG_VALUE1", 64, "VALUE[1]", "{params::DBG_NONE, 56'd0}"),
-        Param("DEBUG_VALUE2", 64, "VALUE[2]", "{params::DBG_NONE, 56'd0}"),
-        Param("DEBUG_VALUE3", 64, "VALUE[3]", "{params::DBG_NONE, 56'd0}"),
+        Param("DEBUG_VALUE0", 64, "VALUE[0]", "{params::GPIO_O_TYPE_NONE, 56'd0}"),
+        Param("DEBUG_VALUE1", 64, "VALUE[1]", "{params::GPIO_O_TYPE_NONE, 56'd0}"),
+        Param("DEBUG_VALUE2", 64, "VALUE[2]", "{params::GPIO_O_TYPE_NONE, 56'd0}"),
+        Param("DEBUG_VALUE3", 64, "VALUE[3]", "{params::GPIO_O_TYPE_NONE, 56'd0}"),
     ],
 )
 
