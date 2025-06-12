@@ -29,7 +29,7 @@ TEST(Op, NotSuppoertedTag) {
   recv_ethercat(&frame[0]);
   update();
 
-  const auto ack = _sTx.ack >> 8;
+  const auto ack = _sTx.ack >> 12;
   ASSERT_EQ(ack, ERR_NOT_SUPPORTED_TAG);
 }
 
@@ -51,7 +51,7 @@ TEST(Op, InvalidMsgId) {
   recv_ethercat(&frame[0]);
   update();
 
-  const auto ack = _sTx.ack >> 8;
+  const auto ack = _sTx.ack >> 12;
   ASSERT_EQ(ack, ERR_INVALID_MSG_ID);
 }
 

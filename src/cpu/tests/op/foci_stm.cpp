@@ -261,7 +261,7 @@ TEST(Op, FocusSTMInvalidSegmentTransition) {
     recv_ethercat(&frame[0]);
     update();
 
-    const auto ack = _sTx.ack >> 8;
+    const auto ack = _sTx.ack >> 12;
     ASSERT_EQ(ack, ERR_INVALID_SEGMENT_TRANSITION);
   }
 
@@ -280,7 +280,7 @@ TEST(Op, FocusSTMInvalidSegmentTransition) {
     recv_ethercat(&frame[0]);
     update();
 
-    const auto ack = _sTx.ack >> 8;
+    const auto ack = _sTx.ack >> 12;
     ASSERT_EQ(ack, ERR_INVALID_SEGMENT_TRANSITION);
   }
 }
@@ -308,7 +308,7 @@ TEST(Op, FocusSTMInvalidTransitionMode) {
     recv_ethercat(&frame[0]);
     update();
 
-    const auto ack = _sTx.ack >> 8;
+    const auto ack = _sTx.ack >> 12;
     ASSERT_EQ(ERR_INVALID_TRANSITION_MODE, ack);
   }
 
@@ -331,7 +331,7 @@ TEST(Op, FocusSTMInvalidTransitionMode) {
     recv_ethercat(&frame[0]);
     update();
 
-    const auto ack = _sTx.ack >> 8;
+    const auto ack = _sTx.ack >> 12;
     ASSERT_EQ(ERR_INVALID_TRANSITION_MODE, ack);
   }
 
@@ -362,7 +362,7 @@ TEST(Op, FocusSTMInvalidTransitionMode) {
     frame = to_frame_data(data);
     recv_ethercat(&frame[0]);
     update();
-    ack = _sTx.ack >> 8;
+    ack = _sTx.ack >> 12;
     ASSERT_EQ(ERR_INVALID_TRANSITION_MODE, ack);
   }
 }
@@ -444,7 +444,7 @@ TEST(Op, InvalidCompletionStepsIntensityFocusSTM) {
     recv_ethercat(&frame[0]);
     update();
 
-    const auto ack = _sTx.ack >> 8;
+    const auto ack = _sTx.ack >> 12;
     ASSERT_EQ(ack, ERR_INVALID_SILENCER_SETTING);
   }
 
@@ -513,7 +513,7 @@ TEST(Op, InvalidCompletionStepsIntensityFocusSTM) {
     frame = to_frame_data(data);
     recv_ethercat(&frame[0]);
     update();
-    ack = _sTx.ack >> 8;
+    ack = _sTx.ack >> 12;
     ASSERT_EQ(ERR_INVALID_SILENCER_SETTING, ack);
   }
 }
@@ -595,7 +595,7 @@ TEST(Op, InvalidCompletionStepsPhaseFocusSTM) {
     recv_ethercat(&frame[0]);
     update();
 
-    const auto ack = _sTx.ack >> 8;
+    const auto ack = _sTx.ack >> 12;
     ASSERT_EQ(ack, ERR_INVALID_SILENCER_SETTING);
   }
 }

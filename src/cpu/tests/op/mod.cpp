@@ -197,7 +197,7 @@ TEST(Op, ModulationInvalidTransitionMode) {
     recv_ethercat(&frame[0]);
     update();
 
-    const auto ack = _sTx.ack >> 8;
+    const auto ack = _sTx.ack >> 12;
     ASSERT_EQ(ERR_INVALID_TRANSITION_MODE, ack);
   }
 
@@ -218,7 +218,7 @@ TEST(Op, ModulationInvalidTransitionMode) {
     recv_ethercat(&frame[0]);
     update();
 
-    const auto ack = _sTx.ack >> 8;
+    const auto ack = _sTx.ack >> 12;
     ASSERT_EQ(ERR_INVALID_TRANSITION_MODE, ack);
   }
 
@@ -247,7 +247,7 @@ TEST(Op, ModulationInvalidTransitionMode) {
     frame = to_frame_data(data);
     recv_ethercat(&frame[0]);
     update();
-    ack = _sTx.ack >> 8;
+    ack = _sTx.ack >> 12;
     ASSERT_EQ(ERR_INVALID_TRANSITION_MODE, ack);
   }
 }
@@ -325,7 +325,7 @@ TEST(Op, InvalidCompletionStepsMod) {
     recv_ethercat(&frame[0]);
     update();
 
-    const auto ack = _sTx.ack >> 8;
+    const auto ack = _sTx.ack >> 12;
     ASSERT_EQ(ack, ERR_INVALID_SILENCER_SETTING);
   }
 
@@ -390,7 +390,7 @@ TEST(Op, InvalidCompletionStepsMod) {
     frame = to_frame_data(data);
     recv_ethercat(&frame[0]);
     update();
-    ack = _sTx.ack >> 8;
+    ack = _sTx.ack >> 12;
     ASSERT_EQ(ERR_INVALID_SILENCER_SETTING, ack);
   }
 }
@@ -504,7 +504,7 @@ TEST(Op, ModMissTransitionTime) {
       update();
 
       if (cnt == size) {
-        const auto ack = _sTx.ack >> 8;
+        const auto ack = _sTx.ack >> 12;
         ASSERT_EQ(ack, ERR_MISS_TRANSITION_TIME);
       } else {
         const auto ack = _sTx.ack >> 8;

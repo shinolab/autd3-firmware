@@ -20,7 +20,7 @@ st_porta_t PORTA = st_porta_t{
 uint8_t get_msg_id(void) {
   static uint8_t msg_id = 0;
   const auto id = msg_id++;
-  if (msg_id == 0x80) msg_id = 0;
+  if (msg_id == MSG_ID_MAX) msg_id = 0;
   return id;
 }
 

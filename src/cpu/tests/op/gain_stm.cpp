@@ -265,7 +265,7 @@ TEST(Op, GainSTMInvalidSegmentTransition) {
     recv_ethercat(&frame[0]);
     update();
 
-    const auto ack = _sTx.ack >> 8;
+    const auto ack = _sTx.ack >> 12;
     ASSERT_EQ(ack, ERR_INVALID_SEGMENT_TRANSITION);
   }
 
@@ -284,7 +284,7 @@ TEST(Op, GainSTMInvalidSegmentTransition) {
     recv_ethercat(&frame[0]);
     update();
 
-    const auto ack = _sTx.ack >> 8;
+    const auto ack = _sTx.ack >> 12;
     ASSERT_EQ(ack, ERR_INVALID_SEGMENT_TRANSITION);
   }
 }
@@ -311,7 +311,7 @@ TEST(Op, GainSTMInvalidTransitionMode) {
     recv_ethercat(&frame[0]);
     update();
 
-    const auto ack = _sTx.ack >> 8;
+    const auto ack = _sTx.ack >> 12;
     ASSERT_EQ(ERR_INVALID_TRANSITION_MODE, ack);
   }
 
@@ -332,7 +332,7 @@ TEST(Op, GainSTMInvalidTransitionMode) {
     recv_ethercat(&frame[0]);
     update();
 
-    const auto ack = _sTx.ack >> 8;
+    const auto ack = _sTx.ack >> 12;
     ASSERT_EQ(ERR_INVALID_TRANSITION_MODE, ack);
   }
 
@@ -370,7 +370,7 @@ TEST(Op, GainSTMInvalidTransitionMode) {
     frame = to_frame_data(data);
     recv_ethercat(&frame[0]);
     update();
-    ack = _sTx.ack >> 8;
+    ack = _sTx.ack >> 12;
     ASSERT_EQ(ERR_INVALID_TRANSITION_MODE, ack);
   }
 }
@@ -538,7 +538,7 @@ TEST(Op, GainSTMInvalidMode) {
   recv_ethercat(&frame[0]);
   update();
 
-  const auto ack = _sTx.ack >> 8;
+  const auto ack = _sTx.ack >> 12;
   ASSERT_EQ(ack, ERR_INVALID_GAIN_STM_MODE);
 }
 
@@ -616,7 +616,7 @@ TEST(Op, InvalidCompletionStepsIntensityGainSTM) {
     recv_ethercat(&frame[0]);
     update();
 
-    const auto ack = _sTx.ack >> 8;
+    const auto ack = _sTx.ack >> 12;
     ASSERT_EQ(ack, ERR_INVALID_SILENCER_SETTING);
   }
 
@@ -699,7 +699,7 @@ TEST(Op, InvalidCompletionStepsIntensityGainSTM) {
     frame = to_frame_data(data);
     recv_ethercat(&frame[0]);
     update();
-    ack = _sTx.ack >> 8;
+    ack = _sTx.ack >> 12;
     ASSERT_EQ(ERR_INVALID_SILENCER_SETTING, ack);
   }
 }
@@ -778,7 +778,7 @@ TEST(Op, InvalidCompletionStepsPhaseGainSTM) {
     recv_ethercat(&frame[0]);
     update();
 
-    const auto ack = _sTx.ack >> 8;
+    const auto ack = _sTx.ack >> 12;
     ASSERT_EQ(ack, ERR_INVALID_SILENCER_SETTING);
   }
 }
@@ -896,7 +896,7 @@ TEST(Op, STMMissTransitionTime) {
       update();
 
       if (cnt == size) {
-        const auto ack = _sTx.ack >> 8;
+        const auto ack = _sTx.ack >> 12;
         ASSERT_EQ(ack, ERR_MISS_TRANSITION_TIME);
       } else {
         const auto ack = _sTx.ack >> 8;

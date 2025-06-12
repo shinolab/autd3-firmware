@@ -189,7 +189,7 @@ TEST(Op, GainInvalidSegmentTransition) {
     recv_ethercat(&frame[0]);
     update();
 
-    const auto ack = _sTx.ack >> 8;
+    const auto ack = _sTx.ack >> 12;
     ASSERT_EQ(ack, ERR_INVALID_SEGMENT_TRANSITION);
   }
 
@@ -208,7 +208,7 @@ TEST(Op, GainInvalidSegmentTransition) {
     recv_ethercat(&frame[0]);
     update();
 
-    const auto ack = _sTx.ack >> 8;
+    const auto ack = _sTx.ack >> 12;
     ASSERT_EQ(ack, ERR_INVALID_SEGMENT_TRANSITION);
   }
 }
