@@ -52,6 +52,7 @@ module main #(
   logic mod_segment;
   logic [15:0] mod_idx;
   logic gpio_in_soft[4];
+  logic signed [13:0] sync_time_diff;
 
   logic gpio_in[4];
   assign gpio_in[0] = GPIO_IN_HARD[0] | gpio_in_soft[0];
@@ -99,7 +100,8 @@ module main #(
       .ECAT_SYNC(CAT_SYNC0),
       .SYS_TIME(sys_time),
       .SYNC(sync),
-      .SKIP_ONE_ASSERT(skip_one_assert)
+      .SKIP_ONE_ASSERT(skip_one_assert),
+      .SYNC_TIME_DIFF(sync_time_diff)
   );
 
   time_cnt_generator #(
@@ -190,13 +192,14 @@ module main #(
       .DOUT_VALID()
   );
 
-  debug #(
+  gpio_output #(
       .DEPTH(DEPTH)
-  ) debug (
+  ) gpio_output (
       .CLK(clk),
       .DEBUG_SETTINGS(debug_settings),
       .TIME_CNT(time_cnt),
       .SYS_TIME(sys_time),
+      .SYNC_TIME_DIFF(sync_time_diff),
       .PWM_OUT(PWM_OUT),
       .THERMO(THERMO),
       .FORCE_FAN(FORCE_FAN),

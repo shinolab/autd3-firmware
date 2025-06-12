@@ -60,19 +60,20 @@ package params;
   typedef enum int {SILENCER_FLAG_BIT_FIXED_UPDATE_RATE_MODE = 0} silencer_mode_bit_t;
 
   typedef enum logic [7:0] {
-    DBG_NONE = 8'h00,
-    DBG_BASE_SIG = 8'h01,
-    DBG_THERMO = 8'h02,
-    DBG_FORCE_FAN = 8'h03,
-    DBG_SYNC = 8'h10,
-    DBG_MOD_SEGMENT = 8'h20,
-    DBG_MOD_IDX = 8'h21,
-    DBG_STM_SEGMENT = 8'h50,
-    DBG_STM_IDX = 8'h51,
-    DBG_IS_STM_MODE = 8'h52,
-    DBG_SYS_TIME_EQ = 8'h60,
-    DBG_PWM_OUT = 8'hE0,
-    DBG_DIRECT = 8'hF0
+    GPIO_O_TYPE_NONE = 8'h00,
+    GPIO_O_TYPE_BASE_SIG = 8'h01,
+    GPIO_O_TYPE_THERMO = 8'h02,
+    GPIO_O_TYPE_FORCE_FAN = 8'h03,
+    GPIO_O_TYPE_SYNC = 8'h10,
+    GPIO_O_TYPE_MOD_SEGMENT = 8'h20,
+    GPIO_O_TYPE_MOD_IDX = 8'h21,
+    GPIO_O_TYPE_STM_SEGMENT = 8'h50,
+    GPIO_O_TYPE_STM_IDX = 8'h51,
+    GPIO_O_TYPE_IS_STM_MODE = 8'h52,
+    GPIO_O_TYPE_SYS_TIME_EQ = 8'h60,
+    GPIO_O_TYPE_SYNC_DIFF = 8'h70,
+    GPIO_O_TYPE_PWM_OUT = 8'hE0,
+    GPIO_O_TYPE_DIRECT = 8'hF0
   } debug_type_t;
 
   typedef enum logic [7:0] {
