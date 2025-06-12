@@ -58,6 +58,8 @@ void init_app(void) { clear(); }
 
 uint8_t handle_payload(const volatile uint8_t* p_data) {
   switch (p_data[0]) {
+    case TAG_NOP:
+      return NO_ERR;
     case TAG_CLEAR:
       return clear();
     case TAG_SYNC:
