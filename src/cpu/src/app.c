@@ -49,6 +49,7 @@ extern void init_app(void);
 // fire periodically with 1ms interval
 extern void update(void);
 
+static volatile uint8_t _err = 0;
 static volatile uint8_t _ack = 0;
 volatile uint8_t _rx_data = 0;
 volatile uint16_t _fpga_flags_internal = 0;
@@ -120,27 +121,29 @@ void update(void) {
   if (pop(&_data)) {
     p_data = (volatile uint8_t*)&_data;
     header = (Header*)p_data;
-    if ((header->msg_id & 0x80) != 0) {
-      _ack = ERR_INVALID_MSG_ID;
+    _ack = header->msg_id;
+
+    if (_ack > MSG_ID_MAX) {
+      _ack &= 0x0F;
+      _err = ERR_INVALID_MSG_ID;
       goto FINISH;
     }
 
-    _ack = handle_payload(&p_data[sizeof(Header)]);
-    if ((_ack & ERR_BIT) != 0) goto FINISH;
+    _err = handle_payload(&p_data[sizeof(Header)]);
+    if (_err != NO_ERR) goto FINISH;
     if (header->slot_2_offset != 0) {
-      _ack |= handle_payload(&p_data[sizeof(Header) + header->slot_2_offset]);
-      if ((_ack & ERR_BIT) != 0) goto FINISH;
+      _err = handle_payload(&p_data[sizeof(Header) + header->slot_2_offset]);
+      if (_err != NO_ERR) goto FINISH;
     }
 
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_CTL_FLAG, _fpga_flags_internal);
 
-    _ack = header->msg_id;
   } else {
     dly_tsk(1);
   }
 
 FINISH:
-  _sTx.ack = (((uint16_t)_ack) << 8) | _rx_data;
+  _sTx.ack = (((uint16_t)_err) << 12) | (((uint16_t)_ack) << 8) | _rx_data;
 }
 
 static uint8_t _last_msg_id = 0xFF;

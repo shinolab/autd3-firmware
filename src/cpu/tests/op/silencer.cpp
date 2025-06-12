@@ -154,7 +154,7 @@ TEST(Op, SilencerFixedCompletionStepsInvaidStepMod) {
     recv_ethercat(&frame[0]);
     update();
 
-    const auto ack = _sTx.ack >> 8;
+    const auto ack = _sTx.ack >> 12;
     ASSERT_EQ(ack, ERR_INVALID_SILENCER_SETTING);
   }
 
@@ -307,7 +307,7 @@ TEST(Op, SilencerFixedCompletionStepsInvaidStepSTM) {
     recv_ethercat(&frame[0]);
     update();
 
-    const auto ack = _sTx.ack >> 8;
+    const auto ack = _sTx.ack >> 12;
     ASSERT_EQ(ack, ERR_INVALID_SILENCER_SETTING);
   }
 
@@ -331,7 +331,7 @@ TEST(Op, SilencerFixedCompletionStepsInvaidStepSTM) {
     recv_ethercat(&frame[0]);
     update();
 
-    const auto ack = _sTx.ack >> 8;
+    const auto ack = _sTx.ack >> 12;
     ASSERT_EQ(ack, ERR_INVALID_SILENCER_SETTING);
   }
 

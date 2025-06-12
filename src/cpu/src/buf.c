@@ -4,9 +4,8 @@ extern "C" {
 
 #include "app.h"
 #include "ecat.h"
+#include "params.h"
 #include "utils.h"
-
-#define BUF_SIZE (32)
 
 static volatile RX_STR _buf[BUF_SIZE];
 volatile uint8_t _write_cursor;
