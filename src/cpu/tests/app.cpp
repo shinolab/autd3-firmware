@@ -22,7 +22,7 @@ TEST(Op, NotSuppoertedTag) {
   header->slot_2_offset = 0;
 
   auto* data_body = reinterpret_cast<uint8_t*>(data.data) + sizeof(Header);
-  data_body[0] = 0x00;
+  data_body[0] = 0xFF;
 
   auto frame = to_frame_data(data);
 

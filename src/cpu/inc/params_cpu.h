@@ -10,6 +10,7 @@
 
 #define BUF_SIZE (MSG_ID_MAX + 1)
 
+#define TAG_NOP (0x00)
 #define TAG_CLEAR (0x01)
 #define TAG_SYNC (0x02)
 #define TAG_FIRM_INFO (0x03)

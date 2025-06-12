@@ -14,6 +14,7 @@ target_sources(test_autd3-firmware PRIVATE
   ${PROJECT_SOURCE_DIR}/../src/op/phase_corr.c
   ${PROJECT_SOURCE_DIR}/../src/op/silencer.c
   ${PROJECT_SOURCE_DIR}/../src/op/sync.c
+  nop.cpp
   clear.cpp
   cpu_gpio.cpp
   silencer.cpp
