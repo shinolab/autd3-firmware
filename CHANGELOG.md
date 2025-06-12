@@ -1,3 +1,8 @@
+# 12.0.0
+
+- Optimize error handling
+- Add `SYNC_DIFF` GPIO output type
+
 # 11.0.0
 
 - Optimize STM memory usage: supports 65536 foci in total, regardless of the number of foci per pattern

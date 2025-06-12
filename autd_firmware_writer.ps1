@@ -1,5 +1,5 @@
 ﻿Param(
-    [string]$version = "11.0.0",
+    [string]$version = "12.0.0",
     [string]$vivado_dir = "NULL"
 )
 
@@ -47,16 +47,19 @@ function UpdateCPU([string]$cpuFirmwareFile) {
     }
 }
 
-function AddVivadoToPATH($vivado_dir, $edition) {
+function FindXilinxPath() {
+    $xilinx_path = GetInstallLocation 'Vivado|Vitis|(Xilinx Design Tools FPGAs)'
+    if (($xilinx_path -eq "NULL")) {
+        ColorEcho "Red" "Error" "Vivado is not found. Install Vivado."
+        Stop-Transcript | Out-Null
+        exit -1
+    }
+    ColorEcho "Green" "INFO" "Found Xilinx path", $xilinx_path
+    return $xilinx_path
+}
+
+function AddVivadoToPATH_2024_or_older($vivado_dir, $xilinx_path, $edition) {
     if ($vivado_dir -eq "NULL") {
-        ColorEcho "Green" "INFO" "Vivado is not found in PATH. Looking for Vivado..."
-        $xilinx_path = GetInstallLocation 'Vivado|Vitis'
-        if (($xilinx_path -eq "NULL")) {
-            ColorEcho "Red" "Error" "Vivado is not found. Install Vivado."
-            Stop-Transcript | Out-Null
-            exit -1
-        }
-        
         $vivado_path = Join-Path $xilinx_path $edition
         if (-not (Test-Path $vivado_path)) {
             return
@@ -77,17 +80,49 @@ function AddVivadoToPATH($vivado_dir, $edition) {
     $env:Path = $env:Path + ";" + $vivado_bin + ";" + $vivado_lib
 }
 
+function AddVivadoToPATH_2025($vivado_dir, $xilinx_path, $edition) {
+    if ($vivado_dir -eq "NULL") {
+        $vivados = Get-ChildItem -Path $xilinx_path -Directory -Recurse -Depth 2 -ErrorAction SilentlyContinue | Where-Object { $_.Name -ieq $edition }
+        if ($vivados.Length -eq 0) {
+            return
+        }
+
+        $vivado = $vivados | Select-Object -first 1
+        $vivado_dir = $vivado.FullName
+        ColorEcho "Green" "INFO" "Find", $edition, "at", $vivado_dir
+    }
+
+    $vivado_bin = Join-Path $vivado_dir "bin"
+    $vivado_lib = Join-Path $vivado_dir "lib" | Join-Path -ChildPath "win64.o" 
+    $env:Path = $env:Path + ";" + $vivado_bin + ";" + $vivado_lib
+}
+
 function UpdateFPGA([string]$fpgaFirmwareFile, [string]$vivado_dir) {
     $can_use_vivado = TestCommand vivado
     $can_use_vivado_lab = TestCommand vivado_lab
 
+    $xilinx_path = ""
+
     if ((-not $can_use_vivado) -and (-not $can_use_vivado_lab)) {
-        AddVivadoToPATH $vivado_dir "Vivado"
+        ColorEcho "Green" "INFO" "Vivado is not found in PATH. Looking for Vivado..."
+        $xilinx_path = FindXilinxPath
+        
+        AddVivadoToPATH_2024_or_older $vivado_dir $xilinx_path "Vivado"
         $can_use_vivado = TestCommand vivado
     }
 
     if ((-not $can_use_vivado) -and (-not $can_use_vivado_lab)) {
-        AddVivadoToPATH $vivado_dir "Vivado_Lab"
+        AddVivadoToPATH_2024_or_older $vivado_dir $xilinx_path "Vivado_Lab"
+        $can_use_vivado_lab = TestCommand vivado_lab
+    }
+    
+    # if ((-not $can_use_vivado) -and (-not $can_use_vivado_lab)) {
+    #     AddVivadoToPATH_2025 $vivado_dir $xilinx_path "Vivado"
+    #     $can_use_vivado = TestCommand vivado
+    # }
+
+    if ((-not $can_use_vivado) -and (-not $can_use_vivado_lab)) {
+        AddVivadoToPATH_2025 $vivado_dir $xilinx_path "Vivado_Lab"
         $can_use_vivado_lab = TestCommand vivado_lab
     }
 
