@@ -10,6 +10,7 @@ module stm #(
     stm_bus_if.stm_port STM_BUS,
     stm_bus_if.out_focus_port STM_BUS_FOCUS,
     stm_bus_if.out_gain_port STM_BUS_GAIN,
+    output_mask_bus_if.out_port OUTPUT_MASK_BUS,
     output wire [7:0] INTENSITY,
     output wire [7:0] PHASE,
     output wire DOUT_VALID,
@@ -29,6 +30,7 @@ module stm #(
 
   assign STM_BUS.MODE = mode;
   assign STM_BUS.SEGMENT = segment;
+  assign OUTPUT_MASK_BUS.SEGMENT = segment;
 
   logic update_settings;
   logic [7:0] intensity_gain;
@@ -36,10 +38,13 @@ module stm #(
   logic [7:0] intensity_focus;
   logic [7:0] phase_focus;
   logic dout_valid_gain, dout_valid_focus;
+  logic [7:0] intensity;
+  logic [7:0] phase;
+  logic dout_valid;
 
-  assign INTENSITY = mode == params::STM_MODE_GAIN ? intensity_gain : intensity_focus;
-  assign PHASE = mode == params::STM_MODE_GAIN ? phase_gain : phase_focus;
-  assign DOUT_VALID = mode == params::STM_MODE_GAIN ? dout_valid_gain : dout_valid_focus;
+  assign intensity = mode == params::STM_MODE_GAIN ? intensity_gain : intensity_focus;
+  assign phase = mode == params::STM_MODE_GAIN ? phase_gain : phase_focus;
+  assign dout_valid = mode == params::STM_MODE_GAIN ? dout_valid_gain : dout_valid_focus;
 
   assign DEBUG_IDX = idx;
   assign DEBUG_SEGMENT = segment;
@@ -117,5 +122,18 @@ module stm #(
       start <= 1'b0;
     end
   end
+
+  output_mask #(
+      .DEPTH(DEPTH)
+  ) output_mask (
+      .CLK(CLK),
+      .OUTPUT_MASK_BUS(OUTPUT_MASK_BUS),
+      .DIN_VALID(dout_valid),
+      .INTENSITY_IN(intensity),
+      .INTENSITY_OUT(INTENSITY),
+      .PHASE_IN(phase),
+      .PHASE_OUT(PHASE),
+      .DOUT_VALID(DOUT_VALID)
+  );
 
 endmodule

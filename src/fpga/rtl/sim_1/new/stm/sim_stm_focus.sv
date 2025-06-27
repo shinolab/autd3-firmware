@@ -33,6 +33,7 @@ module sim_stm_focus ();
   modulation_bus_if mod_bus ();
   stm_bus_if stm_bus ();
   pwe_table_bus_if pwe_table_bus ();
+  output_mask_bus_if output_mask_bus ();
 
   memory memory (
       .CLK(CLK),
@@ -40,6 +41,7 @@ module sim_stm_focus ();
       .MEM_BUS(sim_helper_bram.memory_bus.bram_port),
       .CNT_BUS(cnt_bus.in_port),
       .PHASE_CORR_BUS(phase_corr_bus.in_port),
+      .OUTPUT_MASK_BUS(output_mask_bus.in_port),
       .MOD_BUS(mod_bus.in_port),
       .STM_BUS(stm_bus.in_port),
       .PWE_TABLE_BUS(pwe_table_bus.in_port)
@@ -73,6 +75,7 @@ module sim_stm_focus ();
       .STM_BUS(stm_bus.stm_port),
       .STM_BUS_FOCUS(stm_bus.out_focus_port),
       .STM_BUS_GAIN(stm_bus.out_gain_port),
+      .OUTPUT_MASK_BUS(output_mask_bus.out_port),
       .INTENSITY(intensity),
       .PHASE(phase),
       .DOUT_VALID(dout_valid),

@@ -12,6 +12,7 @@ target_sources(test_autd3-firmware PRIVATE
   ${PROJECT_SOURCE_DIR}/../src/op/reads_fpga_state.c
   ${PROJECT_SOURCE_DIR}/../src/op/pulse_width_encoder.c
   ${PROJECT_SOURCE_DIR}/../src/op/phase_corr.c
+  ${PROJECT_SOURCE_DIR}/../src/op/output_mask.c
   ${PROJECT_SOURCE_DIR}/../src/op/silencer.c
   ${PROJECT_SOURCE_DIR}/../src/op/sync.c
   nop.cpp
@@ -30,4 +31,5 @@ target_sources(test_autd3-firmware PRIVATE
   gain_stm.cpp
   pulse_width_encoder.cpp
   phase_corr.cpp
+  output_mask.cpp
 )

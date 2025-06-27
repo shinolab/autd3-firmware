@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-module sim_stm_gain ();
+module sim_output_mask ();
 
   `include "define.vh"
 
@@ -25,6 +25,8 @@ module sim_stm_gain ();
   logic [15:0] freq_div_buf[params::NumSegment];
   logic [7:0] intensity_buf[params::NumSegment][SIZE][DEPTH];
   logic [7:0] phase_buf[params::NumSegment][SIZE][DEPTH];
+
+  logic [255:0] output_mask_buf[params::NumSegment];
 
   cnt_bus_if cnt_bus ();
   phase_corr_bus_if phase_corr_bus ();
@@ -117,7 +119,11 @@ module sim_stm_gain ();
       end
       $display("check %d/%d", j + 1, cycle_buf[segment]);
       for (int i = 0; i < DEPTH; i++) begin
-        `ASSERT_EQ(intensity_buf[segment][debug_idx][i], intensity);
+        if (output_mask_buf[segment][i]) begin
+          `ASSERT_EQ(intensity_buf[segment][debug_idx][i], intensity);
+        end else begin
+          `ASSERT_EQ(8'h00, intensity);
+        end
         `ASSERT_EQ(phase_buf[segment][debug_idx][i], phase);
         @(posedge CLK);
       end
@@ -153,6 +159,10 @@ module sim_stm_gain ();
       end
       sim_helper_bram.write_stm_gain_intensity_phase(segment, intensity_buf[segment],
                                                      phase_buf[segment], cycle_buf[segment]);
+      for (int i = 0; i < DEPTH; i++) begin
+        output_mask_buf[segment][i] = sim_helper_random.range(1'b1, 1'b0);
+      end
+      sim_helper_bram.write_output_mask(segment, output_mask_buf[segment]);
     end
 
     $display("memory initialized");
@@ -169,7 +179,7 @@ module sim_stm_gain ();
     join
     check(1);
 
-    $display("OK! sim_stm_gain");
+    $display("OK! sim_output_mask");
     $finish();
   end
 
