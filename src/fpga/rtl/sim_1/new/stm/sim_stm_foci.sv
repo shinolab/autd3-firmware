@@ -34,6 +34,7 @@ module sim_stm_foci ();
   modulation_bus_if mod_bus ();
   stm_bus_if stm_bus ();
   pwe_table_bus_if pwe_table_bus ();
+  output_mask_bus_if output_mask_bus ();
 
   memory memory (
       .CLK(CLK),
@@ -41,6 +42,7 @@ module sim_stm_foci ();
       .MEM_BUS(sim_helper_bram.memory_bus.bram_port),
       .CNT_BUS(cnt_bus.in_port),
       .PHASE_CORR_BUS(phase_corr_bus.in_port),
+      .OUTPUT_MASK_BUS(output_mask_bus.in_port),
       .MOD_BUS(mod_bus.in_port),
       .STM_BUS(stm_bus.in_port),
       .PWE_TABLE_BUS(pwe_table_bus.in_port)
@@ -74,6 +76,7 @@ module sim_stm_foci ();
       .STM_BUS(stm_bus.stm_port),
       .STM_BUS_FOCUS(stm_bus.out_focus_port),
       .STM_BUS_GAIN(stm_bus.out_gain_port),
+      .OUTPUT_MASK_BUS(output_mask_bus.out_port),
       .INTENSITY(intensity),
       .PHASE(phase),
       .DOUT_VALID(dout_valid),
@@ -136,14 +139,14 @@ module sim_stm_foci ();
           continue;
         end
         for (int k = 0; k < NumFoci; k++) begin
-          x = focus_x[segment][debug_idx_buf * NumFoci + k] - int'(10.16 * ix / 0.025);  // [0.025mm]
-          y = focus_y[segment][debug_idx_buf * NumFoci + k] - int'(10.16 * iy / 0.025);  // [0.025mm]
-          z = focus_z[segment][debug_idx_buf * NumFoci + k];  // [0.025mm]
+          x = focus_x[segment][debug_idx_buf*NumFoci+k] - int'(10.16 * ix / 0.025);  // [0.025mm]
+          y = focus_y[segment][debug_idx_buf*NumFoci+k] - int'(10.16 * iy / 0.025);  // [0.025mm]
+          z = focus_z[segment][debug_idx_buf*NumFoci+k];  // [0.025mm]
           r = $rtoi($sqrt($itor(x * x + y * y + z * z)));  // [0.025mm]
           lambda = (r << 14) / stm_settings.SOUND_SPEED[segment];
           p = lambda % 256;
           if (k !== 0) begin
-            p += intensity_and_offsets_buf[segment][debug_idx_buf * NumFoci + k];
+            p += intensity_and_offsets_buf[segment][debug_idx_buf*NumFoci+k];
           end
           sin_buf[k] = sin_table[p%256];
           cos_buf[k] = sin_table[(p+64)%256];
@@ -157,7 +160,7 @@ module sim_stm_foci ();
         sin /= NumFoci;
         cos /= NumFoci;
         phase_expect = atan_table[{sin[7:1], cos[7:1]}];
-        `ASSERT_EQ(intensity_and_offsets_buf[segment][debug_idx_buf * NumFoci], intensity);
+        `ASSERT_EQ(intensity_and_offsets_buf[segment][debug_idx_buf*NumFoci], intensity);
         `ASSERT_EQ(phase_expect, phase);
         @(posedge CLK);
         idx++;
@@ -195,14 +198,15 @@ module sim_stm_foci ();
     for (int segment = 0; segment < params::NumSegment; segment++) begin
       for (int i = 0; i < SIZE; i++) begin
         for (int k = 0; k < NumFoci; k++) begin
-          focus_x[segment][i * NumFoci + k] = sim_helper_random.range(131071, -131072 + 6908);
-          focus_y[segment][i * NumFoci + k] = sim_helper_random.range(131071, -131072 + 5283);
-          focus_z[segment][i * NumFoci + k] = sim_helper_random.range(131071, -131072);
-          intensity_and_offsets_buf[segment][i * NumFoci + k] = sim_helper_random.range(8'hFF, 0);
+          focus_x[segment][i*NumFoci+k] = sim_helper_random.range(131071, -131072 + 6908);
+          focus_y[segment][i*NumFoci+k] = sim_helper_random.range(131071, -131072 + 5283);
+          focus_z[segment][i*NumFoci+k] = sim_helper_random.range(131071, -131072);
+          intensity_and_offsets_buf[segment][i*NumFoci+k] = sim_helper_random.range(8'hFF, 0);
         end
       end
       sim_helper_bram.write_stm_focus(segment, focus_x[segment], focus_y[segment], focus_z[segment],
-                                      intensity_and_offsets_buf[segment], cycle_buf[segment] * NumFoci);
+                                      intensity_and_offsets_buf[segment],
+                                      cycle_buf[segment] * NumFoci);
     end
     $display("memory initialized");
 

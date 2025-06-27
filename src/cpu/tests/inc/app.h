@@ -43,6 +43,7 @@ uint16_t bram_read_controller(uint32_t bram_addr);
 uint16_t bram_read_mod(uint32_t segment, uint32_t bram_addr);
 uint16_t bram_read_pwe_table(uint32_t bram_addr);
 uint16_t bram_read_phase_corr(uint32_t bram_addr);
+uint16_t bram_read_output_mask(uint32_t segment, uint32_t bram_addr);
 uint16_t bram_read_stm(uint32_t segment, uint32_t bram_addr);
 
 inline static uint16_t get_addr(uint8_t bram_select, uint16_t bram_addr) { return (((uint16_t)bram_select & 0x0003) << 14) | (bram_addr & 0x3FFF); }

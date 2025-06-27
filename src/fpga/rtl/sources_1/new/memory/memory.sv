@@ -5,6 +5,7 @@ module memory (
     memory_bus_if.bram_port MEM_BUS,
     cnt_bus_if.in_port CNT_BUS,
     phase_corr_bus_if.in_port PHASE_CORR_BUS,
+    output_mask_bus_if.in_port OUTPUT_MASK_BUS,
     modulation_bus_if.in_port MOD_BUS,
     stm_bus_if.in_port STM_BUS,
     pwe_table_bus_if.in_port PWE_TABLE_BUS
@@ -75,6 +76,30 @@ module memory (
       .doutb(phase_corr_dout)
   );
   ///////////////////////// Phase correction //////////////////////////
+
+  //////////////////////////// Output mask ////////////////////////////
+  logic output_mask_en;
+
+  logic output_mask_idx;
+  logic [255:0] output_mask_dout;
+
+  assign output_mask_en = (cnt_sel == BRAM_CNT_SELECT_OUTPUT_MASK) & (select == BRAM_SELECT_CONTROLLER) & en;
+  assign output_mask_idx = OUTPUT_MASK_BUS.SEGMENT;
+  assign OUTPUT_MASK_BUS.VALUE = output_mask_dout;
+  BRAM_OUTPUT_MASK output_mask_bram (
+      .clka (bus_clk),
+      .ena  (output_mask_en),
+      .wea  (we),
+      .addra({addr[4:0]}),
+      .dina (data_in),
+      .douta(),
+      .clkb (CLK),
+      .web  (1'b0),
+      .addrb(output_mask_idx),
+      .dinb (),
+      .doutb(output_mask_dout)
+  );
+  //////////////////////////// Output mask ////////////////////////////
 
   ///////////////////////////// PWE table ////////////////////////////
   logic pwe_table_en;
@@ -162,9 +187,9 @@ module memory (
     if (ctl_we_edge == 3'b011) begin
       case (addr)
         ADDR_MOD_MEM_WR_SEGMENT: mod_mem_wr_segment <= data_in[0];
+        ADDR_MOD_MEM_WR_PAGE: mod_mem_wr_page <= data_in[0];
         ADDR_STM_MEM_WR_SEGMENT: stm_mem_wr_segment <= data_in[0];
         ADDR_STM_MEM_WR_PAGE: stm_mem_wr_page <= data_in[3:0];
-        ADDR_MOD_MEM_WR_PAGE: mod_mem_wr_page <= data_in[0];
         default: begin
         end
       endcase

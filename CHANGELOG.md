@@ -1,3 +1,7 @@
+# 12.1.0
+
+- Add output mask operation
+
 # 12.0.0
 
 - Optimize error handling
