@@ -17,9 +17,9 @@ jobs:
     outputs:
       src: ${{ steps.changed-files-yaml.outputs.src_any_changed }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - id: changed-files-yaml
-        uses: tj-actions/changed-files@v46
+        uses: tj-actions/changed-files@v47
         with:
           files_yaml: |
             src:
@@ -35,7 +35,7 @@ jobs:
     name: test-cpu
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: taiki-e/install-action@v2
         with:
           tool: cargo-make

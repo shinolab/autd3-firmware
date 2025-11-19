@@ -14,7 +14,7 @@ jobs:
   coverage:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: taiki-e/install-action@v2
         with:
           tool: cargo-make
@@ -22,7 +22,7 @@ jobs:
       - run: |
           cd src/cpu
           cargo make cov
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: src/cpu/tests/build/CMakeFiles/test_autd3-firmware.dir/coverage.info
