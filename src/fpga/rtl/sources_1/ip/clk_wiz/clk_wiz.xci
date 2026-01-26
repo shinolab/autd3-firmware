@@ -3,7 +3,7 @@
   "ip_inst": {
     "xci_name": "clk_wiz",
     "component_reference": "xilinx.com:ip:clk_wiz:6.0",
-    "ip_revision": "16",
+    "ip_revision": "17",
     "gen_directory": "../../../../autd3-fpga.gen/sources_1/ip/clk_wiz",
     "parameters": {
       "component_parameters": {
@@ -159,7 +159,7 @@
         "MMCM_CLKFBOUT_MULT_F": [ { "value": "39.000", "value_src": "user", "resolve_type": "user", "format": "float", "usage": "all" } ],
         "MMCM_CLKFBOUT_PHASE": [ { "value": "0.000", "resolve_type": "user", "format": "float", "usage": "all" } ],
         "MMCM_CLKFBOUT_USE_FINE_PS": [ { "value": "false", "resolve_type": "user", "format": "bool", "usage": "all" } ],
-        "MMCM_CLKIN1_PERIOD": [ { "value": "39.063", "value_src": "user", "resolve_type": "user", "format": "float", "usage": "all" } ],
+        "MMCM_CLKIN1_PERIOD": [ { "value": "39.062", "value_src": "user", "resolve_type": "user", "format": "float", "usage": "all" } ],
         "MMCM_CLKIN2_PERIOD": [ { "value": "10.0", "value_src": "user", "resolve_type": "user", "format": "float", "usage": "all" } ],
         "MMCM_CLKOUT4_CASCADE": [ { "value": "false", "resolve_type": "user", "format": "bool", "usage": "all" } ],
         "MMCM_CLOCK_HOLD": [ { "value": "false", "resolve_type": "user", "format": "bool", "usage": "all" } ],
@@ -338,7 +338,7 @@
         "C_INCLK_SUM_ROW2": [ { "value": "no_secondary_input_clock ", "resolve_type": "generated", "usage": "all" } ],
         "C_OUTCLK_SUM_ROW0A": [ { "value": " Output     Output      Phase    Duty Cycle   Pk-to-Pk     Phase", "resolve_type": "generated", "usage": "all" } ],
         "C_OUTCLK_SUM_ROW0B": [ { "value": "  Clock     Freq (MHz)  (degrees)    (%)     Jitter (ps)  Error (ps)", "resolve_type": "generated", "usage": "all" } ],
-        "C_OUTCLK_SUM_ROW1": [ { "value": "clk_out1__20.48000______0.000______50.0______373.566____233.480", "resolve_type": "generated", "usage": "all" } ],
+        "C_OUTCLK_SUM_ROW1": [ { "value": "clk_out1__20.48000______0.000______50.0______373.562____233.480", "resolve_type": "generated", "usage": "all" } ],
         "C_OUTCLK_SUM_ROW2": [ { "value": "no_CLK_OUT2_output", "resolve_type": "generated", "usage": "all" } ],
         "C_OUTCLK_SUM_ROW3": [ { "value": "no_CLK_OUT3_output", "resolve_type": "generated", "usage": "all" } ],
         "C_OUTCLK_SUM_ROW4": [ { "value": "no_CLK_OUT4_output", "resolve_type": "generated", "usage": "all" } ],
@@ -399,7 +399,7 @@
         "C_MMCM_NOTES": [ { "value": "None", "resolve_type": "generated", "usage": "all" } ],
         "C_MMCM_BANDWIDTH": [ { "value": "OPTIMIZED", "resolve_type": "generated", "usage": "all" } ],
         "C_MMCM_CLKFBOUT_MULT_F": [ { "value": "39.000", "resolve_type": "generated", "format": "float", "usage": "all" } ],
-        "C_MMCM_CLKIN1_PERIOD": [ { "value": "39.063", "resolve_type": "generated", "format": "float", "usage": "all" } ],
+        "C_MMCM_CLKIN1_PERIOD": [ { "value": "39.062", "resolve_type": "generated", "format": "float", "usage": "all" } ],
         "C_MMCM_CLKIN2_PERIOD": [ { "value": "10.0", "resolve_type": "generated", "format": "float", "usage": "all" } ],
         "C_MMCM_CLKOUT4_CASCADE": [ { "value": "FALSE", "resolve_type": "generated", "format": "bool", "usage": "all" } ],
         "C_MMCM_CLOCK_HOLD": [ { "value": "FALSE", "resolve_type": "generated", "format": "bool", "usage": "all" } ],
@@ -583,27 +583,27 @@
         "C_VCO_MAX": [ { "value": "1440.000", "resolve_type": "generated", "format": "float", "usage": "all" } ]
       },
       "project_parameters": {
-        "ARCHITECTURE": [ { "value": "artix7" } ],
-        "BASE_BOARD_PART": [ { "value": "" } ],
-        "BOARD_CONNECTIONS": [ { "value": "" } ],
-        "DEVICE": [ { "value": "xc7a200t" } ],
-        "PACKAGE": [ { "value": "fbg676" } ],
-        "PREFHDL": [ { "value": "VERILOG" } ],
-        "SILICON_REVISION": [ { "value": "" } ],
-        "SIMULATOR_LANGUAGE": [ { "value": "MIXED" } ],
-        "SPEEDGRADE": [ { "value": "-2" } ],
-        "STATIC_POWER": [ { "value": "" } ],
-        "TEMPERATURE_GRADE": [ { "value": "" } ]
+        "ARCHITECTURE": [ { "value": "artix7", "resolve_type": "generated", "usage": "all" } ],
+        "BASE_BOARD_PART": [ { "value": "", "resolve_type": "generated", "usage": "all" } ],
+        "BOARD_CONNECTIONS": [ { "value": "", "resolve_type": "generated", "usage": "all" } ],
+        "DEVICE": [ { "value": "xc7a200t", "resolve_type": "generated", "usage": "all" } ],
+        "PACKAGE": [ { "value": "fbg676", "resolve_type": "generated", "usage": "all" } ],
+        "PREFHDL": [ { "value": "VERILOG", "resolve_type": "generated", "usage": "all" } ],
+        "SILICON_REVISION": [ { "value": "", "resolve_type": "generated", "usage": "all" } ],
+        "SIMULATOR_LANGUAGE": [ { "value": "MIXED", "resolve_type": "generated", "usage": "all" } ],
+        "SPEEDGRADE": [ { "value": "-2", "resolve_type": "generated", "usage": "all" } ],
+        "STATIC_POWER": [ { "value": "", "resolve_type": "generated", "usage": "all" } ],
+        "TEMPERATURE_GRADE": [ { "value": "", "resolve_type": "generated", "usage": "all" } ]
       },
       "runtime_parameters": {
         "IPCONTEXT": [ { "value": "IP_Flow" } ],
-        "IPREVISION": [ { "value": "16" } ],
+        "IPREVISION": [ { "value": "17" } ],
         "MANAGED": [ { "value": "TRUE" } ],
         "OUTPUTDIR": [ { "value": "../../../../autd3-fpga.gen/sources_1/ip/clk_wiz" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "." } ],
-        "SWVERSION": [ { "value": "2025.1" } ],
-        "SYNTHESISFLOW": [ { "value": "OUT_OF_CONTEXT" } ]
+        "SWVERSION": [ { "value": "2025.2" } ],
+        "SYNTHESISFLOW": [ { "value": "GLOBAL" } ]
       }
     },
     "boundary": {
@@ -666,5 +666,6 @@
         }
       }
     }
-  }
+  },
+  "checksum": "3e36f833"
 }

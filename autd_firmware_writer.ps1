@@ -48,7 +48,7 @@ function UpdateCPU([string]$cpuFirmwareFile) {
 }
 
 function FindXilinxPath() {
-    $xilinx_path = GetInstallLocation 'Vivado|Vitis|(Xilinx Design Tools FPGAs)'
+    $xilinx_path = GetInstallLocation 'Vivado|Vitis|(Xilinx Design Tools FPGAs)|AMDDesignTools'
     if (($xilinx_path -eq "NULL")) {
         ColorEcho "Red" "Error" "Vivado is not found. Install Vivado."
         Stop-Transcript | Out-Null
@@ -116,10 +116,10 @@ function UpdateFPGA([string]$fpgaFirmwareFile, [string]$vivado_dir) {
         $can_use_vivado_lab = TestCommand vivado_lab
     }
     
-    # if ((-not $can_use_vivado) -and (-not $can_use_vivado_lab)) {
-    #     AddVivadoToPATH_2025 $vivado_dir $xilinx_path "Vivado"
-    #     $can_use_vivado = TestCommand vivado
-    # }
+    if ((-not $can_use_vivado) -and (-not $can_use_vivado_lab)) {
+        AddVivadoToPATH_2025 $vivado_dir $xilinx_path "Vivado"
+        $can_use_vivado = TestCommand vivado
+    }
 
     if ((-not $can_use_vivado) -and (-not $can_use_vivado_lab)) {
         AddVivadoToPATH_2025 $vivado_dir $xilinx_path "Vivado_Lab"
