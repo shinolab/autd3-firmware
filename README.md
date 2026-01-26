@@ -13,11 +13,11 @@ Please install the following software.
 * [Vivado Lab Edition or ML Edition](https://www.xilinx.com/products/design-tools/vivado.html)
    * If you only want to update the firmware, we strongly recommend using the **Lab Edition**.
       * The Lab Edition requires only about 6 GB of disk space, whereas the ML Edition requires over 60 GB.
-   * Tested with Vivado 2025.1
+   * Tested with Vivado 2025.2
 * [J-Link Software](https://www.segger.com/downloads/jlink/)
    * **"legacy USB Driver for J-Link"** is required for older J-Link devices.
       * Refer to [this page](https://wiki.segger.com/J-Link_Model_Overview). If your J-Link device has the WinUSB feature, you do not need to install the legacy driver.
-   * Tested with J-Link Software V8.10 (x64)
+   * Tested with J-Link Software V8.46 (x64)
 
 The following hardware is also required:
 
@@ -31,4 +31,4 @@ The following hardware is also required:
 
 # Author
 
-Shun Suzuki, 2022-2025
+Shun Suzuki, 2022-2026

@@ -25,7 +25,9 @@ def find_vivado() -> str | None:
                 values.append(winreg.EnumValue(subkey, v))
             for v in filter(
                 lambda x: x[0] == "DisplayName"
-                and re.search("Vivado|Vitis|(Xilinx Design Tools FPGAs)", x[1]),
+                and re.search(
+                    "Vivado|Vitis|(Xilinx Design Tools FPGAs)|AMDDesignTools", x[1]
+                ),
                 values,
             ):
                 install_location = next(
