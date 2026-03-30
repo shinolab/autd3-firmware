@@ -22,7 +22,7 @@ jobs:
       - run: |
           cd src/cpu
           cargo make cov
-      - uses: codecov/codecov-action@v5
+      - uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: src/cpu/tests/build/CMakeFiles/test_autd3-firmware.dir/coverage.info
